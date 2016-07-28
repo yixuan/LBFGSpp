@@ -14,18 +14,64 @@ inline double foo(const VectorXd& x, VectorXd& grad)
 
     double f = (x - d).squaredNorm();
     grad.noalias() = 2.0 * (x - d);
+    return f;
+}
+
+void line_search_backtrack(double& step, double& fx, VectorXd& x, VectorXd& grad,
+                           const VectorXd& drt, const VectorXd& xp)
+{
+    const double dec = 0.5;
+    const double inc = 2.1;
+    const double ftol = 1e-4;
+    const double wolfe = 0.9;
+    const int max_linesearch = 20;
+
+    const double fx_init = fx;
+    const double dg_init = grad.dot(drt);
+    const double dg_test = ftol * dg_init;
+    double width;
+
+    std::cout << "  * backtracking: ";
+
+    for(int iter = 0; iter < max_linesearch; iter++)
+    {
+        // x_{k+1} = x_k + step * d_k
+        x.noalias() = xp + step * drt;
+        // Evaluate this candidate
+        fx = foo(x, grad);
+
+        if(fx > fx_init + step * dg_test)
+        {
+            width = dec;
+            std::cout << "dec ";
+        } else {
+            const double dg = grad.dot(drt);
+            if(dg < wolfe * dg_init)
+            {
+                width = inc;
+                std::cout << "inc ";
+            } else {
+                break;
+            }
+        }
+
+        step *= width;
+    }
+
+    std::cout << "exit" << std::endl;
 }
 
 int main()
 {
+    const double m_epsilon = 1e-5;
     const int n = 10;
-    const int m = 5;
+    const int m = 6;
     VectorXd x = VectorXd::Zero(n);
 
     MatrixXd m_s(n, m);
     MatrixXd m_y(n, m);
-    VectorXd m_ys(m);
-    VectorXd m_alpha(m);
+    VectorXd m_ys = VectorXd::Zero(m);
+    VectorXd m_alpha = VectorXd::Zero(m);
 
     // Old x
     VectorXd m_xp(n);
@@ -40,6 +86,15 @@ int main()
     double fx = foo(x, m_grad);
     double xnorm = x.norm();
     double gnorm = m_grad.norm();
+
+    std::cout << "||grad|| = " << gnorm << std::endl;
+
+    if(gnorm <= m_epsilon * std::max(xnorm, 1.0))
+    {
+        std::cout << "minimum found" << std::endl;
+        return 0;
+    }
+
     // Initial direction
     m_drt.noalias() = -m_grad;
     // Initial step
@@ -47,14 +102,14 @@ int main()
 
     int k = 1;
     int end = 0;
-    double ys, yy;
-    for(int iter = 0; iter < 15; iter++)
+    for(int iter = 0; iter < 100; iter++)
     {
         // Save the curent x and gradient
         m_xp.noalias() = x;
         m_gradp.noalias() = m_grad;
 
         // TODO: update step
+        line_search_backtrack(step, fx, x, m_grad, m_drt, m_xp);
 
         // x norm and gradient norm
         xnorm = x.norm();
@@ -62,6 +117,12 @@ int main()
 
         // Report
         std::cout << "||grad|| = " << gnorm << std::endl;
+
+        if(gnorm <= m_epsilon * std::max(xnorm, 1.0))
+        {
+            std::cout << "minimum found" << std::endl;
+            return 0;
+        }
 
         // Update s and y
         MapVec svec(&m_s(0, end), n);
@@ -71,8 +132,8 @@ int main()
 
         // ys = y's = 1/rho
         // yy = y'y
-        ys = svec.dot(yvec);
-        yy = yvec.squaredNorm();
+        double ys = yvec.dot(svec);
+        double yy = yvec.squaredNorm();
         m_ys[end] = ys;
 
         // Direction = -H * g
