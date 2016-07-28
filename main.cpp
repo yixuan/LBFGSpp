@@ -5,7 +5,7 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 typedef Eigen::Map<Eigen::VectorXd> MapVec;
 
-inline double foo(const VectorXd& x, VectorXd grad)
+inline double foo(const VectorXd& x, VectorXd& grad)
 {
     const int n = x.size();
     VectorXd d(n);
@@ -71,7 +71,6 @@ int main()
 
         // ys = y's = 1/rho
         // yy = y'y
-
         ys = svec.dot(yvec);
         yy = yvec.squaredNorm();
         m_ys[end] = ys;
@@ -86,9 +85,10 @@ int main()
         int j = end;
         for(int i = 0; i < bound; i++)
         {
-            MapVec yj(&m_y(0, j), n);
             j = (j + m - 1) % m;
-            m_alpha[j] = yj.dot(m_drt) / m_ys[j];
+            MapVec sj(&m_s(0, j), n);
+            MapVec yj(&m_y(0, j), n);
+            m_alpha[j] = sj.dot(m_drt) / m_ys[j];
             m_drt.noalias() -= m_alpha[j] * yj;
         }
 
