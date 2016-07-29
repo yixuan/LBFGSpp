@@ -5,7 +5,7 @@
 #define LBFGS_H
 
 #include <Eigen/Core>
-#include "LBFGS/Params.h"
+#include "LBFGS/Param.h"
 #include "LBFGS/LineSearch.h"
 
 
@@ -44,12 +44,6 @@ private:
     }
 
 public:
-    LBFGSSolver() :
-        m_param(LBFGSParam<Scalar>())
-    {
-        m_param.check_param();
-    }
-
     LBFGSSolver(const LBFGSParam<Scalar>& param) :
         m_param(param)
     {
@@ -57,7 +51,7 @@ public:
     }
 
     template <typename Foo>
-    void minimize(Foo& f, Vector& x)
+    inline void minimize(Foo& f, Vector& x)
     {
         const int n = x.size();
         reset(n);
