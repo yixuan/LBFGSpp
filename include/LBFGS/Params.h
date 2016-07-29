@@ -52,7 +52,7 @@ public:
         wolfe          = Scalar(0.9);
     }
 
-    inline void check_param()
+    inline void check_param() const
     {
         if(m <= 0)
             throw std::invalid_argument("m must be positive");

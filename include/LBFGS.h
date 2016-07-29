@@ -125,7 +125,7 @@ public:
                 m_drt.noalias() -= m_alpha[j] * yj;
             }
 
-            m_drt.noalias() *= (ys / yy);
+            m_drt *= (ys / yy);
 
             for(int i = 0; i < bound; i++)
             {
