@@ -21,7 +21,7 @@ public:
     static void Backtracking(Foo& f, Scalar& fx, Vector& x, Vector& grad,
                              Scalar& step,
                              const Vector& drt, const Vector& xp,
-                             const LBFGSParam& param)
+                             const LBFGSParam<Scalar>& param)
     {
         const Scalar dec = 0.5;
         const Scalar inc = 2.1;

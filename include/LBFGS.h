@@ -20,15 +20,15 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Map<Vector> MapVec;
 
-    const LBFGSParam& m_param;
-    Matrix            m_s;
-    Matrix            m_y;
-    Vector            m_ys;
-    Vector            m_alpha;
-    Vector            m_xp;     // Old x
-    Vector            m_grad;   // Gradient
-    Vector            m_gradp;  // Old gradient
-    Vector            m_drt;    // Moving direction
+    const LBFGSParam<Scalar>& m_param;
+    Matrix                    m_s;
+    Matrix                    m_y;
+    Vector                    m_ys;
+    Vector                    m_alpha;
+    Vector                    m_xp;     // Old x
+    Vector                    m_grad;   // Gradient
+    Vector                    m_gradp;  // Old gradient
+    Vector                    m_drt;    // Moving direction
 
     inline void reset(int n)
     {
@@ -45,12 +45,12 @@ private:
 
 public:
     LBFGSSolver() :
-        m_param(LBFGSParam())
+        m_param(LBFGSParam<Scalar>())
     {
         m_param.check_param();
     }
 
-    LBFGSSolver(const LBFGSParam& param) :
+    LBFGSSolver(const LBFGSParam<Scalar>& param) :
         m_param(param)
     {
         m_param.check_param();
@@ -85,7 +85,7 @@ public:
             m_xp.noalias() = x;
             m_gradp.noalias() = m_grad;
 
-            LineSearch::Backtracking(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
+            LineSearch<Scalar>::Backtracking(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
 
             // x norm and gradient norm
             xnorm = x.norm();
@@ -109,16 +109,16 @@ public:
             m_ys[end] = ys;
 
             // Direction = -H * g
-            int bound = std::min(m, k);
+            int bound = std::min(m_param.m, k);
             k++;
-            end = (end + 1) % m;
+            end = (end + 1) % m_param.m;
 
             m_drt.noalias() = -m_grad;
 
             int j = end;
             for(int i = 0; i < bound; i++)
             {
-                j = (j + m - 1) % m;
+                j = (j + m_param.m - 1) % m_param.m;
                 MapVec sj(&m_s(0, j), n);
                 MapVec yj(&m_y(0, j), n);
                 m_alpha[j] = sj.dot(m_drt) / m_ys[j];
@@ -133,7 +133,7 @@ public:
                 MapVec yj(&m_y(0, j), n);
                 double beta = yj.dot(m_drt) / m_ys[j];
                 m_drt.noalias() += (m_alpha[j] - beta) * sj;
-                j = (j + 1) % m;
+                j = (j + 1) % m_param.m;
             }
 
             step = 1.0;
