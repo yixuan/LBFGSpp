@@ -36,7 +36,7 @@ public:
             // x_{k+1} = x_k + step * d_k
             x.noalias() = xp + step * drt;
             // Evaluate this candidate
-            fx = f.f_grad(x, grad);
+            fx = f(x, grad);
 
             if(fx > fx_init + step * dg_test)
             {
