@@ -1,8 +1,8 @@
 // Copyright (C) 2016 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef PARAMS_H
-#define PARAMS_H
+#ifndef PARAM_H
+#define PARAM_H
 
 #include <Eigen/Core>
 #include <stdexcept>  // std::invalid_argument
@@ -46,7 +46,7 @@ public:
     {
         m              = 6;
         epsilon        = Scalar(1e-5);
-        max_iterations = 0;
+        max_iterations = 1000;
         max_linesearch = 20;
         ftol           = Scalar(1e-4);
         wolfe          = Scalar(0.9);
@@ -72,4 +72,4 @@ public:
 
 } // namespace LBFGSpp
 
-#endif // PARAMS_H
+#endif // PARAM_H
