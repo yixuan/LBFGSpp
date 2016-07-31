@@ -67,7 +67,7 @@ public:
     {
         m              = 6;
         epsilon        = Scalar(1e-5);
-        max_iterations = 1000;
+        max_iterations = 0;
         max_linesearch = 20;
         ftol           = Scalar(1e-4);
         wolfe          = Scalar(0.9);

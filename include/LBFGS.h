@@ -73,7 +73,7 @@ public:
 
         int k = 1;
         int end = 0;
-        for(int iter = 0; iter < m_param.max_iterations; iter++)
+        for( ; ; )
         {
             // Save the curent x and gradient
             m_xp.noalias() = x;
@@ -86,6 +86,11 @@ public:
             gnorm = m_grad.norm();
 
             if(gnorm <= m_param.epsilon * std::max(xnorm, 1.0))
+            {
+                return;
+            }
+
+            if(m_param.max_iterations != 0 && k >= m_param.max_iterations)
             {
                 return;
             }
@@ -104,7 +109,6 @@ public:
 
             // Direction = -H * g
             int bound = std::min(m_param.m, k);
-            k++;
             end = (end + 1) % m_param.m;
 
             m_drt.noalias() = -m_grad;
@@ -131,6 +135,7 @@ public:
             }
 
             step = 1.0;
+            k++;
         }
     }
 };
