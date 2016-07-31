@@ -16,28 +16,49 @@ class LBFGSParam
 {
 public:
     ///
-    /// The number of corrections to approximate the inverse Hessian matrix.
+    /// The number of corrections to approximate the inverse hessian matrix.
+    /// The L-BFGS routine stores the computation results of previous \ref m
+    /// iterations to approximate the inverse hessian matrix of the current
+    /// iteration. This parameter controls the size of the limited memories
+    /// (corrections). The default value is \c 6. Values less than \c 3 are
+    /// not recommended. Large values will result in excessive computing time.
     ///
     int    m;
     ///
     /// Tolerance for convergence test.
-    /// Algorithm stops if \f$||g|| < \epsilon * \max(1, ||x||)\f$.
+    /// This parameter determines the accuracy with which the solution is to
+    /// be found. A minimization terminates when
+    /// \f$||g|| < \epsilon * \max(1, ||x||)\f$,
+    /// where ||.|| denotes the Euclidean (L2) norm. The default value is
+    /// \c 1e-5.
     ///
     Scalar epsilon;
     ///
     /// The maximum number of iterations.
+    /// The optimization process is terminated when the iteration count
+    /// exceedes this parameter. Setting this parameter to zero continues an
+    /// optimization process until a convergence or error. The default value
+    /// is \c 0.
     ///
     int    max_iterations;
     ///
     /// The maximum number of trials for the line search.
+    /// This parameter controls the number of function and gradients evaluations
+    /// per iteration for the line search routine. The default value is \c 20.
     ///
     int    max_linesearch;
     ///
-    /// Parameter that controls the line search procedure.
+    /// A parameter to control the accuracy of the line search routine.
+    /// The default value is \c 1e-4. This parameter should be greater
+    /// than zero and smaller than \c 0.5.
     ///
     Scalar ftol;
     ///
-    /// Coefficient for the Wolfe condition.
+    /// A coefficient for the Wolfe condition.
+    /// This parameter is valid only when the backtracking line-search
+    /// algorithm is used with the Wolfe condition.
+    /// The default value is \c 0.9. This parameter should be greater
+    /// the \ref ftol parameter and smaller than \c 1.0.
     ///
     Scalar wolfe;
 
