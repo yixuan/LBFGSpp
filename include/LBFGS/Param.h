@@ -24,31 +24,46 @@ namespace LBFGSpp {
 ///
 enum LINE_SEARCH_ALGORITHM
 {
-    LBFGS_LINESEARCH_BACKTRACKING_ARMIJO = 1,       ///< Backtracking method with the Armijo condition.
-                                                    ///< The backtracking method finds the step length such that it satisfies
-                                                    ///< the sufficient decrease (Armijo) condition,
-                                                    ///< \f$f(x + a \cdot d) \le f(x) + ftol \cdot a \cdot g(x)^T d\f$,
-                                                    ///< where \f$x\f$ is the current point, \f$d\f$ is the current search direction,
-                                                    ///< and \f$a\f$ is the step length. \f$f\f$ and \f$g\f$ are the function
-                                                    ///< and gradient values respectively.
+    ///
+    /// Backtracking method with the Armijo condition.
+    /// The backtracking method finds the step length such that it satisfies
+    /// the sufficient decrease (Armijo) condition,
+    /// \f$f(x + a \cdot d) \le f(x) + ftol \cdot a \cdot g(x)^T d\f$,
+    /// where \f$x\f$ is the current point, \f$d\f$ is the current search direction,
+    /// and \f$a\f$ is the step length. \f$f\f$ and \f$g\f$ are the function
+    /// and gradient values respectively.
+    ///
+    LBFGS_LINESEARCH_BACKTRACKING_ARMIJO = 1,
 
-    LBFGS_LINESEARCH_BACKTRACKING = 2,              ///< The backtracking method with the defualt (regular Wolfe) condition.
-                                                    ///< An alias of LBFGS_LINESEARCH_BACKTRACKING_WOLFE.
+    ///
+    /// The backtracking method with the defualt (regular Wolfe) condition.
+    /// An alias of `LBFGS_LINESEARCH_BACKTRACKING_WOLFE`.
+    ///
+    LBFGS_LINESEARCH_BACKTRACKING = 2,
 
-    LBFGS_LINESEARCH_BACKTRACKING_WOLFE = 2,        ///< Backtracking method with regular Wolfe condition.
-                                                    ///< The backtracking method finds the step length such that it satisfies
-                                                    ///< both the Armijo condition (LBFGS_LINESEARCH_BACKTRACKING_ARMIJO)
-                                                    ///< and the curvature condition,
-                                                    ///< \f$g(x + a \cdot d)^T d \ge wolfe \cdot g(x)^T d\f$.
+    ///
+    /// Backtracking method with regular Wolfe condition.
+    /// The backtracking method finds the step length such that it satisfies
+    /// both the Armijo condition (`LBFGS_LINESEARCH_BACKTRACKING_ARMIJO`)
+    /// and the curvature condition,
+    /// \f$g(x + a \cdot d)^T d \ge wolfe \cdot g(x)^T d\f$.
+    ///
+    LBFGS_LINESEARCH_BACKTRACKING_WOLFE = 2,
 
-    LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE = 3  ///< Backtracking method with strong Wolfe condition.
-                                                    ///< The backtracking method finds the step length such that it satisfies
-                                                    ///< both the Armijo condition (LBFGS_LINESEARCH_BACKTRACKING_ARMIJO)
-                                                    ///< and the following condition,
-                                                    ///< \f$\vert g(x + a \cdot d)^T d\vert \le wolfe * \vert g(x)^T d\vert.
+    ///
+    /// Backtracking method with strong Wolfe condition.
+    /// The backtracking method finds the step length such that it satisfies
+    /// both the Armijo condition (`LBFGS_LINESEARCH_BACKTRACKING_ARMIJO`)
+    /// and the following condition,
+    /// \f$\vert g(x + a \cdot d)^T d\vert \le wolfe \cdot \vert g(x)^T d\vert\f$.
+    ///
+    LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE = 3
 };
 
 
+///
+/// Parameters to control the LBFGS algorithm.
+///
 template <typename Scalar = double>
 class LBFGSParam
 {
@@ -80,6 +95,12 @@ public:
     ///
     int    max_iterations;
     ///
+    /// The line search algorithm.
+    /// This parameter specifies the line search algorithm that will be used
+    /// by the LBFGS routine. The default value is `LBFGS_LINESEARCH_BACKTRACKING_ARMIJO`.
+    ///
+    int    linesearch;
+    ///
     /// The maximum number of trials for the line search.
     /// This parameter controls the number of function and gradients evaluations
     /// per iteration for the line search routine. The default value is \c 20.
@@ -106,6 +127,7 @@ public:
         m              = 6;
         epsilon        = Scalar(1e-5);
         max_iterations = 0;
+        linesearch     = LBFGS_LINESEARCH_BACKTRACKING_ARMIJO;
         max_linesearch = 20;
         ftol           = Scalar(1e-4);
         wolfe          = Scalar(0.9);
@@ -119,6 +141,9 @@ public:
             throw std::invalid_argument("epsilon must be positive");
         if(max_iterations < 0)
             throw std::invalid_argument("max_iterations must be non-negative");
+        if(linesearch < LBFGS_LINESEARCH_BACKTRACKING_ARMIJO ||
+           linesearch > LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE)
+           throw std::invalid_argument("unsupported line search algorithm");
         if(max_linesearch <= 0)
             throw std::invalid_argument("max_linesearch must be positive");
         if(ftol <= 0 || ftol >= 0.5)
