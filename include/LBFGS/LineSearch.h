@@ -42,12 +42,26 @@ public:
             {
                 width = dec;
             } else {
+                // Armijo condition is met
+                if(param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_ARMIJO)
+                    break;
+
                 const Scalar dg = grad.dot(drt);
                 if(dg < param.wolfe * dg_init)
                 {
                     width = inc;
                 } else {
-                    break;
+                    // Regular Wolfe condition is met
+                    if(param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_WOLFE)
+                        break;
+
+                    if(dg > -param.wolfe * dg_init)
+                    {
+                        width = dec;
+                    } else {
+                        // Strong Wolfe condition is met
+                        break;
+                    }
                 }
             }
 
