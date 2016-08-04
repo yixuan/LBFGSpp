@@ -51,7 +51,7 @@ private:
 
 public:
     ///
-    /// Constructor for LBFGS solver
+    /// Constructor for LBFGS solver.
     ///
     /// \param param An object of \ref LBFGSParam to store parameters for the
     ///        algorithm
@@ -63,7 +63,8 @@ public:
     }
 
     ///
-    /// Minimizing a multivariate function using LBFGS algorithm
+    /// Minimizing a multivariate function using LBFGS algorithm.
+    /// Exceptions will be thrown if error occurs.
     ///
     /// \param f A function object such that `f(x, grad)` returns the
     ///          objective function value at `x`, and overwrites `grad` with
@@ -71,8 +72,10 @@ public:
     /// \param x In: An initial guess of the optimal point. Out: The best point
     ///          found.
     ///
+    /// \return Number of iterations used.
+    ///
     template <typename Foo>
-    inline void minimize(Foo& f, Vector& x)
+    inline int minimize(Foo& f, Vector& x)
     {
         const int n = x.size();
         const int fpast = m_param.past;
@@ -114,20 +117,20 @@ public:
             // Convergence test -- gradient
             if(gnorm <= m_param.epsilon * std::max(xnorm, 1.0))
             {
-                return;
+                return k;
             }
             // Convergence test -- objective function value
             if(fpast > 0)
             {
                 if(k >= fpast && (m_fx[k % fpast] - fx) / fx < m_param.delta)
-                    return;
+                    return k;
 
                 m_fx[k % fpast] = fx;
             }
             // Maximum number of iterations
             if(m_param.max_iterations != 0 && k >= m_param.max_iterations)
             {
-                return;
+                return k;
             }
 
             // Update s and y
@@ -173,6 +176,8 @@ public:
             step = 1.0;
             k++;
         }
+
+        return k;
     }
 };
 
