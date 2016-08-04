@@ -20,13 +20,14 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Map<Vector> MapVec;
 
-    const LBFGSParam<Scalar>& m_param;
-    Matrix                    m_s;
-    Matrix                    m_y;
-    Vector                    m_ys;
-    Vector                    m_alpha;
+    const LBFGSParam<Scalar>& m_param;  // Parameters to control the LBFGS algorithm
+    Matrix                    m_s;      // History of the s vectors
+    Matrix                    m_y;      // History of the y vectors
+    Vector                    m_ys;     // History of the s'y values
+    Vector                    m_alpha;  // History of the step lengths
+    Vector                    m_fx;     // History of the objective function values
     Vector                    m_xp;     // Old x
-    Vector                    m_grad;   // Gradient
+    Vector                    m_grad;   // New gradient
     Vector                    m_gradp;  // Old gradient
     Vector                    m_drt;    // Moving direction
 
@@ -41,6 +42,8 @@ private:
         m_grad.resize(n);
         m_gradp.resize(n);
         m_drt.resize(n);
+        if(m_param.past > 0)
+            m_fx.resize(m_param.past);
     }
 
 public:
@@ -54,13 +57,17 @@ public:
     inline void minimize(Foo& f, Vector& x)
     {
         const int n = x.size();
+        const int fpast = m_param.past;
         reset(n);
 
         // Evaluate function and compute gradient
         double fx = f(x, m_grad);
         double xnorm = x.norm();
         double gnorm = m_grad.norm();
+        if(fpast > 0)
+            m_fx[0] = fx;
 
+        // Early exit if the initial x is already a minimizer
         if(gnorm <= m_param.epsilon * std::max(xnorm, 1.0))
         {
             return;
@@ -88,6 +95,14 @@ public:
             if(gnorm <= m_param.epsilon * std::max(xnorm, 1.0))
             {
                 return;
+            }
+
+            if(fpast > 0)
+            {
+                if(k >= fpast && (m_fx[k % fpast] - fx) / fx < m_param.delta)
+                    return;
+
+                m_fx[k % fpast] = fx;
             }
 
             if(m_param.max_iterations != 0 && k >= m_param.max_iterations)
