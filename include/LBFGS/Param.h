@@ -28,9 +28,10 @@ enum LINE_SEARCH_ALGORITHM
     /// Backtracking method with the Armijo condition.
     /// The backtracking method finds the step length such that it satisfies
     /// the sufficient decrease (Armijo) condition,
-    /// \f$f(x + a \cdot d) \le f(x) + ftol \cdot a \cdot g(x)^T d\f$,
+    /// \f$f(x + a \cdot d) \le f(x) + \beta' \cdot a \cdot g(x)^T d\f$,
     /// where \f$x\f$ is the current point, \f$d\f$ is the current search direction,
-    /// and \f$a\f$ is the step length. \f$f\f$ and \f$g\f$ are the function
+    /// \f$a\f$ is the step length, and \f$\beta'\f$ is the value specified by
+    /// \ref LBFGSParam::ftol. \f$f\f$ and \f$g\f$ are the function
     /// and gradient values respectively.
     ///
     LBFGS_LINESEARCH_BACKTRACKING_ARMIJO = 1,
@@ -46,7 +47,8 @@ enum LINE_SEARCH_ALGORITHM
     /// The backtracking method finds the step length such that it satisfies
     /// both the Armijo condition (`LBFGS_LINESEARCH_BACKTRACKING_ARMIJO`)
     /// and the curvature condition,
-    /// \f$g(x + a \cdot d)^T d \ge wolfe \cdot g(x)^T d\f$.
+    /// \f$g(x + a \cdot d)^T d \ge \beta \cdot g(x)^T d\f$, where \f$\beta\f$
+    /// is the value specified by \ref LBFGSParam::wolfe.
     ///
     LBFGS_LINESEARCH_BACKTRACKING_WOLFE = 2,
 
@@ -55,7 +57,8 @@ enum LINE_SEARCH_ALGORITHM
     /// The backtracking method finds the step length such that it satisfies
     /// both the Armijo condition (`LBFGS_LINESEARCH_BACKTRACKING_ARMIJO`)
     /// and the following condition,
-    /// \f$\vert g(x + a \cdot d)^T d\vert \le wolfe \cdot \vert g(x)^T d\vert\f$.
+    /// \f$\vert g(x + a \cdot d)^T d\vert \le \beta \cdot \vert g(x)^T d\vert\f$,
+    /// where \f$\beta\f$ is the value specified by \ref LBFGSParam::wolfe.
     ///
     LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE = 3
 };
