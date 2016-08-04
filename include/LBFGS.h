@@ -91,7 +91,7 @@ public:
         // Early exit if the initial x is already a minimizer
         if(gnorm <= m_param.epsilon * std::max(xnorm, 1.0))
         {
-            return;
+            return 1;
         }
 
         // Initial direction

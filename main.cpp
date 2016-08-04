@@ -25,9 +25,10 @@ int main()
     LBFGSSolver<double> solver(param);
 
     VectorXd x = VectorXd::Zero(n);
-    solver.minimize(foo, x);
+    int niter = solver.minimize(foo, x);
 
-    std::cout << "x = \n" << x << std::endl;
+    std::cout << niter << " iterations" << std::endl;
+    std::cout << "x = \n" << x.transpose() << std::endl;
 
     return 0;
 }
