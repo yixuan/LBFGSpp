@@ -12,6 +12,9 @@
 namespace LBFGSpp {
 
 
+///
+/// LBFGS solver for unconstrained numerical optimization
+///
 template <typename Scalar>
 class LBFGSSolver
 {
@@ -47,12 +50,27 @@ private:
     }
 
 public:
+    ///
+    /// Constructor for LBFGS solver
+    ///
+    /// \param param An object of \ref LBFGSParam to store parameters for the
+    ///        algorithm
+    ///
     LBFGSSolver(const LBFGSParam<Scalar>& param) :
         m_param(param)
     {
         m_param.check_param();
     }
 
+    ///
+    /// Minimizing a multivariate function using LBFGS algorithm
+    ///
+    /// \param f A function object such that `f(x, grad)` returns the
+    ///          objective function value at `x`, and overwrites `grad` with
+    ///          the gradient.
+    /// \param x In: An initial guess of the optimal point. Out: The best point
+    ///          found.
+    ///
     template <typename Foo>
     inline void minimize(Foo& f, Vector& x)
     {
@@ -86,17 +104,19 @@ public:
             m_xp.noalias() = x;
             m_gradp.noalias() = m_grad;
 
+            // Line search to update x, fx and gradient
             LineSearch<Scalar>::Backtracking(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
 
-            // x norm and gradient norm
+            // New x norm and gradient norm
             xnorm = x.norm();
             gnorm = m_grad.norm();
 
+            // Convergence test -- gradient
             if(gnorm <= m_param.epsilon * std::max(xnorm, 1.0))
             {
                 return;
             }
-
+            // Convergence test -- objective function value
             if(fpast > 0)
             {
                 if(k >= fpast && (m_fx[k % fpast] - fx) / fx < m_param.delta)
@@ -104,13 +124,15 @@ public:
 
                 m_fx[k % fpast] = fx;
             }
-
+            // Maximum number of iterations
             if(m_param.max_iterations != 0 && k >= m_param.max_iterations)
             {
                 return;
             }
 
             // Update s and y
+            // s_{k+1} = x_{k+1} - x_k
+            // y_{k+1} = g_{k+1} - g_k
             MapVec svec(&m_s(0, end), n);
             MapVec yvec(&m_y(0, end), n);
             svec.noalias() = x - m_xp;
@@ -122,12 +144,10 @@ public:
             Scalar yy = yvec.squaredNorm();
             m_ys[end] = ys;
 
-            // Direction = -H * g
+            // Recursive formula to compute d = -H * g
+            m_drt.noalias() = -m_grad;
             int bound = std::min(m_param.m, k);
             end = (end + 1) % m_param.m;
-
-            m_drt.noalias() = -m_grad;
-
             int j = end;
             for(int i = 0; i < bound; i++)
             {
@@ -149,6 +169,7 @@ public:
                 j = (j + 1) % m_param.m;
             }
 
+            // step = 1 as initial guess
             step = 1.0;
             k++;
         }
