@@ -61,9 +61,9 @@ public:
         reset(n);
 
         // Evaluate function and compute gradient
-        double fx = f(x, m_grad);
-        double xnorm = x.norm();
-        double gnorm = m_grad.norm();
+        Scalar fx = f(x, m_grad);
+        Scalar xnorm = x.norm();
+        Scalar gnorm = m_grad.norm();
         if(fpast > 0)
             m_fx[0] = fx;
 
@@ -76,7 +76,7 @@ public:
         // Initial direction
         m_drt.noalias() = -m_grad;
         // Initial step
-        double step = 1.0 / m_drt.norm();
+        Scalar step = 1.0 / m_drt.norm();
 
         int k = 1;
         int end = 0;
@@ -118,8 +118,8 @@ public:
 
             // ys = y's = 1/rho
             // yy = y'y
-            double ys = yvec.dot(svec);
-            double yy = yvec.squaredNorm();
+            Scalar ys = yvec.dot(svec);
+            Scalar yy = yvec.squaredNorm();
             m_ys[end] = ys;
 
             // Direction = -H * g
@@ -144,7 +144,7 @@ public:
             {
                 MapVec sj(&m_s(0, j), n);
                 MapVec yj(&m_y(0, j), n);
-                double beta = yj.dot(m_drt) / m_ys[j];
+                Scalar beta = yj.dot(m_drt) / m_ys[j];
                 m_drt.noalias() += (m_alpha[j] - beta) * sj;
                 j = (j + 1) % m_param.m;
             }
