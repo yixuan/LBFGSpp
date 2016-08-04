@@ -89,7 +89,7 @@ public:
             m_fx[0] = fx;
 
         // Early exit if the initial x is already a minimizer
-        if(gnorm <= m_param.epsilon * std::max(xnorm, 1.0))
+        if(gnorm <= m_param.epsilon * std::max(xnorm, Scalar(1.0)))
         {
             return 1;
         }
@@ -97,7 +97,7 @@ public:
         // Initial direction
         m_drt.noalias() = -m_grad;
         // Initial step
-        Scalar step = 1.0 / m_drt.norm();
+        Scalar step = Scalar(1.0) / m_drt.norm();
 
         int k = 1;
         int end = 0;
@@ -115,7 +115,7 @@ public:
             gnorm = m_grad.norm();
 
             // Convergence test -- gradient
-            if(gnorm <= m_param.epsilon * std::max(xnorm, 1.0))
+            if(gnorm <= m_param.epsilon * std::max(xnorm, Scalar(1.0)))
             {
                 return k;
             }
@@ -172,8 +172,8 @@ public:
                 j = (j + 1) % m_param.m;
             }
 
-            // step = 1 as initial guess
-            step = 1.0;
+            // step = 1.0 as initial guess
+            step = Scalar(1.0);
             k++;
         }
 
