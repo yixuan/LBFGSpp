@@ -87,6 +87,24 @@ public:
     ///
     Scalar epsilon;
     ///
+    /// Distance for delta-based conergence test.
+    /// This parameter determines the distance \f$d\f$ to compute the
+    /// rate of decrease of the objective function,
+    /// \f$(f_{k-d}(x)-f_k(x))/f_k(x)\f$, where \f$k\f$ is the current iteration
+    /// step. If the value of this parameter is zero, the delta-based convergence
+    /// test will not be performed. The default value is \c 0.
+    ///
+    int    past;
+    ///
+    /// Delta for convergence test.
+    /// The algorithm stops when the following condition is met,
+    /// \f$(f_{k-d}(x)-f_k(x))/f_k(x)<\delta\f$, where \f$f_k(x)\f$ is
+    /// the current function value, \f$f_{k-d}(x)\f$ is the function value
+    /// \f$d\f$ iterations ago (specified by the \ref past parameter).
+    /// The default value is \c 0.
+    ///
+    Scalar delta;
+    ///
     /// The maximum number of iterations.
     /// The optimization process is terminated when the iteration count
     /// exceedes this parameter. Setting this parameter to zero continues an
@@ -126,6 +144,8 @@ public:
     {
         m              = 6;
         epsilon        = Scalar(1e-5);
+        past           = 0;
+        delta          = Scalar(0);
         max_iterations = 0;
         linesearch     = LBFGS_LINESEARCH_BACKTRACKING_ARMIJO;
         max_linesearch = 20;
@@ -136,20 +156,24 @@ public:
     inline void check_param() const
     {
         if(m <= 0)
-            throw std::invalid_argument("m must be positive");
+            throw std::invalid_argument("'m' must be positive");
         if(epsilon <= 0)
-            throw std::invalid_argument("epsilon must be positive");
+            throw std::invalid_argument("'epsilon' must be positive");
+        if(past < 0)
+            throw std::invalid_argument("'past' must be non-negative");
+        if(delta < 0)
+            throw std::invalid_argument("'delta' must be non-negative");
         if(max_iterations < 0)
-            throw std::invalid_argument("max_iterations must be non-negative");
+            throw std::invalid_argument("'max_iterations' must be non-negative");
         if(linesearch < LBFGS_LINESEARCH_BACKTRACKING_ARMIJO ||
            linesearch > LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE)
            throw std::invalid_argument("unsupported line search algorithm");
         if(max_linesearch <= 0)
-            throw std::invalid_argument("max_linesearch must be positive");
+            throw std::invalid_argument("'max_linesearch' must be positive");
         if(ftol <= 0 || ftol >= 0.5)
-            throw std::invalid_argument("ftol must be 0 < ftol < 0.5");
+            throw std::invalid_argument("'ftol' must satisfy 0 < ftol < 0.5");
         if(wolfe <= ftol || wolfe >= 1)
-            throw std::invalid_argument("wolfe must be ftol < wolfe < 1");
+            throw std::invalid_argument("'wolfe' must satisfy ftol < wolfe < 1");
     }
 };
 
