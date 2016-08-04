@@ -196,6 +196,10 @@ public:
            throw std::invalid_argument("unsupported line search algorithm");
         if(max_linesearch <= 0)
             throw std::invalid_argument("'max_linesearch' must be positive");
+        if(min_step < 0)
+            throw std::invalid_argument("'min_step' must be positive");
+        if(max_step < min_step )
+            throw std::invalid_argument("'max_step' must be greater than 'min_step'");
         if(ftol <= 0 || ftol >= 0.5)
             throw std::invalid_argument("'ftol' must satisfy 0 < ftol < 0.5");
         if(wolfe <= ftol || wolfe >= 1)
