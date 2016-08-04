@@ -128,6 +128,18 @@ public:
     ///
     int    max_linesearch;
     ///
+    /// The minimum step length allowed in the line search.
+    /// The default value is \c 1e-20. Usually this value does not need to be
+    /// modified.
+    ///
+    Scalar min_step;
+    ///
+    /// The maximum step length allowed in the line search.
+    /// The default value is \c 1e+20. Usually this value does not need to be
+    /// modified.
+    ///
+    Scalar max_step;
+    ///
     /// A parameter to control the accuracy of the line search routine.
     /// The default value is \c 1e-4. This parameter should be greater
     /// than zero and smaller than \c 0.5.
@@ -156,6 +168,8 @@ public:
         max_iterations = 0;
         linesearch     = LBFGS_LINESEARCH_BACKTRACKING_ARMIJO;
         max_linesearch = 20;
+        min_step       = Scalar(1e-20);
+        max_step       = Scalar(1e+20);
         ftol           = Scalar(1e-4);
         wolfe          = Scalar(0.9);
     }

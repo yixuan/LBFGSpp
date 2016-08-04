@@ -5,6 +5,7 @@
 #define LINE_SEARCH_H
 
 #include <Eigen/Core>
+#include <stdexcept>  // std::runtime_error
 
 
 namespace LBFGSpp {
@@ -61,7 +62,8 @@ public:
         const Scalar dg_test = param.ftol * dg_init;
         Scalar width;
 
-        for(int iter = 0; iter < param.max_linesearch; iter++)
+        int iter;
+        for(iter = 0; iter < param.max_linesearch; iter++)
         {
             // x_{k+1} = x_k + step * d_k
             x.noalias() = xp + step * drt;
@@ -94,6 +96,15 @@ public:
                     }
                 }
             }
+
+            if(iter >= param.max_linesearch)
+                throw std::runtime_error("the line search routine reached the maximum number of iterations");
+
+            if(step < param.min_step)
+                throw std::runtime_error("the line search step became smaller than the minimum value allowed");
+
+            if(step > param.max_step)
+                throw std::runtime_error("the line search step became larger than the maximum value allowed");
 
             step *= width;
         }
