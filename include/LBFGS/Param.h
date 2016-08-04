@@ -143,6 +143,10 @@ public:
     Scalar wolfe;
 
 public:
+    ///
+    /// Constructor for LBFGS parameters.
+    /// Default values for parameters will be set when the object is created.
+    ///
     LBFGSParam()
     {
         m              = 6;
@@ -156,6 +160,11 @@ public:
         wolfe          = Scalar(0.9);
     }
 
+    ///
+    /// Checking the validity of LBFGS parameters.
+    /// An `std::invalid_argument` exception will be thrown if some parameter
+    /// is invalid.
+    ///
     inline void check_param() const
     {
         if(m <= 0)
