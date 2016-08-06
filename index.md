@@ -9,6 +9,8 @@ library developed by [Naoaki Okazaki](http://www.chokkan.org/).
 
 **LBFGS++** is implemented as a header-only C++ library, whose only dependency,
 [Eigen](http://eigen.tuxfamily.org/), is also header-only.
+The development page of **LBFGS++** is at
+[https://github.com/yixuan/LBFGSpp](https://github.com/yixuan/LBFGSpp/).
 
 ## A Quick Example
 
