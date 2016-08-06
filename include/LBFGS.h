@@ -66,23 +66,24 @@ public:
     /// Minimizing a multivariate function using LBFGS algorithm.
     /// Exceptions will be thrown if error occurs.
     ///
-    /// \param f A function object such that `f(x, grad)` returns the
-    ///          objective function value at `x`, and overwrites `grad` with
-    ///          the gradient.
-    /// \param x In: An initial guess of the optimal point. Out: The best point
-    ///          found.
+    /// \param f  A function object such that `f(x, grad)` returns the
+    ///           objective function value at `x`, and overwrites `grad` with
+    ///           the gradient.
+    /// \param x  In: An initial guess of the optimal point. Out: The best point
+    ///           found.
+    /// \param fx Out: The objective function value at `x`.
     ///
     /// \return Number of iterations used.
     ///
     template <typename Foo>
-    inline int minimize(Foo& f, Vector& x)
+    inline int minimize(Foo& f, Vector& x, Scalar& fx)
     {
         const int n = x.size();
         const int fpast = m_param.past;
         reset(n);
 
         // Evaluate function and compute gradient
-        Scalar fx = f(x, m_grad);
+        fx = f(x, m_grad);
         Scalar xnorm = x.norm();
         Scalar gnorm = m_grad.norm();
         if(fpast > 0)
