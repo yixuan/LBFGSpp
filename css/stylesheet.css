@@ -74,11 +74,11 @@ a {
 
 @media screen and (min-width: 64em) {
   .page-header {
-    padding: 5rem 6rem; } }
+    padding: 2rem 4rem; } }
 
 @media screen and (min-width: 42em) and (max-width: 64em) {
   .page-header {
-    padding: 3rem 4rem; } }
+    padding: 2rem 4rem; } }
 
 @media screen and (max-width: 42em) {
   .page-header {
@@ -148,7 +148,7 @@ a {
   .main-content pre > code {
     padding: 0;
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: #567482;
     word-break: normal;
     white-space: pre;
