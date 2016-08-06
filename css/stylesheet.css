@@ -79,17 +79,17 @@ a:hover {
 }
 @media screen and (min-width: 64em) {
   .page-header {
-    padding: 2rem 4rem;
+    padding: 1.5rem 4rem;
   }
 }
 @media screen and (min-width: 42em) and (max-width: 64em) {
   .page-header {
-    padding: 2rem 4rem;
+    padding: 1.5rem 4rem;
   }
 }
 @media screen and (max-width: 42em) {
   .page-header {
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
   }
 }
 .project-name {
@@ -118,7 +118,7 @@ a:hover {
 }
 @media screen and (min-width: 64em) {
   .project-tagline {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 }
 @media screen and (min-width: 42em) and (max-width: 64em) {
