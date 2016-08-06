@@ -66,10 +66,12 @@ int main()
     // Initial guess
     VectorXd x = VectorXd::Zero(n);
     // x will be overwritten to be the best point found
-    int niter = solver.minimize(fun, x);
+    double fx;
+    int niter = solver.minimize(fun, x, fx);
 
     std::cout << niter << " iterations" << std::endl;
     std::cout << "x = \n" << x.transpose() << std::endl;
+    std::cout << "f(x) = " << fx << std::endl;
 
     return 0;
 }
@@ -83,6 +85,7 @@ $ ./a.out
 23 iterations
 x =
 1 1 1 1 1 1 1 1 1 1
+f(x) = 1.87948e-19
 ```
 
 ## Documentation
