@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['minimize',['minimize',['../classLBFGSpp_1_1LBFGSSolver.html#a8d7beff132ea677c05cd63707da19a2f',1,'LBFGSpp::LBFGSSolver']]]
+  ['minimize',['minimize',['../classLBFGSpp_1_1LBFGSSolver.html#a0828a9724870b28fd623746cbb649426',1,'LBFGSpp::LBFGSSolver']]]
 ];

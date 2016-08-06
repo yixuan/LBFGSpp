@@ -123,9 +123,9 @@ $(document).ready(function(){initNavTree('classLBFGSpp_1_1LBFGSSolver.html','');
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aa6d1455b3d630d3e97bee5629ac8c794"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLBFGSpp_1_1LBFGSSolver.html#aa6d1455b3d630d3e97bee5629ac8c794">LBFGSSolver</a> (const <a class="el" href="classLBFGSpp_1_1LBFGSParam.html">LBFGSParam</a>&lt; Scalar &gt; &amp;param)</td></tr>
 <tr class="separator:aa6d1455b3d630d3e97bee5629ac8c794"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d7beff132ea677c05cd63707da19a2f"><td class="memTemplParams" colspan="2">template&lt;typename Foo &gt; </td></tr>
-<tr class="memitem:a8d7beff132ea677c05cd63707da19a2f"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classLBFGSpp_1_1LBFGSSolver.html#a8d7beff132ea677c05cd63707da19a2f">minimize</a> (Foo &amp;f, Vector &amp;x)</td></tr>
-<tr class="separator:a8d7beff132ea677c05cd63707da19a2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0828a9724870b28fd623746cbb649426"><td class="memTemplParams" colspan="2">template&lt;typename Foo &gt; </td></tr>
+<tr class="memitem:a0828a9724870b28fd623746cbb649426"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classLBFGSpp_1_1LBFGSSolver.html#a0828a9724870b28fd623746cbb649426">minimize</a> (Foo &amp;f, Vector &amp;x, Scalar &amp;fx)</td></tr>
+<tr class="separator:a0828a9724870b28fd623746cbb649426"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename Scalar&gt;<br />
@@ -171,7 +171,7 @@ template&lt;typename Scalar &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a8d7beff132ea677c05cd63707da19a2f"></a>
+<a class="anchor" id="a0828a9724870b28fd623746cbb649426"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -192,7 +192,13 @@ template&lt;typename Foo &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">Vector &amp;&#160;</td>
-          <td class="paramname"><em>x</em>&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Scalar &amp;&#160;</td>
+          <td class="paramname"><em>fx</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -210,13 +216,14 @@ template&lt;typename Foo &gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">f</td><td>A function object such that <code>f(x, grad)</code> returns the objective function value at <code>x</code>, and overwrites <code>grad</code> with the gradient. </td></tr>
-    <tr><td class="paramname">x</td><td>In: An initial guess of the optimal point. Out: The best point found.</td></tr>
+    <tr><td class="paramname">x</td><td>In: An initial guess of the optimal point. Out: The best point found. </td></tr>
+    <tr><td class="paramname">fx</td><td>Out: The objective function value at <code>x</code>.</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Number of iterations used. </dd></dl>
 
-<p>Definition at line <a class="el" href="LBFGS_8h_source.html#l00078">78</a> of file <a class="el" href="LBFGS_8h_source.html">LBFGS.h</a>.</p>
+<p>Definition at line <a class="el" href="LBFGS_8h_source.html#l00079">79</a> of file <a class="el" href="LBFGS_8h_source.html">LBFGS.h</a>.</p>
 
 </div>
 </div>

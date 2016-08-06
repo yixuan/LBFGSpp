@@ -20,7 +20,7 @@ var NAVTREEINDEX0 =
 "classLBFGSpp_1_1LBFGSParam.html#af0cea5445020fbda5449e6b167c42f85":[1,0,0,0,12],
 "classLBFGSpp_1_1LBFGSParam.html#afd25aeda1f1a3cb9084e2e860ff6caf8":[1,0,0,0,11],
 "classLBFGSpp_1_1LBFGSSolver.html":[1,0,0,1],
-"classLBFGSpp_1_1LBFGSSolver.html#a8d7beff132ea677c05cd63707da19a2f":[1,0,0,1,1],
+"classLBFGSpp_1_1LBFGSSolver.html#a0828a9724870b28fd623746cbb649426":[1,0,0,1,1],
 "classLBFGSpp_1_1LBFGSSolver.html#aa6d1455b3d630d3e97bee5629ac8c794":[1,0,0,1,0],
 "classLBFGSpp_1_1LineSearch.html":[1,0,0,2],
 "dir_1ad8b767bb3e0594052c34bea1aacfc4.html":[2,0,0],
