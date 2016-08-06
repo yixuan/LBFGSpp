@@ -35,10 +35,12 @@ int main()
     Rosenbrock fun(n);
 
     VectorXf x = VectorXf::Zero(n);
-    int niter = solver.minimize(fun, x);
+    float fx;
+    int niter = solver.minimize(fun, x, fx);
 
     std::cout << niter << " iterations" << std::endl;
     std::cout << "x = \n" << x.transpose() << std::endl;
+    std::cout << "f(x) = " << fx << std::endl;
 
     return 0;
 }
