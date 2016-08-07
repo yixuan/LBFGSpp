@@ -37,6 +37,9 @@ a:hover {
   border-style: solid;
   border-width: 1px;
   border-radius: 0.3rem;
+  font-size: 1.2rem;
+  text-align: center;
+  min-width: 180px;
   transition: color 0.2s, background-color 0.2s, border-color 0.2s;
 }
 .btn+ .btn {
@@ -56,7 +59,6 @@ a:hover {
 @media screen and (min-width: 42em) and (max-width: 64em) {
   .btn {
     padding: 0.6rem 0.9rem;
-    font-size: 0.9rem;
   }
 }
 @media screen and (max-width: 42em) {
@@ -64,7 +66,6 @@ a:hover {
     display: block;
     width: 100%;
     padding: 0.75rem;
-    font-size: 0.9rem;
   }
   .btn+ .btn {
     margin-top: 1rem;
