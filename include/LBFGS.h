@@ -123,7 +123,7 @@ public:
             // Convergence test -- objective function value
             if(fpast > 0)
             {
-                if(k >= fpast && (m_fx[k % fpast] - fx) / fx < m_param.delta)
+                if(k >= fpast && std::abs((m_fx[k % fpast] - fx) / fx) < m_param.delta)
                     return k;
 
                 m_fx[k % fpast] = fx;
