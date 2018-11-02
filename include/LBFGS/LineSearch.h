@@ -6,7 +6,7 @@
 
 #include <Eigen/Core>
 #include <stdexcept>  // std::runtime_error
-
+#include <math.h>
 
 namespace LBFGSpp {
 
@@ -43,10 +43,6 @@ public:
                              const Vector& drt, const Vector& xp,
                              const LBFGSParam<Scalar>& param)
     {
-        // Decreasing and increasing factors
-        const Scalar dec = 0.5;
-        const Scalar inc = 2.1;
-
         // Check the value of step
         if(step <= Scalar(0))
             std::invalid_argument("'step' must be positive");
@@ -60,10 +56,12 @@ public:
             std::logic_error("the moving direction increases the objective function value");
 
         const Scalar dg_test = param.ftol * dg_init;
-        Scalar width;
 
-        int iter;
-        for(iter = 0; iter < param.max_linesearch; iter++)
+        // Upper and lower end of the current line search range
+        Scalar step_lo = 0,
+               step_hi = std::numeric_limits<Scalar>::infinity();
+
+        for( int iter = 0; iter < param.max_linesearch; iter++ )
         {
             // x_{k+1} = x_k + step * d_k
             x.noalias() = xp + step * drt;
@@ -72,7 +70,7 @@ public:
 
             if(fx > fx_init + step * dg_test)
             {
-                width = dec;
+                step_hi = step;
             } else {
                 // Armijo condition is met
                 if(param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_ARMIJO)
@@ -81,7 +79,7 @@ public:
                 const Scalar dg = grad.dot(drt);
                 if(dg < param.wolfe * dg_init)
                 {
-                    width = inc;
+                    step_lo = step;
                 } else {
                     // Regular Wolfe condition is met
                     if(param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_WOLFE)
@@ -89,13 +87,15 @@ public:
 
                     if(dg > -param.wolfe * dg_init)
                     {
-                        width = dec;
+                        step_hi = step;
                     } else {
                         // Strong Wolfe condition is met
                         break;
                     }
                 }
             }
+
+            assert( step_lo < step_hi );
 
             if(iter >= param.max_linesearch)
                 throw std::runtime_error("the line search routine reached the maximum number of iterations");
@@ -106,7 +106,8 @@ public:
             if(step > param.max_step)
                 throw std::runtime_error("the line search step became larger than the maximum value allowed");
 
-            step *= width;
+            // continue search in mid of current search range
+            step = std::isinf(step_hi) ? 2*step : step_lo/2 + step_hi/2;
         }
     }
 };
