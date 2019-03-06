@@ -89,7 +89,8 @@ f(x) = 1.87948e-19
 ```
 
 You can also use a different line search algorithm by providing a second template parameter
-to `LBFGSSolver`. For example, the code below illustrates the bracketing line search algorithm.
+to `LBFGSSolver`. For example, the code below illustrates the bracketing line search algorithm
+(contributed by [@DirkToewe](https://github.com/DirkToewe)).
 
 ```cpp
 int main()
