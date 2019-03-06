@@ -5,6 +5,7 @@ Copyright (c) 1990 Jorge Nocedal
 Copyright (c) 2007-2010 Naoaki Okazaki
 
 Copyright (c) 2016-2019 Yixuan Qiu
+
 Copyright (c) 2018-2019 Dirk Toewe
 
 Permission is hereby granted, free of charge, to any person obtaining
