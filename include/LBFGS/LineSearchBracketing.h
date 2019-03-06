@@ -23,7 +23,7 @@ private:
 public:
     ///
     /// Line search by bracketing. Similar to the backtracking line search
-    /// except that is actively maintains an upper and lower bound of the
+    /// except that it actively maintains an upper and lower bound of the
     /// current search range.
     ///
     /// \param f      A function object such that `f(x, grad)` returns the
