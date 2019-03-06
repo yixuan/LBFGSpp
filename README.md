@@ -88,6 +88,36 @@ x =
 f(x) = 1.87948e-19
 ```
 
+You can also use a different line search algorithm by providing a second template parameter
+to `LBFGSSolver`. For example, the code below illustrates the bracketing line search algorithm.
+
+```cpp
+int main()
+{
+    const int n = 10;
+    // Set up parameters
+    LBFGSParam<double> param;
+    param.epsilon = 1e-6;
+    param.max_iterations = 100;
+
+    // Create solver and function object
+    LBFGSSolver<double, LineSearchBracketing> solver(param);
+    Rosenbrock fun(n);
+
+    // Initial guess
+    VectorXd x = VectorXd::Zero(n);
+    // x will be overwritten to be the best point found
+    double fx;
+    int niter = solver.minimize(fun, x, fx);
+
+    std::cout << niter << " iterations" << std::endl;
+    std::cout << "x = \n" << x.transpose() << std::endl;
+    std::cout << "f(x) = " << fx << std::endl;
+
+    return 0;
+}
+```
+
 ## Documentation
 
 The [API reference](http://yixuan.cos.name/LBFGSpp/doc/) page contains the documentation
