@@ -6,7 +6,8 @@
 
 #include <Eigen/Core>
 #include "LBFGS/Param.h"
-#include "LBFGS/LineSearch.h"
+#include "LBFGS/LineSearchBacktracking.h"
+#include "LBFGS/LineSearchBracketing.h"
 
 
 namespace LBFGSpp {
@@ -15,7 +16,8 @@ namespace LBFGSpp {
 ///
 /// LBFGS solver for unconstrained numerical optimization
 ///
-template <typename Scalar>
+template < typename Scalar,
+           template<class> class LineSearch = LineSearchBacktracking >
 class LBFGSSolver
 {
 private:
@@ -109,7 +111,7 @@ public:
             m_gradp.noalias() = m_grad;
 
             // Line search to update x, fx and gradient
-            LineSearch<Scalar>::Backtracking(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
+            LineSearch<Scalar>::LineSearch(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
 
             // New x norm and gradient norm
             xnorm = x.norm();
