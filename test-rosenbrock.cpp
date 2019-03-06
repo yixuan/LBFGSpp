@@ -12,13 +12,13 @@ private:
     int n;
 public:
     Rosenbrock(int n_) : n(n_) {}
-    float operator()(const VectorXd& x, VectorXd& grad)
+    double operator()(const VectorXd& x, VectorXd& grad)
     {
-        float fx = 0.0;
+        double fx = 0.0;
         for(int i = 0; i < n; i += 2)
         {
-            float t1 = 1.0 - x[i];
-            float t2 = 10 * (x[i + 1] - x[i] * x[i]);
+            double t1 = 1.0 - x[i];
+            double t2 = 10 * (x[i + 1] - x[i] * x[i]);
             grad[i + 1] = 20 * t2;
             grad[i]     = -2.0 * (x[i] * grad[i + 1] + t1);
             fx += t1 * t1 + t2 * t2;
@@ -31,7 +31,7 @@ public:
 int main()
 {
     LBFGSParam<double> param;
-    LBFGSSolver<double> solver(param);
+    LBFGSSolver<double, LineSearchBracketing> solver(param);
 
     for( int n=2; n <= 16; n += 2 )
     {
@@ -45,6 +45,7 @@ int main()
 
             assert( ( (x.array() - 1.0).abs() < 1e-4 ).all() );
         }
+        std::cout << "Test passed!" << std::endl << std::endl;
     }
 
     return 0;
