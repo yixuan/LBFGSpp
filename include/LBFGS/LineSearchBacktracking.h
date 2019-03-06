@@ -1,8 +1,8 @@
-// Copyright (C) 2016 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2019 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef LINE_SEARCH_H
-#define LINE_SEARCH_H
+#ifndef LINE_SEARCH_BACKTRACKING_H
+#define LINE_SEARCH_BACKTRACKING_H
 
 #include <Eigen/Core>
 #include <stdexcept>  // std::runtime_error
@@ -12,10 +12,10 @@ namespace LBFGSpp {
 
 
 ///
-/// Line search algorithms for LBFGS. Mainly for internal use.
+/// The backtracking line search algorithm for LBFGS. Mainly for internal use.
 ///
 template <typename Scalar>
-class LineSearch
+class LineSearchBacktracking
 {
 private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
@@ -38,10 +38,10 @@ public:
     /// \param param  Parameters for the LBFGS algorithm
     ///
     template <typename Foo>
-    static void Backtracking(Foo& f, Scalar& fx, Vector& x, Vector& grad,
-                             Scalar& step,
-                             const Vector& drt, const Vector& xp,
-                             const LBFGSParam<Scalar>& param)
+    static void LineSearch(Foo& f, Scalar& fx, Vector& x, Vector& grad,
+                           Scalar& step,
+                           const Vector& drt, const Vector& xp,
+                           const LBFGSParam<Scalar>& param)
     {
         // Decreasing and increasing factors
         const Scalar dec = 0.5;
@@ -114,4 +114,4 @@ public:
 
 } // namespace LBFGSpp
 
-#endif // LINE_SEARCH_H
+#endif // LINE_SEARCH_BACKTRACKING_H
