@@ -8,6 +8,7 @@
 #include "LBFGS/Param.h"
 #include "LBFGS/LineSearchBacktracking.h"
 #include "LBFGS/LineSearchBracketing.h"
+#include "LBFGS/LineSearchNocedalWright.h"
 
 
 namespace LBFGSpp {
