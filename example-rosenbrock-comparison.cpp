@@ -10,10 +10,10 @@ class Rosenbrock
 {
 private:
     int n;
-    ptrdiff_t ncalls = 0;
+    ptrdiff_t ncalls;
 
 public:
-    Rosenbrock(int n_) : n(n_) {}
+    Rosenbrock(int n_) : n(n_), ncalls(0) {}
     double operator()(const VectorXd& x, VectorXd& grad)
     {
 //        std::cout << x << std::endl;
