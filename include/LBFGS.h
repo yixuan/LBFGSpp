@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2019 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2020 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGS_H
@@ -37,6 +37,8 @@ private:
     Vector                    m_gradp;  // Old gradient
     Vector                    m_drt;    // Moving direction
 
+    // Reset internal variables
+    // n: dimension of the vector to be optimized
     inline void reset(int n)
     {
         const int m = m_param.m;
@@ -50,6 +52,36 @@ private:
         m_drt.resize(n);
         if(m_param.past > 0)
             m_fx.resize(m_param.past);
+    }
+
+    // Recursive formula to compute d = -H * g
+    // H0 = gamma0 * I is the initial approximation to H
+    // Algorithm 7.4 of Nocedal, J., & Wright, S. (2006). Numerical optimization.
+    inline void compute_direction(int k, const Scalar gamma0)
+    {
+        // L-BFGS two-loop recursion
+
+        // Loop 1
+        m_drt.noalias() = -m_grad;
+        int bound = std::min(m_param.m, k);
+        int j = k % m_param.m;
+        for(int i = 0; i < bound; i++)
+        {
+            j = (j + m_param.m - 1) % m_param.m;
+            m_alpha[j] = m_s.col(j).dot(m_drt) / m_ys[j];
+            m_drt.noalias() -= m_alpha[j] * m_y.col(j);
+        }
+
+        // Apply initial H0
+        m_drt *= gamma0;
+
+        // Loop 2
+        for(int i = 0; i < bound; i++)
+        {
+            const Scalar beta = m_y.col(j).dot(m_drt) / m_ys[j];
+            m_drt.noalias() += (m_alpha[j] - beta) * m_s.col(j);
+            j = (j + 1) % m_param.m;
+        }
     }
 
 public:
@@ -81,9 +113,12 @@ public:
     template <typename Foo>
     inline int minimize(Foo& f, Vector& x, Scalar& fx)
     {
+        // Dimension of the vector
         const int n = x.size();
-        const int fpast = m_param.past;
         reset(n);
+
+        // The length of lag for objective function value to test convergence
+        const int fpast = m_param.past;
 
         // Evaluate function and compute gradient
         fx = f(x, m_grad);
@@ -100,13 +135,17 @@ public:
 
         // Initial direction
         m_drt.noalias() = -m_grad;
-        // Initial step
+        // Initial step size
         Scalar step = Scalar(1.0) / m_drt.norm();
 
+        // Number of iterations used
         int k = 1;
-        int end = 0;
         for( ; ; )
         {
+            // Points to the location of history that is going to be overwritten
+            // In chronological order: end, end+1, end+2, ..., m-1, 0, 1, ..., end-1
+            int end = (k - 1) % m_param.m;
+
             // Save the curent x and gradient
             m_xp.noalias() = x;
             m_gradp.noalias() = m_grad;
@@ -147,36 +186,16 @@ public:
 
             // ys = y's = 1/rho
             // yy = y'y
-            Scalar ys = yvec.dot(svec);
-            Scalar yy = yvec.squaredNorm();
+            // gamma0 = ys / yy
+            const Scalar ys = yvec.dot(svec);
+            const Scalar yy = yvec.squaredNorm();
             m_ys[end] = ys;
+            const Scalar gamma0 = ys / yy;
 
             // Recursive formula to compute d = -H * g
-            m_drt.noalias() = -m_grad;
-            int bound = std::min(m_param.m, k);
-            end = (end + 1) % m_param.m;
-            int j = end;
-            for(int i = 0; i < bound; i++)
-            {
-                j = (j + m_param.m - 1) % m_param.m;
-                MapVec sj(&m_s(0, j), n);
-                MapVec yj(&m_y(0, j), n);
-                m_alpha[j] = sj.dot(m_drt) / m_ys[j];
-                m_drt.noalias() -= m_alpha[j] * yj;
-            }
+            compute_direction(k, gamma0);
 
-            m_drt *= (ys / yy);
-
-            for(int i = 0; i < bound; i++)
-            {
-                MapVec sj(&m_s(0, j), n);
-                MapVec yj(&m_y(0, j), n);
-                Scalar beta = yj.dot(m_drt) / m_ys[j];
-                m_drt.noalias() += (m_alpha[j] - beta) * sj;
-                j = (j + 1) % m_param.m;
-            }
-
-            // step = 1.0 as initial guess
+            // Reset step = 1.0 as initial guess for the next line search
             step = Scalar(1.0);
             k++;
         }
