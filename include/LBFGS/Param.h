@@ -20,9 +20,9 @@ namespace LBFGSpp {
 ///
 /// \ingroup Enumerations
 ///
-/// The enumeration of line search algorithms.
+/// The enumeration of line search termination conditions.
 ///
-enum LINE_SEARCH_ALGORITHM
+enum LINE_SEARCH_TERMINATION_CONDITION
 {
     ///
     /// Backtracking method with the Armijo condition.
@@ -116,8 +116,8 @@ public:
     ///
     int    max_iterations;
     ///
-    /// The line search algorithm.
-    /// This parameter specifies the line search algorithm that will be used
+    /// The line search termination condition.
+    /// This parameter specifies the line search termination condition that will be used
     /// by the LBFGS routine. The default value is `LBFGS_LINESEARCH_BACKTRACKING_ARMIJO`.
     ///
     int    linesearch;
@@ -146,8 +146,8 @@ public:
     ///
     Scalar ftol;
     ///
-    /// A coefficient for the Wolfe condition.
-    /// This parameter is valid only when the backtracking line-search
+    /// The coefficient for the Wolfe condition.
+    /// This parameter is valid only when the line-search
     /// algorithm is used with the Wolfe condition.
     /// The default value is \c 0.9. This parameter should be greater
     /// the \ref ftol parameter and smaller than \c 1.0.
@@ -193,7 +193,7 @@ public:
             throw std::invalid_argument("'max_iterations' must be non-negative");
         if(linesearch < LBFGS_LINESEARCH_BACKTRACKING_ARMIJO ||
            linesearch > LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE)
-           throw std::invalid_argument("unsupported line search algorithm");
+           throw std::invalid_argument("unsupported line search termination condition");
         if(max_linesearch <= 0)
             throw std::invalid_argument("'max_linesearch' must be positive");
         if(min_step < 0)
