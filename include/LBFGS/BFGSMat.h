@@ -111,6 +111,8 @@ public:
         }
     }
 
+    //========== The following functions are only used in L-BFGS-B algorithm ==========//
+
     // W = [Y, theta * S]
     // W is [n x (2 * ncorr)], v is [n x 1]
     inline void apply_Wtv(const Vector& v, Vector& res)
@@ -165,7 +167,7 @@ public:
         int i = 0, j = m_ptr - 1;
         for(i = 0; i < m_ncorr; i++)
         {
-            Minv(m_ncorr - i - 1, m_ncorr - i - 1) = m_ys[j];
+            Minv(m_ncorr - i - 1, m_ncorr - i - 1) = -m_ys[j];
             j = (j + m_m - 1) % m_m;
         }
         // Another implementation
