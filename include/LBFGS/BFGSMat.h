@@ -39,7 +39,8 @@ private:
                      //          m_s[, m_ptr-1] points to the most recent history,
                      //          and m_s[, m_ptr % m] points to the most distant one.
 
-    Eigen::PartialPivLU<Matrix> m_Msolver;
+    //========== The following members are only used in L-BFGS-B algorithm ==========//
+    Eigen::PartialPivLU<Matrix> m_Msolver;  // Represents the M matrix, since Minv is easy to form
 
 public:
     // Constructor
@@ -114,7 +115,7 @@ public:
     //========== The following functions are only used in L-BFGS-B algorithm ==========//
 
     // W = [Y, theta * S]
-    // W is [n x (2 * ncorr)], v is [n x 1]
+    // W is [n x (2*ncorr)], v is [n x 1]
     inline void apply_Wtv(const Vector& v, Vector& res)
     {
         res.resize(2 * m_ncorr);
@@ -213,6 +214,12 @@ public:
         }
 
         m_Msolver.compute(Minv);
+    }
+
+    // M is [(2*ncorr) x (2*ncorr)], v is [(2*ncorr) x 1]
+    inline void apply_Mv(const Vector& v, Vector& res)
+    {
+        res.noalias() = m_Msolver.solve(v);
     }
 };
 
