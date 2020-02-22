@@ -86,6 +86,12 @@ public:
         const int n = x.size();
         if(lb.size() != n || ub.size() != n)
             throw std::invalid_argument("'lb' and 'ub' must have the same size as 'x'");
+
+        // Check whether the intiial vector is within the bounds
+        if(!Cauchy<Scalar>::in_bounds(x, lb, ub))
+            throw std::invalid_argument("initial 'x' is out of the bounds");
+
+        // Initialization
         reset(n);
 
         // The length of lag for objective function value to test convergence
