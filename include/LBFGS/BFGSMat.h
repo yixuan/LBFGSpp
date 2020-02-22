@@ -114,6 +114,7 @@ public:
 
     //========== The following functions are only used in L-BFGS-B algorithm ==========//
 
+    // Return the value of theta
     inline Scalar theta() const { return m_theta; }
 
     // W = [Y, theta * S]
@@ -157,6 +158,7 @@ public:
         return res;
     }
 
+    // Compute the inverse M matrix and the associated factorization
     inline void form_M()
     {
         if(m_ncorr < 1)

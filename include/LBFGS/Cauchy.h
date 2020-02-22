@@ -153,6 +153,7 @@ public:
                 break;
             }
 
+            // Update a number of quantities after some coordinates become active
             vecc.noalias() += deltat * vecp;
             fp += deltat * fpp;
             Vector newvecp = vecp;
@@ -187,6 +188,7 @@ public:
             std::cout << "il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl;
         }
 
+        // Last step
         const Scalar tfinal = il + std::max(deltatmin, Scalar(0));
         for(int i = b; i < n; i++)
         {
