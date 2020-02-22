@@ -114,9 +114,11 @@ public:
 
     //========== The following functions are only used in L-BFGS-B algorithm ==========//
 
+    inline Scalar theta() const { return m_theta; }
+
     // W = [Y, theta * S]
     // W is [n x (2*ncorr)], v is [n x 1]
-    inline void apply_Wtv(const Vector& v, Vector& res)
+    inline void apply_Wtv(const Vector& v, Vector& res) const
     {
         res.resize(2 * m_ncorr);
 
@@ -139,6 +141,20 @@ public:
             res[2 * m_ncorr - 1 - i] = m_theta * m_s.col(j).dot(v);
             j = (j + m_m - 1) % m_m;
         }
+    }
+
+    // The i-th row of the W matrix
+    inline Vector wb(int b) const
+    {
+        Vector res(2 * m_ncorr);
+        int j = m_ptr - 1;
+        for(int i = 0; i < m_ncorr; i++)
+        {
+            res[m_ncorr - 1 - i] = m_y(b, j);
+            res[2 * m_ncorr - 1 - i] = m_theta * m_s(b, j);
+            j = (j + m_m - 1) % m_m;
+        }
+        return res;
     }
 
     inline void form_M()
@@ -217,8 +233,12 @@ public:
     }
 
     // M is [(2*ncorr) x (2*ncorr)], v is [(2*ncorr) x 1]
-    inline void apply_Mv(const Vector& v, Vector& res)
+    inline void apply_Mv(const Vector& v, Vector& res) const
     {
+        res.resize(2 * m_ncorr);
+        if(m_ncorr < 1)
+            return;
+
         res.noalias() = m_Msolver.solve(v);
     }
 };
