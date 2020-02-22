@@ -12,7 +12,7 @@
 namespace LBFGSpp {
 
 
-// Class to compute the generalized Cauchu point for L-BFGS-B algorithm
+// Class to compute the generalized Cauchy point for L-BFGS-B algorithm
 template <typename Scalar>
 class Cauchy
 {
@@ -67,6 +67,9 @@ public:
     // On each interval [t[i-1], t[i]], x is changing linearly
     // After passing a break point, one or more coordinates of x will be fixed at the bounds
     // We search the first local minimum of m(x) by examining the intervals [t[i-1], t[i]] sequentially
+    //
+    // Reference:
+    // [1] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
     static void get_cauchy_point(const BFGSMat<Scalar>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub, Vector& xcp)
     {
         const int n = x0.size();
