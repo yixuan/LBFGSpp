@@ -119,6 +119,9 @@ public:
     // Return the value of theta
     inline Scalar theta() const { return m_theta; }
 
+    // Return current number of correction vectors
+    inline int num_corrections() const { return m_ncorr; }
+
     // W = [Y, theta * S]
     // W is [n x (2*ncorr)], v is [n x 1]
     inline void apply_Wtv(const Vector& v, Vector& res) const
@@ -146,7 +149,7 @@ public:
         }
     }
 
-    // The i-th row of the W matrix
+    // The b-th row of the W matrix
     // Return as a column vector
     inline Vector Wb(int b) const
     {
@@ -260,6 +263,23 @@ public:
             return;
 
         res.noalias() = m_Msolver.solve(v);
+    }
+
+    // Compute P'BQv, where P and Q are two index selection operators
+    inline void apply_PtBQv(const IntVector& P_set, const IntVector& Q_set, const Vector& v, Vector& res) const
+    {
+        res.resize(P_set.size());
+        if(m_ncorr < 1 || P_set.size() < 1 || Q_set.size() < 1)
+        {
+            res.setZero();
+            return;
+        }
+
+        Matrix WP = Wb(P_set), WQ = Wb(Q_set);
+        Vector WQtv = WQ.transpose() * v;
+        Vector MWQtv;
+        apply_Mv(WQtv, MWQtv);
+        res.noalias() = -WP * MWQtv;
     }
 };
 
