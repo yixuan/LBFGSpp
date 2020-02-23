@@ -72,6 +72,7 @@ public:
     // [1] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
     static void get_cauchy_point(const BFGSMat<Scalar>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub, Vector& xcp)
     {
+        std::cout << "========================= Entering GCP search =========================\n\n";
         const int n = x0.size();
         xcp.resize(n);
         xcp.noalias() = x0;
@@ -100,7 +101,11 @@ public:
         // `ord` contains the coordinates that define the corresponding break points
         // brk[i] == 0 <=> The ord[i]-th coordinate is on the boundary
         if(brk[n - 1].second <= Scalar(0))
+        {
+            std::cout << "** All coordinates at boundary **\n";
+            std::cout << "\n========================= Leaving GCP search =========================\n\n";
             return;
+        }
 
         // First interval: [il=0, iu=brk[b]], where b is the smallest index such that brk[b] > il
         // The corresponding coordinate that defines this break point is ord[b]
@@ -127,6 +132,11 @@ public:
         Scalar iu = brk[b].second;
         Scalar deltat = iu - il;
 
+        int iter = 0;
+        std::cout << "** Iter " << iter << " **\n";
+        std::cout << "   fp = " << fp << ", fpp = " << fpp << ", deltatmin = " << deltatmin << std::endl;
+        std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl;
+
         // If deltatmin >= deltat, move to the next interval
         while(deltatmin >= deltat)
         {
@@ -137,7 +147,7 @@ public:
             int bp = search_greater(brk, iu) - 1;
 
             // Update xcp and d on active coordinates
-            std::cout << "[ ";
+            std::cout << "** [ ";
             for(int i = b; i <= bp; i++)
             {
                 const int coordb = brk[i].first;
@@ -145,12 +155,15 @@ public:
                 vecd[coordb] = Scalar(0);
                 std::cout << coordb + 1 << " ";
             }
-            std::cout << "]\n";
-            std::cout << xcp.transpose() << std::endl << std::endl;
+            std::cout << "] become active **\n\n";
+            // std::cout << xcp.transpose() << std::endl << std::endl;
 
             // If bp == n - 1, then we have reached the boundary of every coordinate
             if(bp == n - 1)
             {
+                iter++;
+                std::cout << "** All break points visited **" << iter << std::endl;
+
                 b = bp + 1;
                 deltatmin = iu - il;
                 break;
@@ -179,7 +192,6 @@ public:
 
             // Theoretical step size to move
             deltatmin = -fp / fpp;
-            std::cout << "fp = " << fp << ", fpp = " << fpp << ", deltatmin = " << deltatmin << std::endl;
 
             // Update interval bound
             il = iu;
@@ -188,7 +200,11 @@ public:
 
             // Limit on the current interval
             deltat = iu - il;
-            std::cout << "il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl;
+
+            iter++;
+            std::cout << "** Iter " << iter << " **\n";
+            std::cout << "   fp = " << fp << ", fpp = " << fpp << ", deltatmin = " << deltatmin << std::endl;
+            std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl;
         }
 
         // Last step
@@ -198,7 +214,8 @@ public:
             const int coordb = brk[i].first;
             xcp[coordb] = x0[coordb] + tfinal * vecd[coordb];
         }
-        std::cout << std::endl << xcp.transpose() << "\n\n\n";
+        // std::cout << std::endl << xcp.transpose() << "\n\n\n";
+        std::cout << "\n========================= Leaving GCP search =========================\n\n";
     }
 };
 
