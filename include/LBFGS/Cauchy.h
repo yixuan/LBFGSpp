@@ -167,7 +167,7 @@ public:
                 const Scalar zb = xcp[coordb] - x0[coordb];
                 const Scalar gb = g[coordb];
                 const Scalar ggb = gb * gb;
-                const Vector wb = bfgs.wb(coordb);
+                const Vector wb = bfgs.Wb(coordb);
                 bfgs.apply_Mv(wb, cache);  // cache = Mw
                 fp += ggb + bfgs.theta() * gb * zb - gb * cache.dot(vecc);
                 fpp += -(bfgs.theta() * ggb - 2 * gb * cache.dot(vecp) - ggb * cache.dot(wb));
