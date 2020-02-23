@@ -4,6 +4,7 @@
 #ifndef BFGS_MAT_H
 #define BFGS_MAT_H
 
+#include <vector>
 #include <Eigen/Core>
 #include <Eigen/LU>
 
@@ -22,8 +23,8 @@ class BFGSMat
 private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Map<Vector> MapVec;
     typedef Eigen::Ref<const Vector> RefConstVec;
+    typedef std::vector<int> IntVector;
 
     int    m_m;      // Maximum number of correction vectors
     Scalar m_theta;  // theta * I is the initial approximation to the Hessian matrix
@@ -40,6 +41,7 @@ private:
                      //          and m_s[, m_ptr % m] points to the most distant one.
 
     //========== The following members are only used in L-BFGS-B algorithm ==========//
+    Matrix                      m_Minv;     // M inverse
     Eigen::PartialPivLU<Matrix> m_Msolver;  // Represents the M matrix, since Minv is easy to form
 
 public:
@@ -145,7 +147,8 @@ public:
     }
 
     // The i-th row of the W matrix
-    inline Vector wb(int b) const
+    // Return as a column vector
+    inline Vector Wb(int b) const
     {
         Vector res(2 * m_ncorr);
         int j = m_ptr - 1;
@@ -153,6 +156,26 @@ public:
         {
             res[m_ncorr - 1 - i] = m_y(b, j);
             res[2 * m_ncorr - 1 - i] = m_theta * m_s(b, j);
+            j = (j + m_m - 1) % m_m;
+        }
+        return res;
+    }
+
+    // Return some rows of W based on the index set b
+    inline Matrix Wb(const IntVector& b) const
+    {
+        const int n = m_y.rows();
+        const int nb = b.size();
+        Matrix res(nb, 2 * m_ncorr);
+
+        int j = m_ptr - 1;
+        for(int i = 0; i < m_ncorr; i++)
+        {
+            for(int k = 0; k < nb; k++)
+            {
+                res(k, m_ncorr - 1 - i) = m_y(b[k], j);
+                res(k, 2 * m_ncorr - 1 - i) = m_theta * m_s(b[k], j);
+            }
             j = (j + m_m - 1) % m_m;
         }
         return res;
@@ -166,7 +189,8 @@ public:
 
         // Minv = [-D         L']
         //        [ L  theta*S'S]
-        Matrix Minv = Matrix::Zero(2 * m_ncorr, 2 * m_ncorr);
+        m_Minv.resize(2 * m_ncorr, 2 * m_ncorr);
+        m_Minv.setZero();
         // Pointer to most recent history
         const int loc = m_ptr - 1;
         // Segment 1: 0, 1, ..., loc
@@ -186,17 +210,9 @@ public:
         int i = 0, j = m_ptr - 1;
         for(i = 0; i < m_ncorr; i++)
         {
-            Minv(m_ncorr - i - 1, m_ncorr - i - 1) = -m_ys[j];
+            m_Minv(m_ncorr - i - 1, m_ncorr - i - 1) = -m_ys[j];
             j = (j + m_m - 1) % m_m;
         }
-        // Another implementation
-        // Segment 1
-        // Minv.diagonal().segment(m_ncorr - len1, len1).noalias() = -m_ys.head(len1);
-        // Segment 2
-        // if(m_ncorr == m_m && len2 > 0)
-        // {
-        //     Minv.diagonal().head(len2).noalias() = -m_ys.tail(len2);
-        // }
 
         // Compute L
         // Let S=[s[0], ..., s[m-1]], Y=[y[0], ..., y[m-1]]
@@ -214,25 +230,27 @@ public:
             int iloc = m_ptr - 1;
             for(i = m_ncorr - 1; i > j; i--)
             {
-                Minv(m_ncorr + i, j) = m_y.col(jloc).dot(m_s.col(iloc));
+                m_Minv(m_ncorr + i, j) = m_y.col(jloc).dot(m_s.col(iloc));
                 iloc = (iloc + m_m - 1) % m_m;
             }
             jloc = (jloc + m_m - 1) % m_m;
         }
         // Copy to the top right corner
-        Minv.topRightCorner(m_ncorr, m_ncorr).noalias() = Minv.bottomLeftCorner(m_ncorr, m_ncorr).transpose();
+        m_Minv.topRightCorner(m_ncorr, m_ncorr).noalias() = m_Minv.bottomLeftCorner(m_ncorr, m_ncorr).transpose();
 
         // Compute theta*S'S
-        Minv.bottomRightCorner(len1, len1).noalias() = m_theta * m_s.leftCols(len1).transpose() * m_s.leftCols(len1);
+        m_Minv.bottomRightCorner(len1, len1).noalias() = m_theta * m_s.leftCols(len1).transpose() * m_s.leftCols(len1);
         if(m_ncorr == m_m && len2 > 0)
         {
-            Minv.block(m_ncorr, m_ncorr, len2, len2).noalias() = m_theta * m_s.rightCols(len2).transpose() * m_s.rightCols(len2);
-            Minv.block(m_ncorr + len2, m_ncorr, len1, len2).noalias() = m_theta * m_s.leftCols(len1).transpose() * m_s.rightCols(len2);
-            Minv.block(m_ncorr, m_ncorr + len2, len2, len1).noalias() = Minv.block(m_ncorr + len2, m_ncorr, len1, len2).transpose();
+            m_Minv.block(m_ncorr, m_ncorr, len2, len2).noalias() = m_theta * m_s.rightCols(len2).transpose() * m_s.rightCols(len2);
+            m_Minv.block(m_ncorr + len2, m_ncorr, len1, len2).noalias() = m_theta * m_s.leftCols(len1).transpose() * m_s.rightCols(len2);
+            m_Minv.block(m_ncorr, m_ncorr + len2, len2, len1).noalias() = m_Minv.block(m_ncorr + len2, m_ncorr, len1, len2).transpose();
         }
 
-        m_Msolver.compute(Minv);
+        m_Msolver.compute(m_Minv);
     }
+
+    inline const Matrix& Minv() const { return m_Minv; }
 
     // M is [(2*ncorr) x (2*ncorr)], v is [(2*ncorr) x 1]
     inline void apply_Mv(const Vector& v, Vector& res) const
