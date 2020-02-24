@@ -35,8 +35,7 @@ private:
             {
                 x[i] = ub[i];
                 act_ind.push_back(i);
-            } else if(x[i] <= lb[i])
-            {
+            } else if(x[i] <= lb[i]) {
                 x[i] = lb[i];
                 act_ind.push_back(i);
             } else {
@@ -76,10 +75,11 @@ public:
         std::cout << "========================= Entering subspace minimization =========================\n\n";
         const int n = x0.size();
 
-        // Get the free variable set
+        // Get the active set and free variable set
         IntVector act_set, fv_set;
         drt.noalias() = xcp;
         analyze_boundary(drt, lb, ub, act_set, fv_set);
+        // d = xcp - x0
         drt.noalias() -= x0;
         // Size of active set and size of free variables
         const int nact = act_set.size();
@@ -101,7 +101,7 @@ public:
         // Compute F'BAb
         Vector vecc(nfree);
         bfgs.apply_PtBQv(fv_set, act_set, vecb, vecc);
-        // Set the vector y containing free variables, vector c for linear term,
+        // Set the vector y=F'd containing free variables, vector c=F'BAb+F'g for linear term,
         // and vectors l and u for the new bounds
         Vector vecy(nfree), vecl(nfree), vecu(nfree);
         for(int i = 0; i < nfree; i++)
@@ -122,9 +122,11 @@ public:
         for(k = 0; k < maxit; k++)
         {
             // Construct the L, U, and P sets, and then update values
+            // Indices in original drt vector
             L_set.clear();
             U_set.clear();
             P_set.clear();
+            // Indices in y
             yL_set.clear();
             yU_set.clear();
             yP_set.clear();
@@ -156,7 +158,7 @@ public:
             std::cout << "   U = [ "; for(int i = 0; i < U_set.size(); i++)  std::cout << U_set[i] << " "; std::cout << "]\n";
             std::cout << "   P = [ "; for(int i = 0; i < P_set.size(); i++)  std::cout << P_set[i] << " "; std::cout << "]\n\n";
 
-            // Solve y[P]
+            // Solve y[P] = -inv(B[P, P]) * (B[P, L] * l[L] + B[P, U] * u[U] + c[P])
             const int nP = P_set.size();
             const Scalar theta = bfgs.theta();
             if(nP > 0)
@@ -182,7 +184,7 @@ public:
                 }
             }
 
-            // Solve lambda[L]
+            // Solve lambda[L] = B[L, F] * y + c[L]
             const int nL = L_set.size();
             if(nL > 0)
             {
@@ -192,7 +194,7 @@ public:
                 subvec_assign(lambda, yL_set, res);
             }
 
-            // Solve lambda[L]
+            // Solve mu[U] = -B[U, F] * y - c[U]
             const int nU = U_set.size();
             if(nU > 0)
             {
