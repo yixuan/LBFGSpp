@@ -240,6 +240,8 @@ public:
 
         std::cout << "** Minimization finished in " << k + 1 << " iteration(s) **\n\n";
         std::cout << "========================= Leaving subspace minimization =========================\n\n";
+
+        subvec_assign(drt, fv_set, vecy);
     }
 };
 
