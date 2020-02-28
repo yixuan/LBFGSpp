@@ -167,7 +167,6 @@ public:
     // Return some rows of W based on the index set b
     inline Matrix Wb(const IntVector& b) const
     {
-        const int n = m_y.rows();
         const int nb = b.size();
         Matrix res(nb, 2 * m_ncorr);
 
