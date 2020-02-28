@@ -56,7 +56,7 @@ public:
         if(dg_init > 0)
             std::logic_error("the moving direction increases the objective function value");
 
-        const Scalar dg_test = param.ftol * dg_init;
+        const Scalar test_decr = param.ftol * dg_init;
 
         // Upper and lower end of the current line search range
         Scalar step_lo = 0,
@@ -69,7 +69,7 @@ public:
             // Evaluate this candidate
             fx = f(x, grad);
 
-            if(fx > fx_init + step * dg_test)
+            if(fx > fx_init + step * test_decr)
             {
                 step_hi = step;
             } else {

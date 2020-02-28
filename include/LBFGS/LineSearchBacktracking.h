@@ -59,7 +59,7 @@ public:
         if(dg_init > 0)
             std::logic_error("the moving direction increases the objective function value");
 
-        const Scalar dg_test = param.ftol * dg_init;
+        const Scalar test_decr = param.ftol * dg_init;
         Scalar width;
 
         int iter;
@@ -70,7 +70,7 @@ public:
             // Evaluate this candidate
             fx = f(x, grad);
 
-            if(fx > fx_init + step * dg_test)
+            if(fx > fx_init + step * test_decr)
             {
                 width = dec;
             } else {

@@ -1,4 +1,5 @@
-// Copyright (C) 2016-2019 Yixuan Qiu <yixuan.qiu@cos.name> & Dirk Toewe <DirkToewe@GoogleMail.com>
+// Copyright (C) 2016-2020 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2020 Dirk Toewe <DirkToewe@GoogleMail.com>
 // Under MIT license
 
 #ifndef LINE_SEARCH_NOCEDAL_WRIGHT_H
@@ -7,13 +8,14 @@
 #include <Eigen/Core>
 #include <stdexcept>
 
+
 namespace LBFGSpp {
 
 
 ///
-/// A strong Wolfe line search method. Implementation based on:
+/// A line search algorithm for the strong Wolfe condition. Implementation based on:
 ///
-///   "Numerical Optimization" 2n Edition,
+///   "Numerical Optimization" 2nd Edition,
 ///   Jorge Nocedal Stephen J. Wright,
 ///   Chapter 3. Line Search Methods, page 60f.
 ///
@@ -25,7 +27,7 @@ private:
 
 public:
     ///
-    /// Line search.
+    /// Line search by Nocedal and Wright (2006).
     ///
     /// \param f      A function object such that `f(x, grad)` returns the
     ///               objective function value at `x`, and overwrites `grad` with
@@ -74,10 +76,10 @@ public:
         if(dg_init > 0)
             throw std::logic_error("the moving direction increases the objective function value");
 
-        const Scalar dg_test  =   param.ftol  * dg_init,
-                     dg_wolfe = - param.wolfe * dg_init;
+        const Scalar test_decr = param.ftol * dg_init,    // Sufficient decrease
+                     test_curv = -param.wolfe * dg_init;  // Curvature
 
-        // ends of the line search range (step_lo > step_hi is allowed)
+        // Ends of the line search range (step_lo > step_hi is allowed)
         Scalar step_hi, step_lo = 0,
                  fx_hi,   fx_lo = fx_init,
                  dg_hi,   dg_lo = dg_init;
@@ -98,7 +100,7 @@ public:
 
           const Scalar dg = grad.dot(drt);
 
-          if( fx - fx_init > step*dg_test || (0 < step_lo && fx >= fx_lo) )
+          if( fx - fx_init > step * test_decr || (0 < step_lo && fx >= fx_lo) )
           {
             step_hi = step;
               fx_hi = fx;
@@ -106,7 +108,7 @@ public:
             break;
           }
 
-          if( std::abs(dg) <= dg_wolfe )
+          if( std::abs(dg) <= test_curv )
             return;
 
           step_hi = step_lo;
@@ -154,7 +156,7 @@ public:
 
           const Scalar dg = grad.dot(drt);
 
-          if( fx - fx_init > step*dg_test || fx >= fx_lo )
+          if( fx - fx_init > step * test_decr || fx >= fx_lo )
           {
             if( step == step_hi )
               throw std::runtime_error("the line search routine failed, possibly due to insufficient numeric precision");
@@ -165,7 +167,7 @@ public:
           }
           else
           {
-            if( std::abs(dg) <= dg_wolfe )
+            if( std::abs(dg) <= test_curv )
               return;
 
             if( dg * (step_hi - step_lo) >= 0 )
