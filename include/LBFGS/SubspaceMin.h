@@ -10,6 +10,8 @@
 #include "LBFGS/BFGSMat.h"
 
 
+/// \cond
+
 namespace LBFGSpp {
 
 
@@ -268,5 +270,7 @@ public:
 
 
 } // namespace LBFGSpp
+
+/// \endcond
 
 #endif // SUBSPACE_MIN_H

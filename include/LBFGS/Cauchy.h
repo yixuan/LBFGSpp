@@ -9,6 +9,8 @@
 #include "LBFGS/BFGSMat.h"
 
 
+/// \cond
+
 namespace LBFGSpp {
 
 
@@ -213,5 +215,7 @@ public:
 
 
 } // namespace LBFGSpp
+
+/// \endcond
 
 #endif // CAUCHY_H

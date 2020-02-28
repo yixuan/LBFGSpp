@@ -9,14 +9,21 @@
 #include <Eigen/LU>
 
 
+/// \cond
+
 namespace LBFGSpp {
 
 
+//
 // An *implicit* representation of the BFGS approximation to the Hessian matrix B
+//
 // B = theta * I - W * M * W'
 // H = inv(B)
-// See [1] D. C. Liu and J. Nocedal (1989). On the limited memory BFGS method for large scale optimization.
-//     [2] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
+//
+// Reference:
+// [1] D. C. Liu and J. Nocedal (1989). On the limited memory BFGS method for large scale optimization.
+// [2] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
+//
 template <typename Scalar>
 class BFGSMat
 {
@@ -284,5 +291,7 @@ public:
 
 
 } // namespace LBFGSpp
+
+/// \endcond
 
 #endif // BFGS_MAT_H
