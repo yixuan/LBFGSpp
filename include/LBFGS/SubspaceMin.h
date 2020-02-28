@@ -13,7 +13,23 @@
 namespace LBFGSpp {
 
 
-// Class to compute the generalized Cauchu point for L-BFGS-B algorithm
+//
+// Subspace minimization procedure of the L-BFGS-B algorithm,
+// mainly for internal use.
+//
+// The target of subspace minimization is to minimize the quadratic function m(x)
+// over the free variables, subject to the bound condition.
+// Free variables stand for coordinates that are not at the boundary in xcp,
+// the generalized Cauchy point.
+//
+// In the classical implementation of L-BFGS-B [1], the minimization is done by first
+// ignoring the box constraints, followed by a line search. Our implementation is
+// an exact minimization subject to the bounds, based on the BOXCQP algorithm [2].
+//
+// Reference:
+// [1] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
+// [2] C. Voglis and I. E. Lagaris (2004). BOXCQP: An algorithm for bound constrained convex quadratic problems.
+//
 template <typename Scalar>
 class SubspaceMin
 {
@@ -63,17 +79,20 @@ private:
     }
 
 public:
-    // The target of subspace minimization is to minimize the quadratic function m(x)
-    // over the free variables, subject to the bound condition.
-    // Free variables stand for coordinates that are not at the boundary in xcp,
-    // the generalized Cauchy point.
+    // bfgs:  An object that represents the BFGS approximation matrix.
+    // x0:    Current parameter vector.
+    // xcp:   Computed generalized Cauchy point.
+    // g:     Gradient at x0.
+    // lb:    Lower bounds for x.
+    // ub:    Upper bounds for x.
+    // maxit: Maximum number of iterations.
+    // drt:   The output direction vector, drt = xsm - x0.
     static void subspace_minimize(
         const BFGSMat<Scalar>& bfgs, const Vector& x0, const Vector& xcp, const Vector& g,
         const Vector& lb, const Vector& ub, int maxit, Vector& drt
     )
     {
         std::cout << "========================= Entering subspace minimization =========================\n\n";
-        const int n = x0.size();
 
         // Get the active set and free variable set
         IntVector act_set, fv_set;

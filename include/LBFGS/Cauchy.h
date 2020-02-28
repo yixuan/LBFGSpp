@@ -12,7 +12,22 @@
 namespace LBFGSpp {
 
 
-// Class to compute the generalized Cauchy point for L-BFGS-B algorithm
+//
+// Class to compute the generalized Cauchy point (GCP) for the L-BFGS-B algorithm,
+// mainly for internal use.
+//
+// The target of the GCP procedure is to find a step size t such that
+// x(t) = x0 - t * g is a local minimum of the quadratic function m(x),
+// where m(x) is a local approximation to the objective function.
+//
+// First determine a sequence of break points t0=0, t1, t2, ..., tn.
+// On each interval [t[i-1], t[i]], x is changing linearly.
+// After passing a break point, one or more coordinates of x will be fixed at the bounds.
+// We search the first local minimum of m(x) by examining the intervals [t[i-1], t[i]] sequentially.
+//
+// Reference:
+// [1] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
+//
 template <typename Scalar>
 class Cauchy
 {
@@ -27,8 +42,8 @@ private:
         return t1.second < t2.second;
     }
 
-    // Find the smallest index i such that brk[i].second > t, assuming brk.second is already sorted
-    // If return value equals n, then all values are <= t
+    // Find the smallest index i such that brk[i].second > t, assuming brk.second is already sorted.
+    // If the return value equals n, then all values are <= t.
     static int search_greater(const std::vector<BreakPoint>& brk, const Scalar& t)
     {
         const int n = brk.size();
@@ -43,15 +58,12 @@ private:
     }
 
 public:
-    // The target of the generalized Cauchy point (GCP) procedure is to find a step size `t` such that
-    // x(t) = x0 - t * g is a local minimum of the quadratic function m(x)
-    // First determine a sequence of break points t0=0, t1, t2, ..., tn
-    // On each interval [t[i-1], t[i]], x is changing linearly
-    // After passing a break point, one or more coordinates of x will be fixed at the bounds
-    // We search the first local minimum of m(x) by examining the intervals [t[i-1], t[i]] sequentially
-    //
-    // Reference:
-    // [1] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
+    // bfgs: An object that represents the BFGS approximation matrix.
+    // x0:   Current parameter vector.
+    // g:    Gradient at x0.
+    // lb:   Lower bounds for x.
+    // ub:   Upper bounds for x.
+    // xcp:  The output generalized Cauchy point.
     static void get_cauchy_point(const BFGSMat<Scalar>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub, Vector& xcp)
     {
         std::cout << "========================= Entering GCP search =========================\n\n";
@@ -138,7 +150,6 @@ public:
                 std::cout << coordb + 1 << " ";
             }
             std::cout << "] become active **\n\n";
-            // std::cout << xcp.transpose() << std::endl << std::endl;
 
             // If bp == n - 1, then we have reached the boundary of every coordinate
             if(bp == n - 1)
@@ -196,7 +207,6 @@ public:
             const int coordb = brk[i].first;
             xcp[coordb] = x0[coordb] + tfinal * vecd[coordb];
         }
-        // std::cout << std::endl << xcp.transpose() << "\n\n\n";
         std::cout << "\n========================= Leaving GCP search =========================\n\n";
     }
 };
