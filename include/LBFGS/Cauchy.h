@@ -43,24 +43,6 @@ private:
     }
 
 public:
-    // Check whether the vector is within the bounds
-    static bool in_bounds(const Vector& x, const Vector& lb, const Vector& ub)
-    {
-        const int n = x.size();
-        for(int i = 0; i < n; i++)
-        {
-            if(x[i] < lb[i] || x[i] > ub[i])
-                return false;
-        }
-        return true;
-    }
-
-    // Project the vector x to the bound constraint set
-    static void force_bounds(Vector& x, const Vector& lb, const Vector& ub)
-    {
-        x.noalias() = x.cwiseMax(lb).cwiseMin(ub);
-    }
-
     // The target of the generalized Cauchy point (GCP) procedure is to find a step size `t` such that
     // x(t) = x0 - t * g is a local minimum of the quadratic function m(x)
     // First determine a sequence of break points t0=0, t1, t2, ..., tn
