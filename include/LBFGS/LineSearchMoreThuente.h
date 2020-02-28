@@ -155,6 +155,8 @@ public:
                            const Vector& drt, const Vector& xp,
                            const LBFGSParam<Scalar>& param)
     {
+        std::cout << "========================= Entering line search =========================\n\n";
+
         // Check the value of step
         if(step <= Scalar(0))
             std::invalid_argument("'step' must be positive");
@@ -181,9 +183,22 @@ public:
         x.noalias() = xp + step * drt;
         fx = f(x, grad);
         Scalar dg = grad.dot(drt);
+
+        std::cout << "max_step = " << step_max << ", step = " << step << ", fx = " << fx << std::endl;
+
         // Convergence test
         if(fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
+        {
+            std::cout << "** Criteria met\n\n";
+            std::cout << "========================= Leaving line search =========================\n\n";
             return;
+        }
+        if(step >= step_max)
+        {
+            std::cout << "** Maximum step size reached\n\n";
+            std::cout << "========================= Leaving line search =========================\n\n";
+            return;
+        }
 
         // Extrapolation factor
         const Scalar delta = Scalar(1.1);
@@ -208,6 +223,9 @@ public:
                 gI_hi = gt;
 
                 step = new_step;
+
+                std::cout << "Case 1: new step = " << step;
+
             } else if(gt * (fI_lo - step) > Scalar(0)) {
                 // Case 2: ft <= fl, gt * (al - at) > 0
                 const Scalar new_step = std::min(step_max, step + delta * (step - I_hi));
@@ -217,6 +235,9 @@ public:
                 gI_lo = gt;
 
                 step = new_step;
+
+                std::cout << "Case 2: new step = " << step;
+
             } else {
                 // Case 3: ft <= fl, gt * (al - at) <= 0
                 const Scalar new_step = step_selection( I_lo,  I_hi, step,
@@ -231,6 +252,8 @@ public:
                 gI_lo = gt;
 
                 step = new_step;
+
+                std::cout << "Case 3: new step = " << step;
             }
 
             if(step < param.min_step)
@@ -244,14 +267,25 @@ public:
             fx = f(x, grad);
             dg = grad.dot(drt);
 
+            std::cout << ", fx = " << fx << std::endl;
+
             // Convergence test
             if(fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
+            {
+                std::cout << "** Criteria met\n\n";
+                std::cout << "========================= Leaving line search =========================\n\n";
                 return;
+            }
+            if(step >= step_max)
+            {
+                 std::cout << "** Maximum step size reached\n\n";
+                 std::cout << "========================= Leaving line search =========================\n\n";
+                 return;
+            }
         }
 
         if(iter >= param.max_linesearch)
             throw std::runtime_error("the line search routine reached the maximum number of iterations");
-
     }
 };
 
