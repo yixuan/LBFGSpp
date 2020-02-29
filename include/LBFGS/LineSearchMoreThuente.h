@@ -4,16 +4,24 @@
 #ifndef LINE_SEARCH_MORE_THUENTE_H
 #define LINE_SEARCH_MORE_THUENTE_H
 
-#include <stdexcept>  // std::runtime_error
+#include <stdexcept>  // std::invalid_argument, std::runtime_error
 #include <Eigen/Core>
-#include <Eigen/LU>
 
 
 namespace LBFGSpp {
 
 
 ///
-/// The line search algorithm by More and Thuente (1994).
+/// The line search algorithm by Moré and Thuente (1994), currently used for the L-BFGS-B algorithm.
+///
+/// The target of this line search algorithm is to find a step size \f$\alpha\f$ that satisfies the strong Wolfe condition
+/// \f$f(x+\alpha d) \le f(x) + \alpha\mu g(x)^T d\f$ and \f$|g(x+\alpha d)^T d| \le \eta|g(x)^T d|\f$.
+/// Our implementation is a simplified version of the algorithm in [1]. We assume that \f$0<\mu<\eta<1\f$, while in [1]
+/// they do not assume \f$\eta>\mu\f$. As a result, the algorithm in [1] has two stages, but in our implementation we
+/// only need the first stage to guarantee the convergence.
+///
+/// Reference:
+/// [1] Moré, J. J., & Thuente, D. J. (1994). Line search algorithms with guaranteed sufficient decrease. 
 ///
 template <typename Scalar>
 class LineSearchMoreThuente
@@ -22,10 +30,7 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
     // Mininum of a quadratic function that interpolates fa, ga, and fb
-    static Scalar quadratic_interp(
-        const Scalar& a, const Scalar& b,
-        const Scalar& fa, const Scalar& ga, const Scalar& fb
-    )
+    static Scalar quadratic_interp(const Scalar& a, const Scalar& b, const Scalar& fa, const Scalar& ga, const Scalar& fb)
     {
         const Scalar ba = b - a;
         return a + Scalar(0.5) * ba * ba * ga / (fa - fb + ba * ga);
@@ -33,26 +38,21 @@ private:
 
     // Mininum of a quadratic function that interpolates ga and gb
     // Assume that ga != gb
-    static Scalar quadratic_interp(
-        const Scalar& a, const Scalar& b,
-        const Scalar& ga, const Scalar& gb
-    )
+    static Scalar quadratic_interp(const Scalar& a, const Scalar& b, const Scalar& ga, const Scalar& gb)
     {
         return b + (b - a) * gb / (ga - gb);
     }
 
     // Mininum of a cubic function that interpolates fa, ga, fb and gb
     // Assume that a != b
-    static Scalar cubic_interp(
-        const Scalar& a, const Scalar& b,
-        const Scalar& fa, const Scalar& fb,
-        const Scalar& ga, const Scalar& gb
-    )
+    static Scalar cubic_interp(const Scalar& a, const Scalar& b, const Scalar& fa, const Scalar& fb, const Scalar& ga, const Scalar& gb)
     {
         const Scalar ba = b - a;
         const Scalar ba2 = ba * ba;
         const Scalar ba3 = ba2 * ba;
         const Scalar fba = fb - fa;
+        // q(x) = c0 + c1 * x + c2 * x^2 + c3 * x^3
+        // Solve c0, c1, c2, c3 such that q(a) = fa, q(b) = fb, q'(a) = ga, and q'(b) = gb
         const Scalar c3 = (ga + gb) / ba2 - Scalar(2) * fba / ba3;
         const Scalar c2 = fba / ba2 - ga / ba - (Scalar(2) * a + b) * c3;
         const Scalar c1 = fba / ba - (a + b) * c2 - (a * a + a * b + b * b) * c3;
@@ -64,7 +64,7 @@ private:
         const Scalar delta = Scalar(4) * c2 * c2 - Scalar(12) * c1 * c3;
         if(delta < Scalar(0))
             return (fa < fb) ? a : b;
-        // Case I: no solution in (a, b)
+        // Case II: no solution in (a, b)
         const Scalar sdelta = std::sqrt(delta);
         const Scalar sol1 = (-Scalar(2) * c2 - sdelta) / (Scalar(6) * c3);
         const Scalar sol2 = (-Scalar(2) * c2 + sdelta) / (Scalar(6) * c3);
@@ -116,8 +116,7 @@ private:
         const Scalar delta = Scalar(0.66);
         if(std::abs(gt) < std::abs(gl))
         {
-            Scalar res = (std::abs(ac - at) < std::abs(as - at)) ? ac : as;
-            const Scalar delta = Scalar(0.66);
+            const Scalar res = (std::abs(ac - at) < std::abs(as - at)) ? ac : as;
             return (at > al) ?
                    std::min(at + delta * (au - at), res) :
                    std::max(at + delta * (au - at), res);
@@ -133,7 +132,7 @@ private:
 
 public:
     ///
-    /// Line search by More and Thuente (1994).
+    /// Line search by Moré and Thuente (1994).
     ///
     /// \param f        A function object such that `f(x, grad)` returns the
     ///                 objective function value at `x`, and overwrites `grad` with
@@ -172,7 +171,9 @@ public:
             std::logic_error("the moving direction does not decrease the objective function value");
 
         // Tolerance for convergence test
+        // Sufficient decrease
         const Scalar test_decr = param.ftol * dg_init;
+        // Curvature
         const Scalar test_curv = -param.wolfe * dg_init;
 
         // The bracketing interval
