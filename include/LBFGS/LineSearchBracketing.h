@@ -1,4 +1,5 @@
-// Copyright (C) 2016-2019 Yixuan Qiu <yixuan.qiu@cos.name> & Dirk Toewe <DirkToewe@GoogleMail.com>
+// Copyright (C) 2016-2020 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2020 Dirk Toewe <DirkToewe@GoogleMail.com>
 // Under MIT license
 
 #ifndef LINE_SEARCH_BRACKETING_H
@@ -11,7 +12,7 @@ namespace LBFGSpp {
 
 
 ///
-/// The bracketing line search algorithm for LBFGS. Mainly for internal use.
+/// The bracketing line search algorithm for L-BFGS. Mainly for internal use.
 ///
 template <typename Scalar>
 class LineSearchBracketing

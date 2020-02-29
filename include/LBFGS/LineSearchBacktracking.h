@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2019 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2020 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LINE_SEARCH_BACKTRACKING_H
@@ -12,7 +12,7 @@ namespace LBFGSpp {
 
 
 ///
-/// The backtracking line search algorithm for LBFGS. Mainly for internal use.
+/// The backtracking line search algorithm for L-BFGS. Mainly for internal use.
 ///
 template <typename Scalar>
 class LineSearchBacktracking
