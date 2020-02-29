@@ -16,7 +16,7 @@ namespace LBFGSpp {
 
 
 ///
-/// LBFGS solver for unconstrained numerical optimization
+/// L-BFGS solver for unconstrained numerical optimization
 ///
 template < typename Scalar,
            template<class> class LineSearch = LineSearchBacktracking >
@@ -51,7 +51,7 @@ private:
 
 public:
     ///
-    /// Constructor for LBFGS solver.
+    /// Constructor for the L-BFGS solver.
     ///
     /// \param param An object of \ref LBFGSParam to store parameters for the
     ///        algorithm
@@ -63,7 +63,7 @@ public:
     }
 
     ///
-    /// Minimizing a multivariate function using LBFGS algorithm.
+    /// Minimizing a multivariate function using the L-BFGS algorithm.
     /// Exceptions will be thrown if error occurs.
     ///
     /// \param f  A function object such that `f(x, grad)` returns the

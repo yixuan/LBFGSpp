@@ -18,7 +18,7 @@ namespace LBFGSpp {
 
 
 ///
-/// LBFGSB solver for box-constrained numerical optimization
+/// L-BFGS-B solver for box-constrained numerical optimization
 ///
 template < typename Scalar,
            template<class> class LineSearch = LineSearchMoreThuente >
@@ -70,6 +70,7 @@ private:
         x.noalias() = x.cwiseMax(lb).cwiseMin(ub);
     }
 
+    // Norm of the projected gradient
     // ||P(x-g, l, u) - x||_inf
     static Scalar proj_grad_norm(const Vector& x, const Vector& g, const Vector& lb, const Vector& ub)
     {
@@ -84,6 +85,7 @@ private:
         return res;
     }
 
+    // The maximum step size alpha such that x0 + alpha * d stays within the bounds
     static Scalar max_step_size(const Vector& x0, const Vector& drt, const Vector& lb, const Vector& ub)
     {
         const int n = x0.size();
@@ -104,7 +106,7 @@ private:
 
 public:
     ///
-    /// Constructor for LBFGS solver.
+    /// Constructor for the L-BFGS-B solver.
     ///
     /// \param param An object of \ref LBFGSParam to store parameters for the
     ///        algorithm
@@ -116,7 +118,7 @@ public:
     }
 
     ///
-    /// Minimizing a multivariate function using LBFGS algorithm.
+    /// Minimizing a multivariate function subject to box constraints, using the L-BFGS-B algorithm.
     /// Exceptions will be thrown if error occurs.
     ///
     /// \param f  A function object such that `f(x, grad)` returns the
