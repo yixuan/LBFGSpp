@@ -7,6 +7,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/LU>
+#include "BKLDLT.h"
 
 
 /// \cond
@@ -24,7 +25,7 @@ namespace LBFGSpp {
 // [1] D. C. Liu and J. Nocedal (1989). On the limited memory BFGS method for large scale optimization.
 // [2] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
 //
-template <typename Scalar>
+template <typename Scalar, bool LBFGSB = false>
 class BFGSMat
 {
 private:
@@ -48,8 +49,10 @@ private:
                      //          and m_s[, m_ptr % m] points to the most distant one.
 
     //========== The following members are only used in L-BFGS-B algorithm ==========//
-    Matrix                      m_Minv;     // M inverse
-    Eigen::PartialPivLU<Matrix> m_Msolver;  // Represents the M matrix, since Minv is easy to form
+    Matrix                      m_Minv;         // M inverse
+    Eigen::PartialPivLU<Matrix> m_Msolver;      // Represents the M matrix, since Minv is easy to form
+    Matrix                      m_permMinv;     // Permutated M inverse
+    BKLDLT<Scalar>              m_permMsolver;  // Represents the permutated M matrix
 
 public:
     // Constructor
@@ -68,6 +71,12 @@ public:
         m_alpha.resize(m);
         m_ncorr = 0;
         m_ptr = m;  // This makes sure that m_ptr % m == 0 in the first step
+
+        if(LBFGSB)
+        {
+            m_permMinv.resize(2 * m, 2 * m);
+            m_permMinv.diagonal().setOnes();
+        }
     }
 
     // Add correction vectors to the BFGS matrix
@@ -88,6 +97,54 @@ public:
             m_ncorr++;
 
         m_ptr = loc + 1;
+
+        if(LBFGSB)
+        {
+            // Minv = [-D         L']
+            //        [ L  theta*S'S]
+
+            // Copy -D
+            // Let S=[s[0], ..., s[m-1]], Y=[y[0], ..., y[m-1]]
+            // D = [s[0]'y[0], ..., s[m-1]'y[m-1]]
+            m_permMinv(loc, loc) = -ys;
+
+            // Update S'S
+            // We only store S'S in Minv, and multiply theta when LU decomposition is performed
+            Vector Ss = m_s.leftCols(m_ncorr).transpose() * m_s.col(loc);
+            m_permMinv.block(m_m + loc, m_m, 1, m_ncorr).noalias() = Ss.transpose();
+            m_permMinv.block(m_m, m_m + loc, m_ncorr, 1).noalias() = Ss;
+
+            // Compute L
+            // L = [          0                                     ]
+            //     [  s[1]'y[0]             0                       ]
+            //     [  s[2]'y[0]     s[2]'y[1]                       ]
+            //     ...
+            //     [s[m-1]'y[0] ... ... ... ... ... s[m-1]'y[m-2]  0]
+            //
+            // L_next = [        0                                   ]
+            //          [s[2]'y[1]             0                     ]
+            //          [s[3]'y[1]     s[3]'y[2]                     ]
+            //          ...
+            //          [s[m]'y[1] ... ... ... ... ... s[m]'y[m-1]  0]
+            const int len = m_ncorr - 1;
+            // First zero out the column of oldest y
+            if(m_ncorr >= m_m)
+                m_permMinv.block(m_m, loc, m_m, 1).setZero();
+            // Compute the row associated with new s
+            // The current row is loc
+            // End with column (loc + m - 1) % m
+            // Length is len
+            int yloc = (loc + m_m - 1) % m_m;
+            for(int i = 0; i < len; i++)
+            {
+                m_permMinv(m_m + loc, yloc) = m_s.col(loc).dot(m_y.col(yloc));
+                yloc = (yloc + m_m - 1) % m_m;
+            }
+
+            m_permMinv.block(m_m, m_m, m_m, m_m) *= m_theta;
+            m_permMsolver.compute(m_permMinv);
+            m_permMinv.block(m_m, m_m, m_m, m_m) /= m_theta;
+        }
     }
 
     // Recursive formula to compute a * H * v, where a is a scalar, and v is [n x 1]
