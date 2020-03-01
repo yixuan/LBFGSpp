@@ -325,7 +325,29 @@ public:
         if(m_ncorr < 1)
             return;
 
-        res.noalias() = m_Msolver.solve(v);
+        // Permute v to align with M
+        Vector vperm = Vector::Zero(2 * m_m);
+        int loc = m_ptr - 1;
+        // From newest to oldest
+        for(int i = 0; i < m_ncorr; i++)
+        {
+            vperm[loc] = v[m_ncorr - i - 1];
+            vperm[m_m + loc] = v[2 * m_ncorr - i - 1];
+            loc = (loc + m_m - 1) % m_m;
+        }
+
+        // Solve linear equation
+        m_permMsolver.solve_inplace(vperm);
+
+        // Permute the solution back
+        // From newest to oldest
+        loc = m_ptr - 1;
+        for(int i = 0; i < m_ncorr; i++)
+        {
+            res[m_ncorr - i - 1] = vperm[loc];
+            res[2 * m_ncorr - i - 1] = vperm[m_m + loc];
+            loc = (loc + m_m - 1) % m_m;
+        }
     }
 
     // Compute P'BQv, where P and Q are two index selection operators
