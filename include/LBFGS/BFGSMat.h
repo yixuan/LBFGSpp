@@ -6,7 +6,6 @@
 
 #include <vector>
 #include <Eigen/Core>
-#include <Eigen/LU>
 #include "BKLDLT.h"
 
 
@@ -49,8 +48,6 @@ private:
                      //          and m_s[, m_ptr % m] points to the most distant one.
 
     //========== The following members are only used in L-BFGS-B algorithm ==========//
-    Matrix                      m_Minv;         // M inverse
-    Eigen::PartialPivLU<Matrix> m_Msolver;      // Represents the M matrix, since Minv is easy to form
     Matrix                      m_permMinv;     // Permutated M inverse
     BKLDLT<Scalar>              m_permMsolver;  // Represents the permutated M matrix
 
@@ -141,6 +138,7 @@ public:
                 yloc = (yloc + m_m - 1) % m_m;
             }
 
+            // Matrix LDLT factorization
             m_permMinv.block(m_m, m_m, m_m, m_m) *= m_theta;
             m_permMsolver.compute(m_permMinv);
             m_permMinv.block(m_m, m_m, m_m, m_m) /= m_theta;
@@ -246,77 +244,6 @@ public:
         }
         return res;
     }
-
-    // Compute the inverse M matrix and the associated factorization
-    inline void form_M()
-    {
-        if(m_ncorr < 1)
-            return;
-
-        // Minv = [-D         L']
-        //        [ L  theta*S'S]
-        m_Minv.resize(2 * m_ncorr, 2 * m_ncorr);
-        m_Minv.setZero();
-        // Pointer to most recent history
-        const int loc = m_ptr - 1;
-        // Segment 1: 0, 1, ..., loc
-        // Copy to ncorr-len1, ..., ncorr-1
-        const int len1 = loc + 1;
-        // Segment 2: loc+1, ..., m-1, only when ncorr == m
-        // Copy to 0, 1, ..., len2-1
-        const int len2 = m_m - loc - 1;
-
-        // Copy -D
-        // To iterate from the most recent history to most distant,
-        // j = ptr - 1
-        // for i = 0, ..., ncorr
-        //     j points to the column of y or s that is i away from the most recent one
-        //     j = (j + m - 1) % m
-        // end for
-        int i = 0, j = m_ptr - 1;
-        for(i = 0; i < m_ncorr; i++)
-        {
-            m_Minv(m_ncorr - i - 1, m_ncorr - i - 1) = -m_ys[j];
-            j = (j + m_m - 1) % m_m;
-        }
-
-        // Compute L
-        // Let S=[s[0], ..., s[m-1]], Y=[y[0], ..., y[m-1]]
-        // L = [          0                                     ]
-        //     [  s[1]'y[0]             0                       ]
-        //     [  s[2]'y[0]     s[2]'y[1]                       ]
-        //     ...
-        //     [s[m-1]'y[0] ... ... ... ... ... s[m-1]'y[m-2]  0]
-        //
-        // We only use y up to y[m-2]
-        int jloc = m_ptr - 1;
-        jloc = (jloc + m_m - 1) % m_m;
-        for(j = m_ncorr - 2; j >= 0; j--)
-        {
-            int iloc = m_ptr - 1;
-            for(i = m_ncorr - 1; i > j; i--)
-            {
-                m_Minv(m_ncorr + i, j) = m_y.col(jloc).dot(m_s.col(iloc));
-                iloc = (iloc + m_m - 1) % m_m;
-            }
-            jloc = (jloc + m_m - 1) % m_m;
-        }
-        // Copy to the top right corner
-        m_Minv.topRightCorner(m_ncorr, m_ncorr).noalias() = m_Minv.bottomLeftCorner(m_ncorr, m_ncorr).transpose();
-
-        // Compute theta*S'S
-        m_Minv.bottomRightCorner(len1, len1).noalias() = m_theta * m_s.leftCols(len1).transpose() * m_s.leftCols(len1);
-        if(m_ncorr == m_m && len2 > 0)
-        {
-            m_Minv.block(m_ncorr, m_ncorr, len2, len2).noalias() = m_theta * m_s.rightCols(len2).transpose() * m_s.rightCols(len2);
-            m_Minv.block(m_ncorr + len2, m_ncorr, len1, len2).noalias() = m_theta * m_s.leftCols(len1).transpose() * m_s.rightCols(len2);
-            m_Minv.block(m_ncorr, m_ncorr + len2, len2, len1).noalias() = m_Minv.block(m_ncorr + len2, m_ncorr, len1, len2).transpose();
-        }
-
-        m_Msolver.compute(m_Minv);
-    }
-
-    inline const Matrix& Minv() const { return m_Minv; }
 
     // M is [(2*ncorr) x (2*ncorr)], v is [(2*ncorr) x 1]
     inline void apply_Mv(const Vector& v, Vector& res) const

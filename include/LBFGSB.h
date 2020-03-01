@@ -168,7 +168,6 @@ public:
 
         // Compute generalized Cauchy point
         Vector xcp(n);
-        m_bfgs.form_M();
         Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp);
 
         Vector gcp(n);
@@ -232,7 +231,6 @@ public:
                 m_bfgs.add_correction(vecs, vecy);
 
             force_bounds(x, lb, ub);
-            m_bfgs.form_M();
             Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp);
 
             Vector gcp(n);
