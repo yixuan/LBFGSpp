@@ -350,6 +350,41 @@ public:
         }
     }
 
+    // Compute inv(P'BP) * v
+    // P represents an index set
+    // inv(P'BP) * v = v / theta + WP * inv(inv(M) - WP' * WP / theta) * WP' * v / theta^2
+    //
+    // v is [nP x 1]
+    inline void solve_PtBP(const IntVector& Pset, const Vector& v, Vector& res) const
+    {
+        const int nP = Pset.size();
+        res.resize(nP);
+        if(m_ncorr < 1)
+        {
+            res.noalias() = v / m_theta;
+            return;
+        }
+
+        // Compute (permutated) WP
+        Matrix WP = Matrix::Zero(nP, 2 * m_m);
+        for(int i = 0; i < nP; i++)
+        {
+            WP.row(i).head(m_ncorr).noalias() = m_y.row(Pset[i]).head(m_ncorr);
+            WP.row(i).segment(m_m, m_ncorr).noalias() = m_theta * m_s.row(Pset[i]).head(m_ncorr);
+        }
+
+        // Compute the matrix in the middle
+        Matrix mid = m_permMinv;
+        mid.block(m_m, m_m, m_m, m_m) *= m_theta;
+        mid.noalias() -= (WP.transpose() * WP) / m_theta;
+        BKLDLT<Scalar> midsolver(mid);
+
+        // Compute the final result
+        Vector WPv = WP.transpose() * v;
+        midsolver.solve_inplace(WPv);
+        res.noalias() = v / m_theta + (WP * WPv) / (m_theta * m_theta);
+    }
+
     // Compute P'BQv, where P and Q are two index selection operators
     inline void apply_PtBQv(const IntVector& P_set, const IntVector& Q_set, const Vector& v, Vector& res) const
     {

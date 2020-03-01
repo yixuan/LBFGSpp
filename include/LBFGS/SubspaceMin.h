@@ -6,7 +6,6 @@
 
 #include <vector>
 #include <Eigen/Core>
-#include <Eigen/LU>
 #include "LBFGS/BFGSMat.h"
 
 
@@ -181,7 +180,6 @@ public:
 
             // Solve y[P] = -inv(B[P, P]) * (B[P, L] * l[L] + B[P, U] * u[U] + c[P])
             const int nP = P_set.size();
-            const Scalar theta = bfgs.theta();
             if(nP > 0)
             {
                 Vector rhs = subvec(vecc, yP_set);
@@ -193,16 +191,8 @@ public:
                 bfgs.apply_PtBQv(P_set, U_set, uU, tmp);
                 rhs.noalias() += tmp;
 
-                if(bfgs.num_corrections() < 1)
-                {
-                    Vector res = -rhs / theta;
-                    subvec_assign(vecy, yP_set, res);
-                } else {
-                    Matrix WP = bfgs.Wb(P_set);
-                    Matrix middle = bfgs.Minv() - (WP.transpose() * WP) / theta;
-                    Vector res = -rhs / theta - (WP * middle.lu().solve(WP.transpose() * rhs)) / (theta * theta);
-                    subvec_assign(vecy, yP_set, res);
-                }
+                bfgs.solve_PtBP(P_set, -rhs, tmp);
+                subvec_assign(vecy, yP_set, tmp);
             }
 
             // Solve lambda[L] = B[L, F] * y + c[L]
