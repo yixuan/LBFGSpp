@@ -66,7 +66,7 @@ public:
     // lb:   Lower bounds for x.
     // ub:   Upper bounds for x.
     // xcp:  The output generalized Cauchy point.
-    static void get_cauchy_point(const BFGSMat<Scalar>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub, Vector& xcp)
+    static void get_cauchy_point(const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub, Vector& xcp)
     {
         std::cout << "========================= Entering GCP search =========================\n\n";
         const int n = x0.size();

@@ -31,7 +31,7 @@ private:
     typedef std::pair<int, Scalar> BreakPoint;
 
     const LBFGSParam<Scalar>& m_param;  // Parameters to control the LBFGS algorithm
-    BFGSMat<Scalar>           m_bfgs;   // Approximation to the Hessian matrix
+    BFGSMat<Scalar, true>     m_bfgs;   // Approximation to the Hessian matrix
     Vector                    m_fx;     // History of the objective function values
     Vector                    m_xp;     // Old x
     Vector                    m_grad;   // New gradient

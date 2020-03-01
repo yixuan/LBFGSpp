@@ -90,7 +90,7 @@ public:
     // maxit: Maximum number of iterations.
     // drt:   The output direction vector, drt = xsm - x0.
     static void subspace_minimize(
-        const BFGSMat<Scalar>& bfgs, const Vector& x0, const Vector& xcp, const Vector& g,
+        const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& xcp, const Vector& g,
         const Vector& lb, const Vector& ub, int maxit, Vector& drt
     )
     {
@@ -112,8 +112,8 @@ public:
             return;
         }
 
-        std::cout << "Active set = [ "; for(int i = 0; i < act_set.size(); i++)  std::cout << act_set[i] << " "; std::cout << "]\n";
-        std::cout << "Free variable set = [ "; for(int i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
+        std::cout << "Active set = [ "; for(std::size_t i = 0; i < act_set.size(); i++)  std::cout << act_set[i] << " "; std::cout << "]\n";
+        std::cout << "Free variable set = [ "; for(std::size_t i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
         
         // Compute b = A'd
         Vector vecb(nact);
@@ -175,9 +175,9 @@ public:
             }
 
             std::cout << "** Iter " << k << " **\n";
-            std::cout << "   L = [ "; for(int i = 0; i < L_set.size(); i++)  std::cout << L_set[i] << " "; std::cout << "]\n";
-            std::cout << "   U = [ "; for(int i = 0; i < U_set.size(); i++)  std::cout << U_set[i] << " "; std::cout << "]\n";
-            std::cout << "   P = [ "; for(int i = 0; i < P_set.size(); i++)  std::cout << P_set[i] << " "; std::cout << "]\n\n";
+            std::cout << "   L = [ "; for(std::size_t i = 0; i < L_set.size(); i++)  std::cout << L_set[i] << " "; std::cout << "]\n";
+            std::cout << "   U = [ "; for(std::size_t i = 0; i < U_set.size(); i++)  std::cout << U_set[i] << " "; std::cout << "]\n";
+            std::cout << "   P = [ "; for(std::size_t i = 0; i < P_set.size(); i++)  std::cout << P_set[i] << " "; std::cout << "]\n\n";
 
             // Solve y[P] = -inv(B[P, P]) * (B[P, L] * l[L] + B[P, U] * u[U] + c[P])
             const int nP = P_set.size();
