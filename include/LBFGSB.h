@@ -4,14 +4,13 @@
 #ifndef LBFGSB_H
 #define LBFGSB_H
 
-#include <vector>
 #include <stdexcept>  // std::invalid_argument
 #include <Eigen/Core>
-#include "LBFGS/Param.h"
-#include "LBFGS/BFGSMat.h"
-#include "LBFGS/Cauchy.h"
-#include "LBFGS/SubspaceMin.h"
-#include "LBFGS/LineSearchMoreThuente.h"
+#include "LBFGSpp/Param.h"
+#include "LBFGSpp/BFGSMat.h"
+#include "LBFGSpp/Cauchy.h"
+#include "LBFGSpp/SubspaceMin.h"
+#include "LBFGSpp/LineSearchMoreThuente.h"
 
 
 namespace LBFGSpp {

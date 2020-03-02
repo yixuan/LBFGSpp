@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <Eigen/Core>
-#include "LBFGS/BFGSMat.h"
+#include "BFGSMat.h"
 
 
 /// \cond
