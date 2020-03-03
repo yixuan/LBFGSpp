@@ -99,8 +99,6 @@ public:
         IntVector act_set, fv_set;
         drt.noalias() = xcp;
         analyze_boundary(drt, lb, ub, act_set, fv_set);
-        // d = xcp - x0
-        drt.noalias() -= x0;
         // Size of active set and size of free variables
         const int nact = act_set.size();
         const int nfree = fv_set.size();
@@ -114,6 +112,8 @@ public:
         // std::cout << "Active set = [ "; for(std::size_t i = 0; i < act_set.size(); i++)  std::cout << act_set[i] << " "; std::cout << "]\n";
         // std::cout << "Free variable set = [ "; for(std::size_t i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
         
+        // d = xcp - x0
+        drt.noalias() -= x0;
         // Compute b = A'd
         Vector vecb(nact);
         for(int i = 0; i < nact; i++)
