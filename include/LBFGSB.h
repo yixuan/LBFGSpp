@@ -166,16 +166,18 @@ public:
         }
 
         // Compute generalized Cauchy point
-        Vector xcp(n), gcp(n);
+        Vector xcp(n);
         Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp);
+
+        /* Vector gcp(n);
         Scalar fcp = f(xcp, gcp);
         Scalar projgcpnorm = proj_grad_norm(xcp, gcp, lb, ub);
-
-        // std::cout << "xcp = " << xcp.transpose() << std::endl;
-        // std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;
+        std::cout << "xcp = " << xcp.transpose() << std::endl;
+        std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl; */
 
         // Initial direction
-        m_drt.noalias() = (xcp - x) / projgcpnorm;
+        m_drt.noalias() = xcp - x;
+        m_drt.normalize();
         // Tolerance for s'y >= eps * (y'y)
         const Scalar eps = std::numeric_limits<Scalar>::epsilon();
         // s and y vectors
