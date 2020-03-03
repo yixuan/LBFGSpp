@@ -154,7 +154,7 @@ public:
                            const Vector& drt, const Vector& xp,
                            const LBFGSParam<Scalar>& param)
     {
-        std::cout << "========================= Entering line search =========================\n\n";
+        // std::cout << "========================= Entering line search =========================\n\n";
 
         // Check the value of step
         if(step <= Scalar(0))
@@ -167,7 +167,7 @@ public:
         // Projection of gradient on the search direction
         const Scalar dg_init = grad.dot(drt);
 
-        std::cout << "fx_init = " << fx_init << ", dg_init = " << dg_init << std::endl << std::endl;
+        // std::cout << "fx_init = " << fx_init << ", dg_init = " << dg_init << std::endl << std::endl;
 
         // Make sure d points to a descent direction
         if(dg_init >= 0)
@@ -188,19 +188,19 @@ public:
         fx = f(x, grad);
         Scalar dg = grad.dot(drt);
 
-        std::cout << "max_step = " << step_max << ", step = " << step << ", fx = " << fx << ", dg = " << dg << std::endl;
+        // std::cout << "max_step = " << step_max << ", step = " << step << ", fx = " << fx << ", dg = " << dg << std::endl;
 
         // Convergence test
         if(fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
         {
-            std::cout << "** Criteria met\n\n";
-            std::cout << "========================= Leaving line search =========================\n\n";
+            // std::cout << "** Criteria met\n\n";
+            // std::cout << "========================= Leaving line search =========================\n\n";
             return;
         }
         if(step >= step_max)
         {
-            std::cout << "** Maximum step size reached\n\n";
-            std::cout << "========================= Leaving line search =========================\n\n";
+            // std::cout << "** Maximum step size reached\n\n";
+            // std::cout << "========================= Leaving line search =========================\n\n";
             return;
         }
 
@@ -228,7 +228,7 @@ public:
 
                 step = new_step;
 
-                std::cout << "Case 1: new step = " << step;
+                // std::cout << "Case 1: new step = " << step;
 
             } else if(gt * (fI_lo - step) > Scalar(0)) {
                 // Case 2: ft <= fl, gt * (al - at) > 0
@@ -240,7 +240,7 @@ public:
 
                 step = new_step;
 
-                std::cout << "Case 2: new step = " << step;
+                // std::cout << "Case 2: new step = " << step;
 
             } else {
                 // Case 3: ft <= fl, gt * (al - at) <= 0
@@ -257,7 +257,7 @@ public:
 
                 step = new_step;
 
-                std::cout << "Case 3: new step = " << step;
+                // std::cout << "Case 3: new step = " << step;
             }
 
             if(step < param.min_step)
@@ -271,19 +271,19 @@ public:
             fx = f(x, grad);
             dg = grad.dot(drt);
 
-            std::cout << ", fx = " << fx << std::endl;
+            // std::cout << ", fx = " << fx << std::endl;
 
             // Convergence test
             if(fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
             {
-                std::cout << "** Criteria met\n\n";
-                std::cout << "========================= Leaving line search =========================\n\n";
+                // std::cout << "** Criteria met\n\n";
+                // std::cout << "========================= Leaving line search =========================\n\n";
                 return;
             }
             if(step >= step_max)
             {
-                 std::cout << "** Maximum step size reached\n\n";
-                 std::cout << "========================= Leaving line search =========================\n\n";
+                 // std::cout << "** Maximum step size reached\n\n";
+                 // std::cout << "========================= Leaving line search =========================\n\n";
                  return;
             }
         }

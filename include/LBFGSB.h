@@ -156,8 +156,8 @@ public:
         if(fpast > 0)
             m_fx[0] = fx;
 
-        std::cout << "x0 = " << x.transpose() << std::endl;
-        std::cout << "f(x0) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl;
+        // std::cout << "x0 = " << x.transpose() << std::endl;
+        // std::cout << "f(x0) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl;
 
         // Early exit if the initial x is already a minimizer
         if(projgnorm <= m_param.epsilon * std::max(xnorm, Scalar(1)))
@@ -166,14 +166,13 @@ public:
         }
 
         // Compute generalized Cauchy point
-        Vector xcp(n);
+        Vector xcp(n), gcp(n);
         Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp);
-
-        Vector gcp(n);
         Scalar fcp = f(xcp, gcp);
         Scalar projgcpnorm = proj_grad_norm(xcp, gcp, lb, ub);
-        std::cout << "xcp = " << xcp.transpose() << std::endl;
-        std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;
+
+        // std::cout << "xcp = " << xcp.transpose() << std::endl;
+        // std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;
 
         // Initial direction
         m_drt.noalias() = (xcp - x) / projgcpnorm;
@@ -198,9 +197,10 @@ public:
             // New x norm and projected gradient norm
             xnorm = x.norm();
             projgnorm = proj_grad_norm(x, m_grad, lb, ub);
-            std::cout << "** Iteration " << k << std::endl;
+
+            /* std::cout << "** Iteration " << k << std::endl;
             std::cout << "   x = " << x.transpose() << std::endl;
-            std::cout << "   f(x) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl;
+            std::cout << "   f(x) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl; */
 
             // Convergence test -- gradient
             if(projgnorm <= m_param.epsilon * std::max(xnorm, Scalar(1)))
@@ -232,19 +232,19 @@ public:
             force_bounds(x, lb, ub);
             Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp);
 
-            Vector gcp(n);
+            /*Vector gcp(n);
             Scalar fcp = f(xcp, gcp);
             Scalar projgcpnorm = proj_grad_norm(xcp, gcp, lb, ub);
             std::cout << "xcp = " << xcp.transpose() << std::endl;
-            std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;
+            std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;*/
 
             SubspaceMin<Scalar>::subspace_minimize(m_bfgs, x, xcp, m_grad, lb, ub, 10, m_drt);
 
-            Vector gsm(n);
+            /*Vector gsm(n);
             Scalar fsm = f(x + m_drt, gsm);
             Scalar projgsmnorm = proj_grad_norm(x + m_drt, gsm, lb, ub);
             std::cout << "xsm = " << (x + m_drt).transpose() << std::endl;
-            std::cout << "f(xsm) = " << fsm << ", ||proj_grad|| = " << projgsmnorm << std::endl << std::endl;
+            std::cout << "f(xsm) = " << fsm << ", ||proj_grad|| = " << projgsmnorm << std::endl << std::endl;*/
 
             k++;
         }

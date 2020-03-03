@@ -93,7 +93,7 @@ public:
         const Vector& lb, const Vector& ub, int maxit, Vector& drt
     )
     {
-        std::cout << "========================= Entering subspace minimization =========================\n\n";
+        // std::cout << "========================= Entering subspace minimization =========================\n\n";
 
         // Get the active set and free variable set
         IntVector act_set, fv_set;
@@ -107,12 +107,12 @@ public:
         // If there is no free variable, simply return drt
         if(nfree < 1)
         {
-            std::cout << "========================= (Early) leaving subspace minimization =========================\n\n";
+            // std::cout << "========================= (Early) leaving subspace minimization =========================\n\n";
             return;
         }
 
-        std::cout << "Active set = [ "; for(std::size_t i = 0; i < act_set.size(); i++)  std::cout << act_set[i] << " "; std::cout << "]\n";
-        std::cout << "Free variable set = [ "; for(std::size_t i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
+        // std::cout << "Active set = [ "; for(std::size_t i = 0; i < act_set.size(); i++)  std::cout << act_set[i] << " "; std::cout << "]\n";
+        // std::cout << "Free variable set = [ "; for(std::size_t i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
         
         // Compute b = A'd
         Vector vecb(nact);
@@ -173,10 +173,10 @@ public:
                 }
             }
 
-            std::cout << "** Iter " << k << " **\n";
+            /* std::cout << "** Iter " << k << " **\n";
             std::cout << "   L = [ "; for(std::size_t i = 0; i < L_set.size(); i++)  std::cout << L_set[i] << " "; std::cout << "]\n";
             std::cout << "   U = [ "; for(std::size_t i = 0; i < U_set.size(); i++)  std::cout << U_set[i] << " "; std::cout << "]\n";
-            std::cout << "   P = [ "; for(std::size_t i = 0; i < P_set.size(); i++)  std::cout << P_set[i] << " "; std::cout << "]\n\n";
+            std::cout << "   P = [ "; for(std::size_t i = 0; i < P_set.size(); i++)  std::cout << P_set[i] << " "; std::cout << "]\n\n"; */
 
             // Solve y[P] = -inv(B[P, P]) * (B[P, L] * l[L] + B[P, U] * u[U] + c[P])
             const int nP = P_set.size();
@@ -251,8 +251,8 @@ public:
                 break;
         }
 
-        std::cout << "** Minimization finished in " << k + 1 << " iteration(s) **\n\n";
-        std::cout << "========================= Leaving subspace minimization =========================\n\n";
+        // std::cout << "** Minimization finished in " << k + 1 << " iteration(s) **\n\n";
+        // std::cout << "========================= Leaving subspace minimization =========================\n\n";
 
         subvec_assign(drt, fv_set, vecy);
     }

@@ -68,7 +68,8 @@ public:
     // xcp:  The output generalized Cauchy point.
     static void get_cauchy_point(const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub, Vector& xcp)
     {
-        std::cout << "========================= Entering GCP search =========================\n\n";
+        // std::cout << "========================= Entering GCP search =========================\n\n";
+
         const int n = x0.size();
         xcp.resize(n);
         xcp.noalias() = x0;
@@ -98,8 +99,8 @@ public:
         // brk[i] == 0 <=> The ord[i]-th coordinate is on the boundary
         if(brk[n - 1].second <= Scalar(0))
         {
-            std::cout << "** All coordinates at boundary **\n";
-            std::cout << "\n========================= Leaving GCP search =========================\n\n";
+            /* std::cout << "** All coordinates at boundary **\n";
+            std::cout << "\n========================= Leaving GCP search =========================\n\n"; */
             return;
         }
 
@@ -129,9 +130,9 @@ public:
         Scalar deltat = iu - il;
 
         int iter = 0;
-        std::cout << "** Iter " << iter << " **\n";
+        /* std::cout << "** Iter " << iter << " **\n";
         std::cout << "   fp = " << fp << ", fpp = " << fpp << ", deltatmin = " << deltatmin << std::endl;
-        std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl;
+        std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl; */
 
         // If deltatmin >= deltat, move to the next interval
         while(deltatmin >= deltat)
@@ -143,21 +144,21 @@ public:
             int bp = search_greater(brk, iu) - 1;
 
             // Update xcp and d on active coordinates
-            std::cout << "** [ ";
+            // std::cout << "** [ ";
             for(int i = b; i <= bp; i++)
             {
                 const int coordb = brk[i].first;
                 xcp[coordb] = (vecd[coordb] > Scalar(0)) ? ub[coordb] : lb[coordb];
                 vecd[coordb] = Scalar(0);
-                std::cout << coordb + 1 << " ";
+                // std::cout << coordb + 1 << " ";
             }
-            std::cout << "] become active **\n\n";
+            // std::cout << "] become active **\n\n";
 
             // If bp == n - 1, then we have reached the boundary of every coordinate
             if(bp == n - 1)
             {
                 iter++;
-                std::cout << "** All break points visited **" << iter << std::endl;
+                // std::cout << "** All break points visited **" << iter << std::endl;
 
                 b = bp + 1;
                 deltatmin = iu - il;
@@ -197,9 +198,9 @@ public:
             deltat = iu - il;
 
             iter++;
-            std::cout << "** Iter " << iter << " **\n";
+            /* std::cout << "** Iter " << iter << " **\n";
             std::cout << "   fp = " << fp << ", fpp = " << fpp << ", deltatmin = " << deltatmin << std::endl;
-            std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl;
+            std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl; */
         }
 
         // Last step
@@ -209,7 +210,7 @@ public:
             const int coordb = brk[i].first;
             xcp[coordb] = x0[coordb] + tfinal * vecd[coordb];
         }
-        std::cout << "\n========================= Leaving GCP search =========================\n\n";
+        // std::cout << "\n========================= Leaving GCP search =========================\n\n";
     }
 };
 
