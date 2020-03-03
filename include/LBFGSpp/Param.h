@@ -84,7 +84,7 @@ public:
     /// Tolerance for convergence test.
     /// This parameter determines the accuracy with which the solution is to
     /// be found. A minimization terminates when
-    /// \f$||g|| < \epsilon * \max(1, ||x||)\f$,
+    /// \f$||g|| < \epsilon\cdot\max(1, ||x||)\f$,
     /// where \f$||\cdot||\f$ denotes the Euclidean (L2) norm. The default value is
     /// \c 1e-5.
     ///
@@ -93,7 +93,7 @@ public:
     /// Distance for delta-based convergence test.
     /// This parameter determines the distance \f$d\f$ to compute the
     /// rate of decrease of the objective function,
-    /// \f$(f_{k-d}(x)-f_k(x))/f_k(x)\f$, where \f$k\f$ is the current iteration
+    /// \f$f_{k-d}(x)-f_k(x)\f$, where \f$k\f$ is the current iteration
     /// step. If the value of this parameter is zero, the delta-based convergence
     /// test will not be performed. The default value is \c 0.
     ///
@@ -101,8 +101,8 @@ public:
     ///
     /// Delta for convergence test.
     /// The algorithm stops when the following condition is met,
-    /// \f$(f_{k-d}(x)-f_k(x))/f_k(x)<\delta\f$, where \f$f_k(x)\f$ is
-    /// the current function value, \f$f_{k-d}(x)\f$ is the function value
+    /// \f$|f_{k-d}(x)-f_k(x)|<\delta\cdot\max(1, |f_k(x)|, |f_{k-d}(x)|)\f$, where \f$f_k(x)\f$ is
+    /// the current function value, and \f$f_{k-d}(x)\f$ is the function value
     /// \f$d\f$ iterations ago (specified by the \ref past parameter).
     /// The default value is \c 0.
     ///
@@ -228,7 +228,7 @@ public:
     /// Tolerance for convergence test.
     /// This parameter determines the accuracy with which the solution is to
     /// be found. A minimization terminates when
-    /// \f$||Pg||_{\infty} < \epsilon * \max(1, ||x||)\f$,
+    /// \f$||Pg||_{\infty} < \epsilon\cdot\max(1, ||x||)\f$,
     /// where \f$||x||\f$ denotes the Euclidean (L2) norm of \f$x\f$, and
     /// \f$Pg=P(x-g,l,u)-x\f$ is the projected gradient. The default value is
     /// \c 1e-5.
@@ -238,18 +238,18 @@ public:
     /// Distance for delta-based convergence test.
     /// This parameter determines the distance \f$d\f$ to compute the
     /// rate of decrease of the objective function,
-    /// \f$(f_{k-d}(x)-f_k(x))/f_k(x)\f$, where \f$k\f$ is the current iteration
+    /// \f$f_{k-d}(x)-f_k(x)\f$, where \f$k\f$ is the current iteration
     /// step. If the value of this parameter is zero, the delta-based convergence
-    /// test will not be performed. The default value is \c 0.
+    /// test will not be performed. The default value is \c 1.
     ///
     int    past;
     ///
     /// Delta for convergence test.
     /// The algorithm stops when the following condition is met,
-    /// \f$(f_{k-d}(x)-f_k(x))/f_k(x)<\delta\f$, where \f$f_k(x)\f$ is
-    /// the current function value, \f$f_{k-d}(x)\f$ is the function value
+    /// \f$|f_{k-d}(x)-f_k(x)|<\delta\cdot\max(1, |f_k(x)|, |f_{k-d}(x)|)\f$, where \f$f_k(x)\f$ is
+    /// the current function value, and \f$f_{k-d}(x)\f$ is the function value
     /// \f$d\f$ iterations ago (specified by the \ref past parameter).
-    /// The default value is \c 0.
+    /// The default value is \c 1e-10.
     ///
     Scalar delta;
     ///
@@ -308,8 +308,8 @@ public:
     {
         m              = 6;
         epsilon        = Scalar(1e-5);
-        past           = 0;
-        delta          = Scalar(0);
+        past           = 1;
+        delta          = Scalar(1e-10);
         max_iterations = 0;
         max_submin     = 20;
         max_linesearch = 20;

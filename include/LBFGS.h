@@ -78,6 +78,8 @@ public:
     template <typename Foo>
     inline int minimize(Foo& f, Vector& x, Scalar& fx)
     {
+        using std::abs;
+
         // Dimension of the vector
         const int n = x.size();
         reset(n);
@@ -126,7 +128,8 @@ public:
             // Convergence test -- objective function value
             if(fpast > 0)
             {
-                if(k >= fpast && std::abs((m_fx[k % fpast] - fx) / fx) < m_param.delta)
+                const Scalar fxd = m_fx[k % fpast];
+                if(k >= fpast && abs(fxd - fx) <= m_param.delta * std::max(std::max(abs(fx), abs(fxd)), Scalar(1)))
                     return k;
 
                 m_fx[k % fpast] = fx;

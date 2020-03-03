@@ -134,6 +134,8 @@ public:
     template <typename Foo>
     inline int minimize(Foo& f, Vector& x, Scalar& fx, const Vector& lb, const Vector& ub)
     {
+        using std::abs;
+
         // Dimension of the vector
         const int n = x.size();
         if(lb.size() != n || ub.size() != n)
@@ -212,7 +214,8 @@ public:
             // Convergence test -- objective function value
             if(fpast > 0)
             {
-                if(k >= fpast && std::abs((m_fx[k % fpast] - fx) / fx) < m_param.delta)
+                const Scalar fxd = m_fx[k % fpast];
+                if(k >= fpast && abs(fxd - fx) <= m_param.delta * std::max(std::max(abs(fx), abs(fxd)), Scalar(1)))
                     return k;
 
                 m_fx[k % fpast] = fx;
@@ -240,7 +243,7 @@ public:
             std::cout << "xcp = " << xcp.transpose() << std::endl;
             std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;*/
 
-            SubspaceMin<Scalar>::subspace_minimize(m_bfgs, x, xcp, m_grad, lb, ub, 10, m_drt);
+            SubspaceMin<Scalar>::subspace_minimize(m_bfgs, x, xcp, m_grad, lb, ub, m_param.max_submin, m_drt);
 
             /*Vector gsm(n);
             Scalar fsm = f(x + m_drt, gsm);
