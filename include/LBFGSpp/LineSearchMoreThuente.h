@@ -166,6 +166,9 @@ public:
         const Scalar fx_init = fx;
         // Projection of gradient on the search direction
         const Scalar dg_init = grad.dot(drt);
+
+        std::cout << "fx_init = " << fx_init << ", dg_init = " << dg_init << std::endl << std::endl;
+
         // Make sure d points to a descent direction
         if(dg_init >= 0)
             std::logic_error("the moving direction does not decrease the objective function value");
@@ -185,7 +188,7 @@ public:
         fx = f(x, grad);
         Scalar dg = grad.dot(drt);
 
-        std::cout << "max_step = " << step_max << ", step = " << step << ", fx = " << fx << std::endl;
+        std::cout << "max_step = " << step_max << ", step = " << step << ", fx = " << fx << ", dg = " << dg << std::endl;
 
         // Convergence test
         if(fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
