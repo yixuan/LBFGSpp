@@ -29,13 +29,13 @@ private:
     typedef Eigen::Map<Vector> MapVec;
     typedef std::pair<int, Scalar> BreakPoint;
 
-    const LBFGSParam<Scalar>& m_param;  // Parameters to control the LBFGS algorithm
-    BFGSMat<Scalar, true>     m_bfgs;   // Approximation to the Hessian matrix
-    Vector                    m_fx;     // History of the objective function values
-    Vector                    m_xp;     // Old x
-    Vector                    m_grad;   // New gradient
-    Vector                    m_gradp;  // Old gradient
-    Vector                    m_drt;    // Moving direction
+    const LBFGSBParam<Scalar>& m_param;  // Parameters to control the LBFGS algorithm
+    BFGSMat<Scalar, true>      m_bfgs;   // Approximation to the Hessian matrix
+    Vector                     m_fx;     // History of the objective function values
+    Vector                     m_xp;     // Old x
+    Vector                     m_grad;   // New gradient
+    Vector                     m_gradp;  // Old gradient
+    Vector                     m_drt;    // Moving direction
 
     // Reset internal variables
     // n: dimension of the vector to be optimized
@@ -110,7 +110,7 @@ public:
     /// \param param An object of \ref LBFGSParam to store parameters for the
     ///        algorithm
     ///
-    LBFGSBSolver(const LBFGSParam<Scalar>& param) :
+    LBFGSBSolver(const LBFGSBParam<Scalar>& param) :
         m_param(param)
     {
         m_param.check_param();

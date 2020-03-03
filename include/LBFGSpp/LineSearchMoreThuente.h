@@ -6,6 +6,7 @@
 
 #include <stdexcept>  // std::invalid_argument, std::runtime_error
 #include <Eigen/Core>
+#include "LBFGSpp/Param.h"
 
 
 namespace LBFGSpp {
@@ -152,7 +153,7 @@ public:
     static void LineSearch(Foo& f, Scalar& fx, Vector& x, Vector& grad,
                            Scalar& step, const Scalar& step_max,
                            const Vector& drt, const Vector& xp,
-                           const LBFGSParam<Scalar>& param)
+                           const LBFGSBParam<Scalar>& param)
     {
         // std::cout << "========================= Entering line search =========================\n\n";
 
