@@ -177,9 +177,9 @@ public:
         const Scalar test_curv = -param.wolfe * dg_init;
 
         // The bracketing interval
-        Scalar I_lo = Scalar(0), I_hi = std::numeric_limits<Scalar>::infinity();
-        Scalar fI_lo = fx_init, fI_hi = std::numeric_limits<Scalar>::infinity();
-        Scalar gI_lo = dg_init, gI_hi = std::numeric_limits<Scalar>::infinity();
+        Scalar  I_lo = Scalar(0),                           I_hi = std::numeric_limits<Scalar>::infinity();
+        Scalar fI_lo = Scalar(0),                          fI_hi = std::numeric_limits<Scalar>::infinity();
+        Scalar gI_lo = (Scalar(1) - param.ftol) * dg_init, gI_hi = std::numeric_limits<Scalar>::infinity();
         // Function value and gradient at the current step size
         x.noalias() = xp + step * drt;
         fx = f(x, grad);
