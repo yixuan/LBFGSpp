@@ -4,6 +4,7 @@
 #ifndef SUBSPACE_MIN_H
 #define SUBSPACE_MIN_H
 
+#include <stdexcept>
 #include <vector>
 #include <Eigen/Core>
 #include "BFGSMat.h"
@@ -250,6 +251,9 @@ public:
             if(converged)
                 break;
         }
+
+        if(k >= maxit)
+            throw std::runtime_error("the subspace minimization routine reached the maximum number of iterations");
 
         // std::cout << "** Minimization finished in " << k + 1 << " iteration(s) **\n\n";
         // std::cout << "========================= Leaving subspace minimization =========================\n\n";
