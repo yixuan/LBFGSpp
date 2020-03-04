@@ -61,11 +61,11 @@ private:
 
     // Find the smallest index i such that brk[ord[i]] > t, assuming brk[ord] is already sorted.
     // If the return value equals n, then all values are <= t.
-    static int search_greater(const Vector& brk, const IntVector& ord, const Scalar& t)
+    static int search_greater(const Vector& brk, const IntVector& ord, const Scalar& t, int start = 0)
     {
         const int n = brk.size();
         int i;
-        for(i = 0; i < n; i++)
+        for(i = start; i < n; i++)
         {
             if(brk[ord[i]] > t)
                 break;
@@ -139,7 +139,7 @@ public:
         // Limit on the current interval
         Scalar il = Scalar(0);
         // We have excluded the case that max(brk) <= 0
-        int b = search_greater(brk, ord, il);
+        int b = search_greater(brk, ord, il, 0);
         Scalar iu = brk[ord[b]];
         Scalar deltat = iu - il;
 
@@ -155,7 +155,7 @@ public:
             // b is the smallest number such that brko[b] == iu
             // Let bp be the largest number such that brko[bp] == iu
             // Then coordinates ord[b] to ord[bp] will be active
-            int bp = search_greater(brk, ord, iu) - 1;
+            int bp = search_greater(brk, ord, iu, b) - 1;
 
             // Update xcp and d on active coordinates
             // std::cout << "** [ ";
