@@ -270,68 +270,85 @@ public:
         }
     }
 
-    // Compute inv(P'BP) * v
-    // P represents an index set
-    // inv(P'BP) * v = v / theta + WP * inv(inv(M) - WP' * WP / theta) * WP' * v / theta^2
-    //
-    // v is [nP x 1]
-    inline void solve_PtBP(const IntVector& P_set, const Vector& v, Vector& res) const
+    inline void split_W(const IntVector& P_set, const IntVector& L_set, const IntVector& U_set,
+                        Matrix& WP, Matrix& WL, Matrix& WU) const
     {
         const int nP = P_set.size();
-        res.resize(nP);
-        if(m_ncorr < 1)
-        {
-            res.noalias() = v / m_theta;
-            return;
-        }
+        const int nL = L_set.size();
+        const int nU = U_set.size();
+        WP.resize(nP, 2 * m_ncorr);
+        WL.resize(nL, 2 * m_ncorr);
+        WU.resize(nU, 2 * m_ncorr);
 
-        // Compute (permutated) WP
-        Matrix WP = Matrix::Zero(nP, 2 * m_m);
-        for(int i = 0; i < nP; i++)
-        {
-            WP.row(i).head(m_ncorr).noalias() = m_y.row(P_set[i]).head(m_ncorr);
-            WP.row(i).segment(m_m, m_ncorr).noalias() = m_s.row(P_set[i]).head(m_ncorr);
-        }
-        WP.block(0, m_m, nP, m_ncorr) *= m_theta;
-
-        // Compute the matrix in the middle
-        Matrix mid = m_permMinv;
-        mid.block(m_m, m_m, m_m, m_m) *= m_theta;
-        mid.noalias() -= (WP.transpose() * WP) / m_theta;
-        BKLDLT<Scalar> midsolver(mid);
-
-        // Compute the final result
-        Vector WPv = WP.transpose() * v;
-        midsolver.solve_inplace(WPv);
-        res.noalias() = v / m_theta + (WP * WPv) / (m_theta * m_theta);
-    }
-
-    // Compute P'BQv, where P and Q are two index selection operators
-    inline void apply_PtBQv(const IntVector& P_set, const IntVector& Q_set, const Vector& v, Vector& res) const
-    {
-        const int nP = P_set.size();
-        const int nQ = Q_set.size();
-        res.resize(nP);
-        if(m_ncorr < 1 || nP < 1 || nQ < 1)
-        {
-            res.setZero();
-            return;
-        }
-
-        // Compute (permutated) WP
-        Matrix WP = Matrix::Zero(nP, 2 * m_ncorr);
         for(int i = 0; i < nP; i++)
         {
             WP.row(i).head(m_ncorr).noalias() = m_y.row(P_set[i]).head(m_ncorr);
             WP.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(P_set[i]).head(m_ncorr);
         }
-
-        // Compute (permutated) WQ
-        Matrix WQ = Matrix::Zero(nQ, 2 * m_ncorr);
-        for(int i = 0; i < nQ; i++)
+        for(int i = 0; i < nL; i++)
         {
-            WQ.row(i).head(m_ncorr).noalias() = m_y.row(Q_set[i]).head(m_ncorr);
-            WQ.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(Q_set[i]).head(m_ncorr);
+            WL.row(i).head(m_ncorr).noalias() = m_y.row(L_set[i]).head(m_ncorr);
+            WL.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(L_set[i]).head(m_ncorr);
+        }
+        for(int i = 0; i < nU; i++)
+        {
+            WU.row(i).head(m_ncorr).noalias() = m_y.row(U_set[i]).head(m_ncorr);
+            WU.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(U_set[i]).head(m_ncorr);
+        }
+    }
+
+    inline void split_W(const IntVector& F_set, const IntVector& A_set, Matrix& WF, Matrix& WA) const
+    {
+        IntVector Nul_set;
+        Matrix WNul;
+        split_W(F_set, A_set, Nul_set, WF, WA, WNul);
+    }
+
+    // Compute inv(P'BP) * v
+    // P represents an index set
+    // inv(P'BP) * v = v / theta + WP * inv(inv(M) - WP' * WP / theta) * WP' * v / theta^2
+    //
+    // v is [nP x 1]
+    inline void solve_PtBP(const Matrix& WP, const Vector& v, Vector& res) const
+    {
+        const int nP = WP.rows();
+        res.resize(nP);
+        if(m_ncorr < 1 || nP < 1)
+        {
+            res.noalias() = v / m_theta;
+            return;
+        }
+
+        // Compute the matrix in the middle (only the lower triangular part is needed)
+        // Remember that W = [Y, theta * S], but we do not store theta in WP
+        Matrix mid = WP.transpose() * WP;
+        mid.topLeftCorner(m_ncorr, m_ncorr).noalias() = m_permMinv.topLeftCorner(m_ncorr, m_ncorr) -
+                                                        mid.topLeftCorner(m_ncorr, m_ncorr) / m_theta;
+        mid.block(m_ncorr, 0, m_ncorr, m_ncorr).noalias() = m_permMinv.block(m_m, 0, m_ncorr, m_ncorr) -
+                                                            mid.block(m_ncorr, 0, m_ncorr, m_ncorr);
+        mid.bottomRightCorner(m_ncorr, m_ncorr).noalias() = (m_permMinv.block(m_m, m_m, m_ncorr, m_ncorr) -
+                                                             mid.bottomRightCorner(m_ncorr, m_ncorr)) * m_theta;
+        BKLDLT<Scalar> midsolver(mid);
+
+        // Compute the final result
+        Vector WPv = WP.transpose() * v;
+        WPv.tail(m_ncorr) *= m_theta;
+        midsolver.solve_inplace(WPv);
+        WPv.tail(m_ncorr) *= m_theta;
+        res.noalias() = v / m_theta + (WP * WPv) / (m_theta * m_theta);
+    }
+
+    // Compute P'BQv, where P and Q are two mutually exclusive index selection operators
+    // P'BQv = -WP * M * WQ' * v
+    inline void apply_PtBQv(const Matrix& WP, const Matrix& WQ, const Vector& v, Vector& res) const
+    {
+        const int nP = WP.rows();
+        const int nQ = WQ.rows();
+        res.resize(nP);
+        if(m_ncorr < 1 || nP < 1 || nQ < 1)
+        {
+            res.setZero();
+            return;
         }
 
         // Remember that W = [Y, theta * S], so we need to multiply theta to the second half

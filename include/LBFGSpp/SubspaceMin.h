@@ -120,8 +120,11 @@ public:
         for(int i = 0; i < nact; i++)
             vecb[i] = drt[act_set[i]];
         // Compute F'BAb
+        // Split W according to F and A
+        Matrix WF, WA;
         Vector vecc(nfree);
-        bfgs.apply_PtBQv(fv_set, act_set, vecb, vecc);
+        bfgs.split_W(fv_set, act_set, WF, WA);
+        bfgs.apply_PtBQv(WF, WA, vecb, vecc);
         // Set the vector y=F'd containing free variables, vector c=F'BAb+F'g for linear term,
         // and vectors l and u for the new bounds
         Vector vecy(nfree), vecl(nfree), vecu(nfree);
@@ -179,6 +182,9 @@ public:
             std::cout << "   U = [ "; for(std::size_t i = 0; i < U_set.size(); i++)  std::cout << U_set[i] << " "; std::cout << "]\n";
             std::cout << "   P = [ "; for(std::size_t i = 0; i < P_set.size(); i++)  std::cout << P_set[i] << " "; std::cout << "]\n\n"; */
 
+            // Split the W matrix according to P, L, and U
+            Matrix WP, WL, WU;
+            bfgs.split_W(P_set, L_set, U_set, WP, WL, WU);
             // Solve y[P] = -inv(B[P, P]) * (B[P, L] * l[L] + B[P, U] * u[U] + c[P])
             const int nP = P_set.size();
             if(nP > 0)
@@ -187,12 +193,12 @@ public:
                 Vector lL = subvec(vecl, yL_set);
                 Vector uU = subvec(vecu, yU_set);
                 Vector tmp(nP);
-                bfgs.apply_PtBQv(P_set, L_set, lL, tmp);
+                bfgs.apply_PtBQv(WP, WL, lL, tmp);
                 rhs.noalias() += tmp;
-                bfgs.apply_PtBQv(P_set, U_set, uU, tmp);
+                bfgs.apply_PtBQv(WP, WU, uU, tmp);
                 rhs.noalias() += tmp;
 
-                bfgs.solve_PtBP(P_set, -rhs, tmp);
+                bfgs.solve_PtBP(WP, -rhs, tmp);
                 subvec_assign(vecy, yP_set, tmp);
             }
 
@@ -201,7 +207,7 @@ public:
             if(nL > 0)
             {
                 Vector res;
-                bfgs.apply_PtBQv(L_set, fv_set, vecy, res);
+                bfgs.apply_PtBQv(WL, WF, vecy, res);
                 res.noalias() += subvec(vecc, yL_set);
                 subvec_assign(lambda, yL_set, res);
             }
@@ -211,7 +217,7 @@ public:
             if(nU > 0)
             {
                 Vector res;
-                bfgs.apply_PtBQv(U_set, fv_set, vecy, res);
+                bfgs.apply_PtBQv(WU, WF, vecy, res);
                 res.noalias() = -res - subvec(vecc, yU_set);
                 subvec_assign(mu, yU_set, res);
             }
