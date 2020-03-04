@@ -226,54 +226,47 @@ public:
         return res;
     }
 
-    // Return some rows of W based on the index set b
-    inline Matrix Wb(const IntVector& b) const
-    {
-        const int nb = b.size();
-        Matrix res(nb, 2 * m_ncorr);
-
-        int j = m_ptr - 1;
-        for(int i = 0; i < m_ncorr; i++)
-        {
-            for(int k = 0; k < nb; k++)
-            {
-                res(k, m_ncorr - 1 - i) = m_y(b[k], j);
-                res(k, 2 * m_ncorr - 1 - i) = m_theta * m_s(b[k], j);
-            }
-            j = (j + m_m - 1) % m_m;
-        }
-        return res;
-    }
-
     // M is [(2*ncorr) x (2*ncorr)], v is [(2*ncorr) x 1]
-    inline void apply_Mv(const Vector& v, Vector& res) const
+    inline void apply_Mv(const Vector& v, Vector& res, bool vpermuted = false) const
     {
         res.resize(2 * m_ncorr);
         if(m_ncorr < 1)
             return;
 
-        // Permute v to align with M
         Vector vperm = Vector::Zero(2 * m_m);
-        int loc = m_ptr - 1;
-        // From newest to oldest
-        for(int i = 0; i < m_ncorr; i++)
+        if(vpermuted)
         {
-            vperm[loc] = v[m_ncorr - i - 1];
-            vperm[m_m + loc] = v[2 * m_ncorr - i - 1];
-            loc = (loc + m_m - 1) % m_m;
+            vperm.head(m_ncorr).noalias() = v.head(m_ncorr);
+            vperm.segment(m_m, m_ncorr).noalias() = v.tail(m_ncorr);
+        } else {
+            // Permute v to align with M
+            int loc = m_ptr - 1;
+            // From newest to oldest
+            for(int i = 0; i < m_ncorr; i++)
+            {
+                vperm[loc] = v[m_ncorr - i - 1];
+                vperm[m_m + loc] = v[2 * m_ncorr - i - 1];
+                loc = (loc + m_m - 1) % m_m;
+            }
         }
 
         // Solve linear equation
         m_permMsolver.solve_inplace(vperm);
 
-        // Permute the solution back
-        // From newest to oldest
-        loc = m_ptr - 1;
-        for(int i = 0; i < m_ncorr; i++)
+        if(vpermuted)
         {
-            res[m_ncorr - i - 1] = vperm[loc];
-            res[2 * m_ncorr - i - 1] = vperm[m_m + loc];
-            loc = (loc + m_m - 1) % m_m;
+            res.head(m_ncorr).noalias() = vperm.head(m_ncorr);
+            res.tail(m_ncorr).noalias() = vperm.segment(m_m, m_ncorr);
+        } else {
+            // Permute the solution back
+            // From newest to oldest
+            int loc = m_ptr - 1;
+            for(int i = 0; i < m_ncorr; i++)
+            {
+                res[m_ncorr - i - 1] = vperm[loc];
+                res[2 * m_ncorr - i - 1] = vperm[m_m + loc];
+                loc = (loc + m_m - 1) % m_m;
+            }
         }
     }
 
@@ -282,9 +275,9 @@ public:
     // inv(P'BP) * v = v / theta + WP * inv(inv(M) - WP' * WP / theta) * WP' * v / theta^2
     //
     // v is [nP x 1]
-    inline void solve_PtBP(const IntVector& Pset, const Vector& v, Vector& res) const
+    inline void solve_PtBP(const IntVector& P_set, const Vector& v, Vector& res) const
     {
-        const int nP = Pset.size();
+        const int nP = P_set.size();
         res.resize(nP);
         if(m_ncorr < 1)
         {
@@ -296,9 +289,10 @@ public:
         Matrix WP = Matrix::Zero(nP, 2 * m_m);
         for(int i = 0; i < nP; i++)
         {
-            WP.row(i).head(m_ncorr).noalias() = m_y.row(Pset[i]).head(m_ncorr);
-            WP.row(i).segment(m_m, m_ncorr).noalias() = m_theta * m_s.row(Pset[i]).head(m_ncorr);
+            WP.row(i).head(m_ncorr).noalias() = m_y.row(P_set[i]).head(m_ncorr);
+            WP.row(i).segment(m_m, m_ncorr).noalias() = m_s.row(P_set[i]).head(m_ncorr);
         }
+        WP.block(0, m_m, nP, m_ncorr) *= m_theta;
 
         // Compute the matrix in the middle
         Matrix mid = m_permMinv;
@@ -315,17 +309,37 @@ public:
     // Compute P'BQv, where P and Q are two index selection operators
     inline void apply_PtBQv(const IntVector& P_set, const IntVector& Q_set, const Vector& v, Vector& res) const
     {
-        res.resize(P_set.size());
-        if(m_ncorr < 1 || P_set.size() < 1 || Q_set.size() < 1)
+        const int nP = P_set.size();
+        const int nQ = Q_set.size();
+        res.resize(nP);
+        if(m_ncorr < 1 || nP < 1 || nQ < 1)
         {
             res.setZero();
             return;
         }
 
-        Matrix WP = Wb(P_set), WQ = Wb(Q_set);
+        // Compute (permutated) WP
+        Matrix WP = Matrix::Zero(nP, 2 * m_ncorr);
+        for(int i = 0; i < nP; i++)
+        {
+            WP.row(i).head(m_ncorr).noalias() = m_y.row(P_set[i]).head(m_ncorr);
+            WP.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(P_set[i]).head(m_ncorr);
+        }
+
+        // Compute (permutated) WQ
+        Matrix WQ = Matrix::Zero(nQ, 2 * m_ncorr);
+        for(int i = 0; i < nQ; i++)
+        {
+            WQ.row(i).head(m_ncorr).noalias() = m_y.row(Q_set[i]).head(m_ncorr);
+            WQ.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(Q_set[i]).head(m_ncorr);
+        }
+
+        // Remember that W = [Y, theta * S], so we need to multiply theta to the second half
         Vector WQtv = WQ.transpose() * v;
+        WQtv.tail(m_ncorr) *= m_theta;
         Vector MWQtv;
-        apply_Mv(WQtv, MWQtv);
+        apply_Mv(WQtv, MWQtv, true);
+        MWQtv.tail(m_ncorr) *= m_theta;
         res.noalias() = -WP * MWQtv;
     }
 };
