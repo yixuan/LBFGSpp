@@ -31,28 +31,43 @@ namespace LBFGSpp {
 // [1] R. H. Byrd, P. Lu, and J. Nocedal (1995). A limited memory algorithm for bound constrained optimization.
 //
 template <typename Scalar>
+class ArgSort
+{
+private:
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+    typedef Eigen::Matrix<int, Eigen::Dynamic, 1> IntVector;
+
+    const Vector& values;
+
+public:
+    ArgSort(const Vector& value_vec) :
+        values(value_vec)
+    {}
+
+    inline bool operator()(int key1, int key2) { return values[key1] < values[key2]; }
+    inline void sort_key(IntVector& key_vec) const
+    {
+        std::sort(key_vec.data(), key_vec.data() + key_vec.size(), *this);
+    }
+};
+
+template <typename Scalar>
 class Cauchy
 {
 private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+    typedef Eigen::Matrix<int, Eigen::Dynamic, 1> IntVector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef std::pair<int, Scalar> BreakPoint;
 
-    // Used to sort pairs according to the second member
-    static bool pair_comparison(const BreakPoint& t1, const BreakPoint& t2)
-    {
-        return t1.second < t2.second;
-    }
-
-    // Find the smallest index i such that brk[i].second > t, assuming brk.second is already sorted.
+    // Find the smallest index i such that brk[ord[i]] > t, assuming brk[ord] is already sorted.
     // If the return value equals n, then all values are <= t.
-    static int search_greater(const std::vector<BreakPoint>& brk, const Scalar& t)
+    static int search_greater(const Vector& brk, const IntVector& ord, const Scalar& t)
     {
         const int n = brk.size();
         int i;
         for(i = 0; i < n; i++)
         {
-            if(brk[i].second > t)
+            if(brk[ord[i]] > t)
                 break;
         }
 
@@ -75,36 +90,35 @@ public:
         xcp.noalias() = x0;
 
         // Construct break points
-        std::vector<BreakPoint> brk(n);
-        Vector vecd(n);
+        Vector brk(n), vecd(n);
+        IntVector ord = IntVector::LinSpaced(n, 0, n - 1);
         for(int i = 0; i < n; i++)
         {
             if(g[i] < Scalar(0))
-                brk[i] = std::make_pair(i, (x0[i] - ub[i]) / g[i]);
+                brk[i] = (x0[i] - ub[i]) / g[i];
             else if(g[i] > Scalar(0))
-                brk[i] = std::make_pair(i, (x0[i] - lb[i]) / g[i]);
+                brk[i] = (x0[i] - lb[i]) / g[i];
             else
-                brk[i] = std::make_pair(i, std::numeric_limits<Scalar>::infinity());
+                brk[i] = std::numeric_limits<Scalar>::infinity();
 
-            vecd[i] = (brk[i].second == Scalar(0)) ? Scalar(0) : -g[i];
+            vecd[i] = (brk[i] == Scalar(0)) ? Scalar(0) : -g[i];
         }
 
-        // Sort break points
-        std::sort(brk.begin(), brk.end(), pair_comparison);
+        // Sort indices of break points
+        ArgSort<Scalar> sorting(brk);
+        sorting.sort_key(ord);
 
-        // Notation: brk => brk.second, e.g. brk[i] => brk[i].second
-        //           ord => brk.first, e.g. ord[i] => brk[i].first
-        // Break points `brk` are in increasing order
+        // Break points `brko := brk[ord]` are in increasing order
         // `ord` contains the coordinates that define the corresponding break points
-        // brk[i] == 0 <=> The ord[i]-th coordinate is on the boundary
-        if(brk[n - 1].second <= Scalar(0))
+        // brk[i] == 0 <=> The i-th coordinate is on the boundary
+        if(brk[ord[n - 1]] <= Scalar(0))
         {
             /* std::cout << "** All coordinates at boundary **\n";
             std::cout << "\n========================= Leaving GCP search =========================\n\n"; */
             return;
         }
 
-        // First interval: [il=0, iu=brk[b]], where b is the smallest index such that brk[b] > il
+        // First interval: [il=0, iu=brko[b], where b is the smallest index such that brko[b] > il
         // The corresponding coordinate that defines this break point is ord[b]
 
         // p = W'd
@@ -125,8 +139,8 @@ public:
         // Limit on the current interval
         Scalar il = Scalar(0);
         // We have excluded the case that max(brk) <= 0
-        int b = search_greater(brk, il);
-        Scalar iu = brk[b].second;
+        int b = search_greater(brk, ord, il);
+        Scalar iu = brk[ord[b]];
         Scalar deltat = iu - il;
 
         int iter = 0;
@@ -138,16 +152,16 @@ public:
         while(deltatmin >= deltat)
         {
             // First check how many coordinates will be active when we move to the previous iu
-            // b is the smallest number such that brk[b] == iu
-            // Let bp be the largest number such that brk[bp] == iu
+            // b is the smallest number such that brko[b] == iu
+            // Let bp be the largest number such that brko[bp] == iu
             // Then coordinates ord[b] to ord[bp] will be active
-            int bp = search_greater(brk, iu) - 1;
+            int bp = search_greater(brk, ord, iu) - 1;
 
             // Update xcp and d on active coordinates
             // std::cout << "** [ ";
             for(int i = b; i <= bp; i++)
             {
-                const int coordb = brk[i].first;
+                const int coordb = ord[i];
                 xcp[coordb] = (vecd[coordb] > Scalar(0)) ? ub[coordb] : lb[coordb];
                 vecd[coordb] = Scalar(0);
                 // std::cout << coordb + 1 << " ";
@@ -171,7 +185,7 @@ public:
             Vector newvecp = vecp;
             for(int i = b; i <= bp; i++)
             {
-                const int coordb = brk[i].first;
+                const int coordb = ord[i];
                 // zb = xcpb - x0b
                 const Scalar zb = xcp[coordb] - x0[coordb];
                 const Scalar gb = g[coordb];
@@ -192,7 +206,7 @@ public:
             // Update interval bound
             il = iu;
             b = bp + 1;
-            iu = brk[b].second;
+            iu = brk[ord[b]];
 
             // Limit on the current interval
             deltat = iu - il;
@@ -207,7 +221,7 @@ public:
         const Scalar tfinal = il + std::max(deltatmin, Scalar(0));
         for(int i = b; i < n; i++)
         {
-            const int coordb = brk[i].first;
+            const int coordb = ord[i];
             xcp[coordb] = x0[coordb] + tfinal * vecd[coordb];
         }
         // std::cout << "\n========================= Leaving GCP search =========================\n\n";
