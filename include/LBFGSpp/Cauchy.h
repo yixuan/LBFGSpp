@@ -37,11 +37,11 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
     typedef Eigen::Matrix<int, Eigen::Dynamic, 1> IntVector;
 
-    const Vector& values;
+    const Scalar* values;
 
 public:
     ArgSort(const Vector& value_vec) :
-        values(value_vec)
+        values(value_vec.data())
     {}
 
     inline bool operator()(int key1, int key2) { return values[key1] < values[key2]; }
