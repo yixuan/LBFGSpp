@@ -38,10 +38,10 @@ class SubspaceMin
 private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef std::vector<int> IntVector;
+    typedef std::vector<int> IndexSet;
 
     // Correct out-of-bound values, and record the indices of active set and free variables
-    static void analyze_boundary(Vector& x, const Vector& lb, const Vector& ub, IntVector& act_ind, IntVector& fv_ind)
+    static void analyze_boundary(Vector& x, const Vector& lb, const Vector& ub, IndexSet& act_ind, IndexSet& fv_ind)
     {
         const int n = x.size();
         act_ind.clear();
@@ -63,7 +63,7 @@ private:
     }
 
     // v[ind]
-    static Vector subvec(const Vector& v, const IntVector& ind)
+    static Vector subvec(const Vector& v, const IndexSet& ind)
     {
         const int nsub = ind.size();
         Vector res(nsub);
@@ -73,7 +73,7 @@ private:
     }
 
     // v[ind] = rhs
-    static void subvec_assign(Vector& v, const IntVector& ind, const Vector& rhs)
+    static void subvec_assign(Vector& v, const IndexSet& ind, const Vector& rhs)
     {
         const int nsub = ind.size();
         for(int i = 0; i < nsub; i++)
@@ -97,7 +97,7 @@ public:
         // std::cout << "========================= Entering subspace minimization =========================\n\n";
 
         // Get the active set and free variable set
-        IntVector act_set, fv_set;
+        IndexSet act_set, fv_set;
         drt.noalias() = xcp;
         analyze_boundary(drt, lb, ub, act_set, fv_set);
         // Size of active set and size of free variables
@@ -141,7 +141,7 @@ public:
         Vector lambda = Vector::Zero(nfree), mu = Vector::Zero(nfree);
 
         // Iterations
-        IntVector L_set, U_set, P_set, yL_set, yU_set, yP_set;
+        IndexSet L_set, U_set, P_set, yL_set, yU_set, yP_set;
         int k;
         for(k = 0; k < maxit; k++)
         {
