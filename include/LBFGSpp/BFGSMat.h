@@ -190,12 +190,8 @@ public:
     inline void apply_Wtv(const Vector& v, Vector& res) const
     {
         res.resize(2 * m_ncorr);
-        for(int j = 0; j < m_ncorr; j++)
-        {
-            res[j] = m_y.col(j).dot(v);
-            res[m_ncorr + j] = m_s.col(j).dot(v);
-        }
-        res.tail(m_ncorr) *= m_theta;
+        res.head(m_ncorr).noalias() = m_y.leftCols(m_ncorr).transpose() * v;
+        res.tail(m_ncorr).noalias() = m_theta * m_s.leftCols(m_ncorr).transpose() * v;
     }
 
     // The b-th row of the W matrix
