@@ -243,11 +243,13 @@ public:
         for(int j = 0; j < m_ncorr; j++)
         {
             Scalar resy = Scalar(0), ress = Scalar(0);
+            const Scalar* yptr = &m_y(0, j);
+            const Scalar* sptr = &m_s(0, j);
             for(int i = 0; i < nP; i++)
             {
                 const int row = P_set[i];
-                resy += m_y(row, j) * v[i];
-                ress += m_s(row, j) * v[i];
+                resy += yptr[row] * v[i];
+                ress += sptr[row] * v[i];
             }
             res[j] = resy;
             res[m_ncorr + j] = ress;
@@ -261,25 +263,24 @@ public:
     {
         const int nP = P_set.size();
         res.resize(nP);
+        res.setZero();
         if(m_ncorr < 1 || nP < 1)
-        {
-            res.setZero();
             return;
-        }
 
         Vector Mv;
         apply_Mv(v, Mv);
         // WP * Mv
         Mv.tail(m_ncorr) *= m_theta;
-        for(int i = 0; i < nP; i++)
+        for(int j = 0; j < m_ncorr; j++)
         {
-            Scalar r = Scalar(0);
-            const int row = P_set[i];
-            for(int j = 0; j < m_ncorr; j++)
+            const Scalar* yptr = &m_y(0, j);
+            const Scalar* sptr = &m_s(0, j);
+            const Scalar Mvy = Mv[j], Mvs = Mv[m_ncorr + j];
+            for(int i = 0; i < nP; i++)
             {
-                r += m_y(row, j) * Mv[j] + m_s(row, j) * Mv[m_ncorr + j];
+                const int row = P_set[i];
+                res[i] += Mvy * yptr[row] + Mvs * sptr[row];
             }
-            res[i] = r;
         }
         res *= scale;
     }
@@ -400,22 +401,17 @@ public:
         // [0:(ncorr - 1), 0:(ncorr - 1)]
         for(int j = 0; j < m_ncorr; j++)
         {
-            for(int i = j; i < m_ncorr; i++)
-            {
-                mid(i, j) = m_permMinv(i, j) - WP.col(i).dot(WP.col(j)) / m_theta;
-            }
+            mid.col(j).segment(j, m_ncorr - j).noalias() = m_permMinv.col(j).segment(j, m_ncorr - j) -
+                WP.block(0, j, nP, m_ncorr - j).transpose() * WP.col(j) / m_theta;
         }
         // [ncorr:(2 * ncorr - 1), 0:(ncorr - 1)]
         mid.block(m_ncorr, 0, m_ncorr, m_ncorr).noalias() = m_permMinv.block(m_m, 0, m_ncorr, m_ncorr) -
             WP.rightCols(m_ncorr).transpose() * WP.leftCols(m_ncorr);
         // [ncorr:(2 * ncorr - 1), ncorr:(2 * ncorr - 1)]
-        const int offset = m_m - m_ncorr;
-        for(int j = m_ncorr; j < 2 * m_ncorr; j++)
+        for(int j = 0; j < m_ncorr; j++)
         {
-            for(int i = j; i < 2 * m_ncorr; i++)
-            {
-                mid(i, j) = (m_permMinv(offset + i, offset + j) - WP.col(i).dot(WP.col(j))) * m_theta;
-            }
+            mid.col(m_ncorr + j).segment(m_ncorr + j, m_ncorr - j).noalias() = m_theta *
+                (m_permMinv.col(m_m + j).segment(m_m + j, m_ncorr - j) - WP.rightCols(m_ncorr - j).transpose() * WP.col(m_ncorr + j));
         }
         // Factorization
         BKLDLT<Scalar> midsolver(mid);
