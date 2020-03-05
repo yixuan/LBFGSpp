@@ -5,6 +5,7 @@
 #define LBFGSB_H
 
 #include <stdexcept>  // std::invalid_argument
+#include <vector>
 #include <Eigen/Core>
 #include "LBFGSpp/Param.h"
 #include "LBFGSpp/BFGSMat.h"
@@ -27,7 +28,7 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Map<Vector> MapVec;
-    typedef std::pair<int, Scalar> BreakPoint;
+    typedef std::vector<int> IndexSet;
 
     const LBFGSBParam<Scalar>& m_param;  // Parameters to control the LBFGS algorithm
     BFGSMat<Scalar, true>      m_bfgs;   // Approximation to the Hessian matrix
@@ -168,8 +169,9 @@ public:
         }
 
         // Compute generalized Cauchy point
-        Vector xcp(n);
-        Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp);
+        Vector xcp(n), vecc;
+        IndexSet act_set, fv_set;
+        Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp, vecc, act_set, fv_set);
 
         /* Vector gcp(n);
         Scalar fcp = f(xcp, gcp);
@@ -235,7 +237,7 @@ public:
                 m_bfgs.add_correction(vecs, vecy);
 
             force_bounds(x, lb, ub);
-            Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp);
+            Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp, vecc, act_set, fv_set);
 
             /*Vector gcp(n);
             Scalar fcp = f(xcp, gcp);

@@ -58,6 +58,7 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
     typedef Eigen::Matrix<int, Eigen::Dynamic, 1> IntVector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+    typedef std::vector<int> IndexSet;
 
     // Find the smallest index i such that brk[ord[i]] > t, assuming brk[ord] is already sorted.
     // If the return value equals n, then all values are <= t.
@@ -75,19 +76,30 @@ private:
     }
 
 public:
-    // bfgs: An object that represents the BFGS approximation matrix.
-    // x0:   Current parameter vector.
-    // g:    Gradient at x0.
-    // lb:   Lower bounds for x.
-    // ub:   Upper bounds for x.
-    // xcp:  The output generalized Cauchy point.
-    static void get_cauchy_point(const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub, Vector& xcp)
+    // bfgs:    An object that represents the BFGS approximation matrix.
+    // x0:      Current parameter vector.
+    // g:       Gradient at x0.
+    // lb:      Lower bounds for x.
+    // ub:      Upper bounds for x.
+    // xcp:     The output generalized Cauchy point.
+    // vecc:    c = W'(xcp - x0), used in the subspace minimization routine.
+    // act_set: Active set.
+    // fv_set:  Free variable set.
+    static void get_cauchy_point(
+        const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub,
+        Vector& xcp, Vector& vecc, IndexSet& act_set, IndexSet& fv_set
+    )
     {
         // std::cout << "========================= Entering GCP search =========================\n\n";
 
+        // Initialization
         const int n = x0.size();
         xcp.resize(n);
         xcp.noalias() = x0;
+        vecc.resize(2 * bfgs.num_corrections());
+        vecc.setZero();
+        act_set.clear();
+        fv_set.clear();
 
         // Construct break points
         Vector brk(n), vecd(n);
@@ -113,6 +125,8 @@ public:
         // brk[i] == 0 <=> The i-th coordinate is on the boundary
         if(brk[ord[n - 1]] <= Scalar(0))
         {
+            for(int i = 0; i < n; i++)
+                act_set.push_back(i);
             /* std::cout << "** All coordinates at boundary **\n";
             std::cout << "\n========================= Leaving GCP search =========================\n\n"; */
             return;
@@ -121,11 +135,9 @@ public:
         // First interval: [il=0, iu=brko[b]], where b is the smallest index such that brko[b] > il
         // The corresponding coordinate that defines this break point is ord[b]
 
-        // p = W'd
+        // p = W'd, c = 0
         Vector vecp;
         bfgs.apply_Wtv(vecd, vecp);
-        // c = 0
-        Vector vecc = Vector::Zero(vecp.size());
         // f' = -d'd
         Scalar fp = -vecd.squaredNorm();
         // f'' = -theta * f' - p'Mp
@@ -142,6 +154,9 @@ public:
         int b = search_greater(brk, ord, il, 0);
         Scalar iu = brk[ord[b]];
         Scalar deltat = iu - il;
+        // Coordinates before b belong to active set
+        for(int i = 0; i < b; i++)
+            act_set.push_back(ord[i]);
 
         /* int iter = 0;
         std::cout << "** Iter " << iter << " **\n";
@@ -178,6 +193,7 @@ public:
                 {
                     const int act = ord[i];
                     xcp[act] = (vecd[act] > Scalar(0)) ? ub[act] : lb[act];
+                    act_set.push_back(act);
                     // std::cout << act + 1 << " ";
                 }
                 // std::cout << "] become active **\n\n";
@@ -205,6 +221,7 @@ public:
                 fpp -= (bfgs.theta() * ggact + 2 * gact * cache.dot(vecp) + ggact * cache.dot(wact));
                 vecp.noalias() += gact * wact;
                 vecd[act] = Scalar(0);
+                act_set.push_back(act);
                 // std::cout << act + 1 << " ";
             }
             // std::cout << "] become active **\n\n";
@@ -235,6 +252,7 @@ public:
             {
                 const int coord = ord[i];
                 xcp[coord] = x0[coord] + tfinal * vecd[coord];
+                fv_set.push_back(coord);
             }
         }
         // std::cout << "\n========================= Leaving GCP search =========================\n\n";
