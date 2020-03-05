@@ -157,7 +157,7 @@ public:
         while(deltatmin >= deltat)
         {
             // Step 1
-            vecc.noalias() = deltat * vecp;
+            vecc.noalias() += deltat * vecp;
 
             // Step 2
             // First check how many coordinates will be active when we cross the previous iu
