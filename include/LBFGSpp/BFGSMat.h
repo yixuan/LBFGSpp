@@ -281,20 +281,33 @@ public:
         WL.resize(nL, 2 * m_ncorr);
         WU.resize(nU, 2 * m_ncorr);
 
-        for(int i = 0; i < nP; i++)
+        // Y part
+        for(int j = 0; j < m_ncorr; j++)
         {
-            WP.row(i).head(m_ncorr).noalias() = m_y.row(P_set[i]).head(m_ncorr);
-            WP.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(P_set[i]).head(m_ncorr);
+            const Scalar* Yptr = &m_y(0, j);
+            Scalar* Pptr = WP.data() + j * nP;
+            Scalar* Lptr = WL.data() + j * nL;
+            Scalar* Uptr = WU.data() + j * nU;
+            for(int i = 0; i < nP; i++)
+                Pptr[i] = Yptr[P_set[i]];
+            for(int i = 0; i < nL; i++)
+                Lptr[i] = Yptr[L_set[i]];
+            for(int i = 0; i < nU; i++)
+                Uptr[i] = Yptr[U_set[i]];
         }
-        for(int i = 0; i < nL; i++)
+        // S part
+        for(int j = 0; j < m_ncorr; j++)
         {
-            WL.row(i).head(m_ncorr).noalias() = m_y.row(L_set[i]).head(m_ncorr);
-            WL.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(L_set[i]).head(m_ncorr);
-        }
-        for(int i = 0; i < nU; i++)
-        {
-            WU.row(i).head(m_ncorr).noalias() = m_y.row(U_set[i]).head(m_ncorr);
-            WU.row(i).segment(m_ncorr, m_ncorr).noalias() = m_s.row(U_set[i]).head(m_ncorr);
+            const Scalar* Sptr = &m_s(0, j);
+            Scalar* Pptr = WP.data() + (m_ncorr + j) * nP;
+            Scalar* Lptr = WL.data() + (m_ncorr + j) * nL;
+            Scalar* Uptr = WU.data() + (m_ncorr + j) * nU;
+            for(int i = 0; i < nP; i++)
+                Pptr[i] = Sptr[P_set[i]];
+            for(int i = 0; i < nL; i++)
+                Lptr[i] = Sptr[L_set[i]];
+            for(int i = 0; i < nU; i++)
+                Uptr[i] = Sptr[U_set[i]];
         }
     }
 
