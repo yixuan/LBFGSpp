@@ -40,28 +40,6 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef std::vector<int> IndexSet;
 
-    // Correct out-of-bound values, and record the indices of active set and free variables
-    static void analyze_boundary(Vector& x, const Vector& lb, const Vector& ub, IndexSet& act_ind, IndexSet& fv_ind)
-    {
-        const int n = x.size();
-        act_ind.clear();
-        fv_ind.clear();
-
-        for(int i = 0; i < n; i++)
-        {
-            if(x[i] >= ub[i])
-            {
-                x[i] = ub[i];
-                act_ind.push_back(i);
-            } else if(x[i] <= lb[i]) {
-                x[i] = lb[i];
-                act_ind.push_back(i);
-            } else {
-                fv_ind.push_back(i);
-            }
-        }
-    }
-
     // v[ind]
     static Vector subvec(const Vector& v, const IndexSet& ind)
     {
@@ -102,8 +80,7 @@ public:
 
         // d = xcp - x0
         drt.noalias() = xcp - x0;
-        // Size of active set and size of free variables
-        const int nact = act_set.size();
+        // Size of free variables
         const int nfree = fv_set.size();
         // If there is no free variable, simply return drt
         if(nfree < 1)
@@ -116,9 +93,7 @@ public:
         // std::cout << "Free variable set = [ "; for(std::size_t i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
 
         // Compute b = A'd
-        Vector vecb(nact);
-        for(int i = 0; i < nact; i++)
-            vecb[i] = drt[act_set[i]];
+        Vector vecb = subvec(drt, act_set);
         // Compute F'BAb = -F'WMW'AA'd
         Vector vecc(nfree);
         bfgs.compute_FtBAb(fv_set, act_set, Wd, drt, vecb, vecc);
