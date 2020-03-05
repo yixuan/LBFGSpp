@@ -118,7 +118,7 @@ public:
             return;
         }
 
-        // First interval: [il=0, iu=brko[b], where b is the smallest index such that brko[b] > il
+        // First interval: [il=0, iu=brko[b]], where b is the smallest index such that brko[b] > il
         // The corresponding coordinate that defines this break point is ord[b]
 
         // p = W'd
@@ -143,86 +143,98 @@ public:
         Scalar iu = brk[ord[b]];
         Scalar deltat = iu - il;
 
-        int iter = 0;
-        /* std::cout << "** Iter " << iter << " **\n";
+        /* int iter = 0;
+        std::cout << "** Iter " << iter << " **\n";
         std::cout << "   fp = " << fp << ", fpp = " << fpp << ", deltatmin = " << deltatmin << std::endl;
         std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl; */
 
-        // If deltatmin >= deltat, move to the next interval
+        // If deltatmin >= deltat, we need to do the following things:
+        // 1. Update vecc
+        // 2. Since we are going to cross iu, the coordinates that define iu become active
+        // 3. Update some quantities on these new active coordinates (xcp, vecd, vecp)
+        // 4. Move to the next interval and compute the new deltatmin
+        bool crossed_all = false;
         while(deltatmin >= deltat)
         {
-            // First check how many coordinates will be active when we move to the previous iu
+            // Step 1
+            vecc.noalias() = deltat * vecp;
+
+            // Step 2
+            // First check how many coordinates will be active when we cross the previous iu
             // b is the smallest number such that brko[b] == iu
             // Let bp be the largest number such that brko[bp] == iu
             // Then coordinates ord[b] to ord[bp] will be active
-            int bp = search_greater(brk, ord, iu, b) - 1;
+            const int act_begin = b;
+            const int act_end = search_greater(brk, ord, iu, b) - 1;
 
-            // Update xcp and d on active coordinates
-            // std::cout << "** [ ";
-            for(int i = b; i <= bp; i++)
+            // If act_end == n - 1, then we have crossed all coordinates
+            // We only need to update xcp from ord[b] to ord[bp], and then exit
+            if(act_end == n - 1)
             {
-                const int coordb = ord[i];
-                xcp[coordb] = (vecd[coordb] > Scalar(0)) ? ub[coordb] : lb[coordb];
-                vecd[coordb] = Scalar(0);
-                // std::cout << coordb + 1 << " ";
-            }
-            // std::cout << "] become active **\n\n";
+                // std::cout << "** [ ";
+                for(int i = act_begin; i <= act_end; i++)
+                {
+                    const int act = ord[i];
+                    xcp[act] = (vecd[act] > Scalar(0)) ? ub[act] : lb[act];
+                    // std::cout << act + 1 << " ";
+                }
+                // std::cout << "] become active **\n\n";
+                // std::cout << "** All break points visited **\n\n";
 
-            // If bp == n - 1, then we have reached the boundary of every coordinate
-            if(bp == n - 1)
-            {
-                iter++;
-                // std::cout << "** All break points visited **" << iter << std::endl;
-
-                b = bp + 1;
-                deltatmin = iu - il;
+                crossed_all = true;
                 break;
             }
 
-            // Update a number of quantities after some coordinates become active
-            vecc.noalias() += deltat * vecp;
+            // Step 3
+            // Update xcp and d on active coordinates
+            // std::cout << "** [ ";
+            Vector wact, cache;
             fp += deltat * fpp;
-            Vector newvecp = vecp;
-            for(int i = b; i <= bp; i++)
+            for(int i = act_begin; i <= act_end; i++)
             {
-                const int coordb = ord[i];
-                // zb = xcpb - x0b
-                const Scalar zb = xcp[coordb] - x0[coordb];
-                const Scalar gb = g[coordb];
-                const Scalar ggb = gb * gb;
-                const Vector wb = bfgs.Wb(coordb);
-                bfgs.apply_Mv(wb, cache);  // cache = Mw
-                fp += ggb + bfgs.theta() * gb * zb - gb * cache.dot(vecc);
-                fpp += -(bfgs.theta() * ggb - 2 * gb * cache.dot(vecp) - ggb * cache.dot(wb));
-                // p = p + gb * wb
-                newvecp.noalias() += gb * wb;
-                // db = 0
-                vecd[coordb] = Scalar(0);
+                const int act = ord[i];
+                xcp[act] = (vecd[act] > Scalar(0)) ? ub[act] : lb[act];
+                // z = xcp - x0
+                const Scalar zact = xcp[act] - x0[act];
+                const Scalar gact = g[act];
+                const Scalar ggact = gact * gact;
+                wact.noalias() = bfgs.Wb(act);
+                bfgs.apply_Mv(wact, cache);  // cache = Mw
+                fp += ggact + bfgs.theta() * gact * zact - gact * cache.dot(vecc);
+                fpp -= (bfgs.theta() * ggact + 2 * gact * cache.dot(vecp) + ggact * cache.dot(wact));
+                vecp.noalias() += gact * wact;
+                vecd[act] = Scalar(0);
+                // std::cout << act + 1 << " ";
             }
+            // std::cout << "] become active **\n\n";
 
+            // Step 4
+            // Update interval bound
+            il = iu;
+            b = act_end + 1;
+            iu = brk[ord[b]];
+            // Width of the current interval
+            deltat = iu - il;
             // Theoretical step size to move
             deltatmin = -fp / fpp;
 
-            // Update interval bound
-            il = iu;
-            b = bp + 1;
-            iu = brk[ord[b]];
-
-            // Limit on the current interval
-            deltat = iu - il;
-
-            iter++;
-            /* std::cout << "** Iter " << iter << " **\n";
+            /* iter++;
+            std::cout << "** Iter " << iter << " **\n";
             std::cout << "   fp = " << fp << ", fpp = " << fpp << ", deltatmin = " << deltatmin << std::endl;
             std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl; */
         }
 
         // Last step
-        const Scalar tfinal = il + std::max(deltatmin, Scalar(0));
-        for(int i = b; i < n; i++)
+        if(!crossed_all)
         {
-            const int coordb = ord[i];
-            xcp[coordb] = x0[coordb] + tfinal * vecd[coordb];
+            deltatmin = std::max(deltatmin, Scalar(0));
+            vecc.noalias() += deltatmin * vecp;
+            const Scalar tfinal = il + deltatmin;
+            for(int i = b; i < n; i++)
+            {
+                const int coord = ord[i];
+                xcp[coord] = x0[coord] + tfinal * vecd[coord];
+            }
         }
         // std::cout << "\n========================= Leaving GCP search =========================\n\n";
     }
