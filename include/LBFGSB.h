@@ -245,7 +245,8 @@ public:
             std::cout << "xcp = " << xcp.transpose() << std::endl;
             std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;*/
 
-            SubspaceMin<Scalar>::subspace_minimize(m_bfgs, x, xcp, m_grad, lb, ub, m_param.max_submin, m_drt);
+            SubspaceMin<Scalar>::subspace_minimize(m_bfgs, x, xcp, m_grad, lb, ub,
+                vecc, act_set, fv_set, m_param.max_submin, m_drt);
 
             /*Vector gsm(n);
             Scalar fsm = f(x + m_drt, gsm);

@@ -81,25 +81,27 @@ private:
     }
 
 public:
-    // bfgs:  An object that represents the BFGS approximation matrix.
-    // x0:    Current parameter vector.
-    // xcp:   Computed generalized Cauchy point.
-    // g:     Gradient at x0.
-    // lb:    Lower bounds for x.
-    // ub:    Upper bounds for x.
-    // maxit: Maximum number of iterations.
-    // drt:   The output direction vector, drt = xsm - x0.
+    // bfgs:    An object that represents the BFGS approximation matrix.
+    // x0:      Current parameter vector.
+    // xcp:     Computed generalized Cauchy point.
+    // g:       Gradient at x0.
+    // lb:      Lower bounds for x.
+    // ub:      Upper bounds for x.
+    // Wd:      W'(xcp - x0)
+    // act_set: Active set.
+    // fv_set:  Free variable set.
+    // maxit:   Maximum number of iterations.
+    // drt:     The output direction vector, drt = xsm - x0.
     static void subspace_minimize(
         const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& xcp, const Vector& g,
-        const Vector& lb, const Vector& ub, int maxit, Vector& drt
+        const Vector& lb, const Vector& ub, const Vector& Wd, const IndexSet& act_set, const IndexSet& fv_set, int maxit,
+        Vector& drt
     )
     {
         // std::cout << "========================= Entering subspace minimization =========================\n\n";
 
-        // Get the active set and free variable set
-        IndexSet act_set, fv_set;
-        drt.noalias() = xcp;
-        analyze_boundary(drt, lb, ub, act_set, fv_set);
+        // d = xcp - x0
+        drt.noalias() = xcp - x0;
         // Size of active set and size of free variables
         const int nact = act_set.size();
         const int nfree = fv_set.size();
@@ -112,19 +114,14 @@ public:
 
         // std::cout << "Active set = [ "; for(std::size_t i = 0; i < act_set.size(); i++)  std::cout << act_set[i] << " "; std::cout << "]\n";
         // std::cout << "Free variable set = [ "; for(std::size_t i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
-        
-        // d = xcp - x0
-        drt.noalias() -= x0;
+
         // Compute b = A'd
         Vector vecb(nact);
         for(int i = 0; i < nact; i++)
             vecb[i] = drt[act_set[i]];
-        // Compute F'BAb
-        // Split W according to F and A
-        Matrix WF, WA;
+        // Compute F'BAb = -F'WMW'AA'd
         Vector vecc(nfree);
-        bfgs.split_W(fv_set, act_set, WF, WA);
-        bfgs.apply_PtBQv(WF, WA, vecb, vecc);
+        bfgs.compute_FtBAb(fv_set, act_set, Wd, drt, vecb, vecc);
         // Set the vector y=F'd containing free variables, vector c=F'BAb+F'g for linear term,
         // and vectors l and u for the new bounds
         Vector vecy(nfree), vecl(nfree), vecu(nfree);
@@ -204,20 +201,23 @@ public:
 
             // Solve lambda[L] = B[L, F] * y + c[L]
             const int nL = L_set.size();
+            const int nU = U_set.size();
+            Vector Fy;
+            if(nL > 0 || nU > 0)
+                bfgs.apply_WtPv(fv_set, vecy, Fy);
             if(nL > 0)
             {
                 Vector res;
-                bfgs.apply_PtBQv(WL, WF, vecy, res);
+                bfgs.apply_PtWMv(WL, Fy, res, Scalar(-1));
                 res.noalias() += subvec(vecc, yL_set);
                 subvec_assign(lambda, yL_set, res);
             }
 
             // Solve mu[U] = -B[U, F] * y - c[U]
-            const int nU = U_set.size();
             if(nU > 0)
             {
                 Vector res;
-                bfgs.apply_PtBQv(WU, WF, vecy, res);
+                bfgs.apply_PtWMv(WU, Fy, res, Scalar(-1));
                 res.noalias() = -res - subvec(vecc, yU_set);
                 subvec_assign(mu, yU_set, res);
             }

@@ -31,7 +31,7 @@ private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     typedef Eigen::Ref<const Vector> RefConstVec;
-    typedef std::vector<int> IntVector;
+    typedef std::vector<int> IndexSet;
 
     int    m_m;      // Maximum number of correction vectors
     Scalar m_theta;  // theta * I is the initial approximation to the Hessian matrix
@@ -185,93 +185,165 @@ public:
     inline int num_corrections() const { return m_ncorr; }
 
     // W = [Y, theta * S]
-    // W is [n x (2*ncorr)], v is [n x 1]
+    // W [n x (2*ncorr)], v [n x 1], res [(2*ncorr) x 1]
+    // res preserves the ordering of Y and S columns
     inline void apply_Wtv(const Vector& v, Vector& res) const
     {
         res.resize(2 * m_ncorr);
-
-        // To iterate from the most recent history to most distant,
-        // j = ptr - 1
-        // for i = 0, ..., ncorr
-        //     j points to the column of y or s that is i away from the most recent one
-        //     j = (j + m - 1) % m
-        // end for
-
-        // Pointer to most recent history
-        int j = m_ptr - 1;
-        for(int i = 0; i < m_ncorr; i++)
+        for(int j = 0; j < m_ncorr; j++)
         {
-            // res[0] corresponds to the oldest y
-            // res[ncorr-1]   => newest y
-            // res[ncorr]     => oldest s
-            // res[2*ncorr-1] => newest s
-            res[m_ncorr - 1 - i] = m_y.col(j).dot(v);
-            res[2 * m_ncorr - 1 - i] = m_theta * m_s.col(j).dot(v);
-            j = (j + m_m - 1) % m_m;
+            res[j] = m_y.col(j).dot(v);
+            res[m_ncorr + j] = m_s.col(j).dot(v);
         }
+        res.tail(m_ncorr) *= m_theta;
     }
 
     // The b-th row of the W matrix
+    // Preserves the ordering of Y and S columns
     // Return as a column vector
     inline Vector Wb(int b) const
     {
         Vector res(2 * m_ncorr);
-        int j = m_ptr - 1;
-        for(int i = 0; i < m_ncorr; i++)
+        for(int j = 0; j < m_ncorr; j++)
         {
-            res[m_ncorr - 1 - i] = m_y(b, j);
-            res[2 * m_ncorr - 1 - i] = m_theta * m_s(b, j);
-            j = (j + m_m - 1) % m_m;
+            res[j] = m_y(b, j);
+            res[m_ncorr + j] = m_s(b, j);
         }
+        res.tail(m_ncorr) *= m_theta;
         return res;
     }
 
     // M is [(2*ncorr) x (2*ncorr)], v is [(2*ncorr) x 1]
-    inline void apply_Mv(const Vector& v, Vector& res, bool vpermuted = false) const
+    inline void apply_Mv(const Vector& v, Vector& res) const
     {
         res.resize(2 * m_ncorr);
         if(m_ncorr < 1)
             return;
 
-        Vector vperm = Vector::Zero(2 * m_m);
-        if(vpermuted)
-        {
-            vperm.head(m_ncorr).noalias() = v.head(m_ncorr);
-            vperm.segment(m_m, m_ncorr).noalias() = v.tail(m_ncorr);
-        } else {
-            // Permute v to align with M
-            int loc = m_ptr - 1;
-            // From newest to oldest
-            for(int i = 0; i < m_ncorr; i++)
-            {
-                vperm[loc] = v[m_ncorr - i - 1];
-                vperm[m_m + loc] = v[2 * m_ncorr - i - 1];
-                loc = (loc + m_m - 1) % m_m;
-            }
-        }
+        Vector vpadding = Vector::Zero(2 * m_m);
+        vpadding.head(m_ncorr).noalias() = v.head(m_ncorr);
+        vpadding.segment(m_m, m_ncorr).noalias() = v.tail(m_ncorr);
 
         // Solve linear equation
-        m_permMsolver.solve_inplace(vperm);
+        m_permMsolver.solve_inplace(vpadding);
 
-        if(vpermuted)
+        res.head(m_ncorr).noalias() = vpadding.head(m_ncorr);
+        res.tail(m_ncorr).noalias() = vpadding.segment(m_m, m_ncorr);
+    }
+
+    // Compute W'Pv
+    // W [n x (2*ncorr)], v [nP x 1], res [(2*ncorr) x 1]
+    // res preserves the ordering of Y and S columns
+    inline void apply_WtPv(const IndexSet& P_set, const Vector& v, Vector& res) const
+    {
+        const int nP = P_set.size();
+        res.resize(2 * m_ncorr);
+        if(m_ncorr < 1 || nP < 1)
         {
-            res.head(m_ncorr).noalias() = vperm.head(m_ncorr);
-            res.tail(m_ncorr).noalias() = vperm.segment(m_m, m_ncorr);
-        } else {
-            // Permute the solution back
-            // From newest to oldest
-            int loc = m_ptr - 1;
-            for(int i = 0; i < m_ncorr; i++)
-            {
-                res[m_ncorr - i - 1] = vperm[loc];
-                res[2 * m_ncorr - i - 1] = vperm[m_m + loc];
-                loc = (loc + m_m - 1) % m_m;
-            }
+            res.setZero();
+            return;
         }
+
+        for(int j = 0; j < m_ncorr; j++)
+        {
+            Scalar resy = Scalar(0), ress = Scalar(0);
+            for(int i = 0; i < nP; i++)
+            {
+                const int row = P_set[i];
+                resy += m_y(row, j) * v[i];
+                ress += m_s(row, j) * v[i];
+            }
+            res[j] = resy;
+            res[m_ncorr + j] = ress;
+        }
+        res.tail(m_ncorr) *= m_theta;
+    }
+
+    // Compute s * P'WMv
+    // Assume that v[2*ncorr x 1] has the same ordering (permutation) as W and M
+    inline void apply_PtWMv(const IndexSet& P_set, const Vector& v, Vector& res, const Scalar& scale) const
+    {
+        const int nP = P_set.size();
+        res.resize(nP);
+        if(m_ncorr < 1 || nP < 1)
+        {
+            res.setZero();
+            return;
+        }
+
+        Vector Mv;
+        apply_Mv(v, Mv);
+        // WP * Mv
+        Mv.tail(m_ncorr) *= m_theta;
+        for(int i = 0; i < nP; i++)
+        {
+            Scalar r = Scalar(0);
+            const int row = P_set[i];
+            for(int j = 0; j < m_ncorr; j++)
+            {
+                r += m_y(row, j) * Mv[j] + m_s(row, j) * Mv[m_ncorr + j];
+            }
+            res[i] = r;
+        }
+        res *= scale;
+    }
+    // If the P'W matrix has been explicitly formed, do a direct matrix multiplication
+    inline void apply_PtWMv(const Matrix& WP, const Vector& v, Vector& res, const Scalar& scale) const
+    {
+        const int nP = WP.rows();
+        res.resize(nP);
+        if(m_ncorr < 1 || nP < 1)
+        {
+            res.setZero();
+            return;
+        }
+
+        Vector Mv;
+        apply_Mv(v, Mv);
+        // WP * Mv
+        Mv.tail(m_ncorr) *= m_theta;
+        res.noalias() = scale * WP * Mv;
+    }
+
+
+    // Compute F'BAb = -(F'W)M(W'AA'd)
+    // W'd is known, and AA'+FF'=I, so W'AA'd = W'd - W'FF'd
+    // If act_set is smaller, compute W'AA'd = WA' * b
+    // If fv_set is smaller, compute W'AA'd = W'd - WF' * (F'd)
+    inline void compute_FtBAb(
+        const IndexSet& fv_set, const IndexSet& act_set, const Vector& Wd, const Vector& vecd, const Vector& vecb,
+        Vector& res
+    ) const
+    {
+        const int nact = act_set.size();
+        const int nfree = fv_set.size();
+        res.resize(nfree);
+        if(m_ncorr < 1 || nact < 1 || nfree < 1)
+        {
+            res.setZero();
+            return;
+        }
+
+        // W'AA'd
+        Vector rhs(2 * m_ncorr);
+        if(nact <= nfree)
+        {
+            apply_WtPv(act_set, vecb, rhs);
+        } else {
+            // Construct F'd
+            Vector Fd(nfree);
+            for(int i = 0; i < nfree; i++)
+                Fd[i] = vecd[fv_set[i]];
+            // Compute W'AA'd = W'd - WF' * (F'd)
+            apply_WtPv(fv_set, Fd, rhs);
+            rhs.noalias() = Wd - rhs;
+        }
+
+        apply_PtWMv(fv_set, rhs, res, Scalar(-1));
     }
 
     // Split W in rows
-    inline void split_W(const IntVector& P_set, const IntVector& L_set, const IntVector& U_set,
+    inline void split_W(const IndexSet& P_set, const IndexSet& L_set, const IndexSet& U_set,
                         Matrix& WP, Matrix& WL, Matrix& WU) const
     {
         const int nP = P_set.size();
@@ -309,14 +381,6 @@ public:
             for(int i = 0; i < nU; i++)
                 Uptr[i] = Sptr[U_set[i]];
         }
-    }
-
-    // Split W in rows
-    inline void split_W(const IntVector& F_set, const IntVector& A_set, Matrix& WF, Matrix& WA) const
-    {
-        IntVector Nul_set;
-        Matrix WNul;
-        split_W(F_set, A_set, Nul_set, WF, WA, WNul);
     }
 
     // Compute inv(P'BP) * v
@@ -384,7 +448,7 @@ public:
         Vector WQtv = WQ.transpose() * v;
         WQtv.tail(m_ncorr) *= m_theta;
         Vector MWQtv;
-        apply_Mv(WQtv, MWQtv, true);
+        apply_Mv(WQtv, MWQtv);
         MWQtv.tail(m_ncorr) *= m_theta;
         res.noalias() = -WP * MWQtv;
     }
