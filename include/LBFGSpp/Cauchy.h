@@ -154,6 +154,8 @@ public:
         // 3. Update some quantities on these new active coordinates (xcp, vecd, vecp)
         // 4. Move to the next interval and compute the new deltatmin
         bool crossed_all = false;
+        const int ncorr = bfgs.num_corrections();
+        Vector wact(2 * ncorr);
         while(deltatmin >= deltat)
         {
             // Step 1
@@ -188,7 +190,6 @@ public:
             // Step 3
             // Update xcp and d on active coordinates
             // std::cout << "** [ ";
-            Vector wact, cache;
             fp += deltat * fpp;
             for(int i = act_begin; i <= act_end; i++)
             {
