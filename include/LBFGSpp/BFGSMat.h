@@ -270,6 +270,7 @@ public:
         }
     }
 
+    // Split W in rows
     inline void split_W(const IntVector& P_set, const IntVector& L_set, const IntVector& U_set,
                         Matrix& WP, Matrix& WL, Matrix& WU) const
     {
@@ -297,6 +298,7 @@ public:
         }
     }
 
+    // Split W in rows
     inline void split_W(const IntVector& F_set, const IntVector& A_set, Matrix& WF, Matrix& WA) const
     {
         IntVector Nul_set;
@@ -321,15 +323,29 @@ public:
 
         // Compute the matrix in the middle (only the lower triangular part is needed)
         // Remember that W = [Y, theta * S], but we do not store theta in WP
-        Matrix mid = WP.transpose() * WP;
-        mid.topLeftCorner(m_ncorr, m_ncorr).noalias() = m_permMinv.topLeftCorner(m_ncorr, m_ncorr) -
-                                                        mid.topLeftCorner(m_ncorr, m_ncorr) / m_theta;
+        Matrix mid(2 * m_ncorr, 2 * m_ncorr);
+        // [0:(ncorr - 1), 0:(ncorr - 1)]
+        for(int j = 0; j < m_ncorr; j++)
+        {
+            for(int i = j; i < m_ncorr; i++)
+            {
+                mid(i, j) = m_permMinv(i, j) - WP.col(i).dot(WP.col(j)) / m_theta;
+            }
+        }
+        // [ncorr:(2 * ncorr - 1), 0:(ncorr - 1)]
         mid.block(m_ncorr, 0, m_ncorr, m_ncorr).noalias() = m_permMinv.block(m_m, 0, m_ncorr, m_ncorr) -
-                                                            mid.block(m_ncorr, 0, m_ncorr, m_ncorr);
-        mid.bottomRightCorner(m_ncorr, m_ncorr).noalias() = (m_permMinv.block(m_m, m_m, m_ncorr, m_ncorr) -
-                                                             mid.bottomRightCorner(m_ncorr, m_ncorr)) * m_theta;
+            WP.rightCols(m_ncorr).transpose() * WP.leftCols(m_ncorr);
+        // [ncorr:(2 * ncorr - 1), ncorr:(2 * ncorr - 1)]
+        const int offset = m_m - m_ncorr;
+        for(int j = m_ncorr; j < 2 * m_ncorr; j++)
+        {
+            for(int i = j; i < 2 * m_ncorr; i++)
+            {
+                mid(i, j) = (m_permMinv(offset + i, offset + j) - WP.col(i).dot(WP.col(j))) * m_theta;
+            }
+        }
+        // Factorization
         BKLDLT<Scalar> midsolver(mid);
-
         // Compute the final result
         Vector WPv = WP.transpose() * v;
         WPv.tail(m_ncorr) *= m_theta;
