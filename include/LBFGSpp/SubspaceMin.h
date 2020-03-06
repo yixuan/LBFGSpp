@@ -192,8 +192,7 @@ public:
             std::cout << "   P = [ "; for(std::size_t i = 0; i < P_set.size(); i++)  std::cout << P_set[i] << " "; std::cout << "]\n\n"; */
 
             // Split the W matrix according to P, L, and U
-            Matrix WP, WL, WU;
-            bfgs.split_W(P_set, L_set, U_set, WP, WL, WU);
+            Matrix WP = bfgs.Wb(P_set);
             // Solve y[P] = -inv(B[P, P]) * (B[P, L] * l[L] + B[P, U] * u[U] + c[P])
             const int nP = P_set.size();
             if(nP > 0)
@@ -202,10 +201,12 @@ public:
                 Vector lL = subvec(vecl, yL_set);
                 Vector uU = subvec(vecu, yU_set);
                 Vector tmp(nP);
-                bfgs.apply_PtBQv(WP, WL, lL, tmp);
-                rhs.noalias() += tmp;
-                bfgs.apply_PtBQv(WP, WU, uU, tmp);
-                rhs.noalias() += tmp;
+                bool nonzero = bfgs.apply_PtBQv(WP, L_set, lL, tmp, true);
+                if(nonzero)
+                    rhs.noalias() += tmp;
+                nonzero = bfgs.apply_PtBQv(WP, U_set, uU, tmp, true);
+                if(nonzero)
+                    rhs.noalias() += tmp;
 
                 bfgs.solve_PtBP(WP, -rhs, tmp);
                 subvec_assign(vecy, yP_set, tmp);
@@ -220,7 +221,7 @@ public:
             if(nL > 0)
             {
                 Vector res;
-                bfgs.apply_PtWMv(WL, Fy, res, Scalar(-1));
+                bfgs.apply_PtWMv(L_set, Fy, res, Scalar(-1));
                 res.noalias() += subvec(vecc, yL_set);
                 subvec_assign(lambda, yL_set, res);
             }
@@ -229,7 +230,7 @@ public:
             if(nU > 0)
             {
                 Vector res;
-                bfgs.apply_PtWMv(WU, Fy, res, Scalar(-1));
+                bfgs.apply_PtWMv(U_set, Fy, res, Scalar(-1));
                 res.noalias() = -res - subvec(vecc, yU_set);
                 subvec_assign(mu, yU_set, res);
             }

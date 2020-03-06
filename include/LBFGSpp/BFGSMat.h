@@ -209,6 +209,29 @@ public:
         return res;
     }
 
+    // Extract rows of W
+    inline Matrix Wb(const IndexSet& b) const
+    {
+        const int nb = b.size();
+        const int* bptr = b.data();
+        Matrix res(nb, 2 * m_ncorr);
+
+        for(int j = 0; j < m_ncorr; j++)
+        {
+            const Scalar* Yptr = &m_y(0, j);
+            const Scalar* Sptr = &m_s(0, j);
+            Scalar* resYptr = res.data() + j * nb;
+            Scalar* resSptr = resYptr + m_ncorr * nb;
+            for(int i = 0; i < nb; i++)
+            {
+                const int row = bptr[i];
+                resYptr[i] = Yptr[row];
+                resSptr[i] = Sptr[row];
+            }
+        }
+        return res;
+    }
+
     // M is [(2*ncorr) x (2*ncorr)], v is [(2*ncorr) x 1]
     inline void apply_Mv(const Vector& v, Vector& res) const
     {
@@ -370,48 +393,6 @@ public:
         apply_PtWMv(fv_set, rhs, res, Scalar(-1));
     }
 
-    // Split W in rows
-    inline void split_W(const IndexSet& P_set, const IndexSet& L_set, const IndexSet& U_set,
-                        Matrix& WP, Matrix& WL, Matrix& WU) const
-    {
-        const int nP = P_set.size();
-        const int nL = L_set.size();
-        const int nU = U_set.size();
-        WP.resize(nP, 2 * m_ncorr);
-        WL.resize(nL, 2 * m_ncorr);
-        WU.resize(nU, 2 * m_ncorr);
-
-        for(int j = 0; j < m_ncorr; j++)
-        {
-            const Scalar* Yptr = &m_y(0, j);
-            const Scalar* Sptr = &m_s(0, j);
-            Scalar* PYptr = WP.data() + j * nP;
-            Scalar* PSptr = PYptr + m_ncorr * nP;
-            Scalar* LYptr = WL.data() + j * nL;
-            Scalar* LSptr = LYptr + m_ncorr * nL;
-            Scalar* UYptr = WU.data() + j * nU;
-            Scalar* USptr = UYptr + m_ncorr * nU;
-            for(int i = 0; i < nP; i++)
-            {
-                const int row = P_set[i];
-                PYptr[i] = Yptr[row];
-                PSptr[i] = Sptr[row];
-            }
-            for(int i = 0; i < nL; i++)
-            {
-                const int row = L_set[i];
-                LYptr[i] = Yptr[row];
-                LSptr[i] = Sptr[row];
-            }
-            for(int i = 0; i < nU; i++)
-            {
-                const int row = U_set[i];
-                UYptr[i] = Yptr[row];
-                USptr[i] = Sptr[row];
-            }
-        }
-    }
-
     // Compute inv(P'BP) * v
     // P represents an index set
     // inv(P'BP) * v = v / theta + WP * inv(inv(M) - WP' * WP / theta) * WP' * v / theta^2
@@ -457,7 +438,34 @@ public:
 
     // Compute P'BQv, where P and Q are two mutually exclusive index selection operators
     // P'BQv = -WP * M * WQ' * v
-    inline void apply_PtBQv(const Matrix& WP, const Matrix& WQ, const Vector& v, Vector& res) const
+    // Returns false if the result is known to be zero
+    inline bool apply_PtBQv(const Matrix& WP, const IndexSet& Q_set, const Vector& v, Vector& res, bool test_zero = false) const
+    {
+        const int nP = WP.rows();
+        const int nQ = Q_set.size();
+        res.resize(nP);
+        if(m_ncorr < 1 || nP < 1 || nQ < 1)
+        {
+            res.setZero();
+            return false;
+        }
+
+        Vector WQtv;
+        bool nonzero = apply_WtPv(Q_set, v, WQtv, test_zero);
+        if(!nonzero)
+        {
+            res.setZero();
+            return false;
+        }
+
+        Vector MWQtv;
+        apply_Mv(WQtv, MWQtv);
+        MWQtv.tail(m_ncorr) *= m_theta;
+        res.noalias() = -WP * MWQtv;
+        return true;
+    }
+    // If the Q'W matrix has been explicitly formed, do a direct matrix multiplication
+    inline bool apply_PtBQv(const Matrix& WP, const Matrix& WQ, const Vector& v, Vector& res) const
     {
         const int nP = WP.rows();
         const int nQ = WQ.rows();
@@ -465,7 +473,7 @@ public:
         if(m_ncorr < 1 || nP < 1 || nQ < 1)
         {
             res.setZero();
-            return;
+            return false;
         }
 
         // Remember that W = [Y, theta * S], so we need to multiply theta to the second half
@@ -475,6 +483,7 @@ public:
         apply_Mv(WQtv, MWQtv);
         MWQtv.tail(m_ncorr) *= m_theta;
         res.noalias() = -WP * MWQtv;
+        return true;
     }
 };
 
