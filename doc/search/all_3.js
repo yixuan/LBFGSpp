@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['enumerations',['Enumerations',['../group__Enumerations.html',1,'']]],
-  ['epsilon',['epsilon',['../classLBFGSpp_1_1LBFGSParam.html#a460aea47ddeffaed305054e9620fa974',1,'LBFGSpp::LBFGSParam']]]
+  ['ftol_4',['ftol',['../classLBFGSpp_1_1LBFGSParam.html#afd25aeda1f1a3cb9084e2e860ff6caf8',1,'LBFGSpp::LBFGSParam::ftol()'],['../classLBFGSpp_1_1LBFGSBParam.html#aa65896259d12ee094ba197e7202b6d8f',1,'LBFGSpp::LBFGSBParam::ftol()']]]
 ];

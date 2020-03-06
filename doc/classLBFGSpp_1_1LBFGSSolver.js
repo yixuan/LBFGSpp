@@ -1,5 +1,5 @@
 var classLBFGSpp_1_1LBFGSSolver =
 [
-    [ "LBFGSSolver", "classLBFGSpp_1_1LBFGSSolver.html#aa6d1455b3d630d3e97bee5629ac8c794", null ],
-    [ "minimize", "classLBFGSpp_1_1LBFGSSolver.html#a0828a9724870b28fd623746cbb649426", null ]
+    [ "LBFGSSolver", "classLBFGSpp_1_1LBFGSSolver.html#a2a7734277fde68058fb37f73150e196e", null ],
+    [ "minimize", "classLBFGSpp_1_1LBFGSSolver.html#aa1961dc72e480cb35e7831ad18d772f8", null ]
 ];

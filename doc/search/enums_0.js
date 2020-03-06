@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['line_5fsearch_5falgorithm',['LINE_SEARCH_ALGORITHM',['../group__Enumerations.html#ga9b34b9135178db328adf5cb8a75da900',1,'LBFGSpp']]]
+  ['line_5fsearch_5ftermination_5fcondition_56',['LINE_SEARCH_TERMINATION_CONDITION',['../group__Enumerations.html#ga1b147763c7c15bb1c66f42152e3570d4',1,'LBFGSpp']]]
 ];

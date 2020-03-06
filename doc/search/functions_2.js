@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['lbfgsparam',['LBFGSParam',['../classLBFGSpp_1_1LBFGSParam.html#a7ff92a387ac0aad1002b09bc404f25c4',1,'LBFGSpp::LBFGSParam']]],
-  ['lbfgssolver',['LBFGSSolver',['../classLBFGSpp_1_1LBFGSSolver.html#aa6d1455b3d630d3e97bee5629ac8c794',1,'LBFGSpp::LBFGSSolver']]]
+  ['minimize_43',['minimize',['../classLBFGSpp_1_1LBFGSSolver.html#aa1961dc72e480cb35e7831ad18d772f8',1,'LBFGSpp::LBFGSSolver::minimize()'],['../classLBFGSpp_1_1LBFGSBSolver.html#a420f4521286e2ac37a37f41b9f5767a9',1,'LBFGSpp::LBFGSBSolver::minimize()']]]
 ];

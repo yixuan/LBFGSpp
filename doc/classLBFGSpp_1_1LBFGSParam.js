@@ -1,7 +1,7 @@
 var classLBFGSpp_1_1LBFGSParam =
 [
     [ "LBFGSParam", "classLBFGSpp_1_1LBFGSParam.html#a7ff92a387ac0aad1002b09bc404f25c4", null ],
-    [ "check_param", "classLBFGSpp_1_1LBFGSParam.html#a4b6b065a1487770ae44cc71171f5fd24", null ],
+    [ "check_param", "classLBFGSpp_1_1LBFGSParam.html#a2c010374197034cffece535f6624b7a9", null ],
     [ "m", "classLBFGSpp_1_1LBFGSParam.html#a70eca2e693d8f86ab6fc929ec8595218", null ],
     [ "epsilon", "classLBFGSpp_1_1LBFGSParam.html#a460aea47ddeffaed305054e9620fa974", null ],
     [ "past", "classLBFGSpp_1_1LBFGSParam.html#a7f029918c7d5f9888602a727630a2d53", null ],

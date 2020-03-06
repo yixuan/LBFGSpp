@@ -1,14 +1,10 @@
 var searchData=
 [
-  ['lbfgs_5flinesearch_5fbacktracking',['LBFGS_LINESEARCH_BACKTRACKING',['../group__Enumerations.html#gga9b34b9135178db328adf5cb8a75da900a7cd5b47330ed088f18c73e0200c59209',1,'LBFGSpp']]],
-  ['lbfgs_5flinesearch_5fbacktracking_5farmijo',['LBFGS_LINESEARCH_BACKTRACKING_ARMIJO',['../group__Enumerations.html#gga9b34b9135178db328adf5cb8a75da900a422c28e40b2cffdebbeaa64070b10f2d',1,'LBFGSpp']]],
-  ['lbfgs_5flinesearch_5fbacktracking_5fstrong_5fwolfe',['LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE',['../group__Enumerations.html#gga9b34b9135178db328adf5cb8a75da900a1d24b804ba1b4a07c196d970b57a2f08',1,'LBFGSpp']]],
-  ['lbfgs_5flinesearch_5fbacktracking_5fwolfe',['LBFGS_LINESEARCH_BACKTRACKING_WOLFE',['../group__Enumerations.html#gga9b34b9135178db328adf5cb8a75da900ae62f6bb1965fc99923a4297da7de82d6',1,'LBFGSpp']]],
-  ['lbfgsparam',['LBFGSParam',['../classLBFGSpp_1_1LBFGSParam.html#a7ff92a387ac0aad1002b09bc404f25c4',1,'LBFGSpp::LBFGSParam']]],
-  ['lbfgsparam',['LBFGSParam',['../classLBFGSpp_1_1LBFGSParam.html',1,'LBFGSpp']]],
-  ['lbfgssolver',['LBFGSSolver',['../classLBFGSpp_1_1LBFGSSolver.html',1,'LBFGSpp']]],
-  ['lbfgssolver',['LBFGSSolver',['../classLBFGSpp_1_1LBFGSSolver.html#aa6d1455b3d630d3e97bee5629ac8c794',1,'LBFGSpp::LBFGSSolver']]],
-  ['line_5fsearch_5falgorithm',['LINE_SEARCH_ALGORITHM',['../group__Enumerations.html#ga9b34b9135178db328adf5cb8a75da900',1,'LBFGSpp']]],
-  ['linesearch',['LineSearch',['../classLBFGSpp_1_1LineSearch.html',1,'LBFGSpp']]],
-  ['linesearch',['linesearch',['../classLBFGSpp_1_1LBFGSParam.html#a2fb18577b0e516ce6f5d8554e36dde05',1,'LBFGSpp::LBFGSParam']]]
+  ['m_20',['m',['../classLBFGSpp_1_1LBFGSParam.html#a70eca2e693d8f86ab6fc929ec8595218',1,'LBFGSpp::LBFGSParam::m()'],['../classLBFGSpp_1_1LBFGSBParam.html#ae293bfac62405197b820d766e199fffe',1,'LBFGSpp::LBFGSBParam::m()']]],
+  ['max_5fiterations_21',['max_iterations',['../classLBFGSpp_1_1LBFGSParam.html#a9afca7340b6eaff8a6bad3712ebdf043',1,'LBFGSpp::LBFGSParam::max_iterations()'],['../classLBFGSpp_1_1LBFGSBParam.html#a076281d66e09bfd0b2d32f66cab5269f',1,'LBFGSpp::LBFGSBParam::max_iterations()']]],
+  ['max_5flinesearch_22',['max_linesearch',['../classLBFGSpp_1_1LBFGSParam.html#a4a1bb3fc2b776551916854f60f551f35',1,'LBFGSpp::LBFGSParam::max_linesearch()'],['../classLBFGSpp_1_1LBFGSBParam.html#ae292244d56ee643e765d0eda8879512b',1,'LBFGSpp::LBFGSBParam::max_linesearch()']]],
+  ['max_5fstep_23',['max_step',['../classLBFGSpp_1_1LBFGSParam.html#ac304c1e5c0ce21faea9b7f16601d45fc',1,'LBFGSpp::LBFGSParam::max_step()'],['../classLBFGSpp_1_1LBFGSBParam.html#a110e3f2e02baef03401d6374fd0a998f',1,'LBFGSpp::LBFGSBParam::max_step()']]],
+  ['max_5fsubmin_24',['max_submin',['../classLBFGSpp_1_1LBFGSBParam.html#afb781e34a321966dabf5ceee017b104a',1,'LBFGSpp::LBFGSBParam']]],
+  ['min_5fstep_25',['min_step',['../classLBFGSpp_1_1LBFGSParam.html#adf2748b5edcef27cb88e960154734d30',1,'LBFGSpp::LBFGSParam::min_step()'],['../classLBFGSpp_1_1LBFGSBParam.html#a3797674815aad41252870437b68443b8',1,'LBFGSpp::LBFGSBParam::min_step()']]],
+  ['minimize_26',['minimize',['../classLBFGSpp_1_1LBFGSSolver.html#aa1961dc72e480cb35e7831ad18d772f8',1,'LBFGSpp::LBFGSSolver::minimize()'],['../classLBFGSpp_1_1LBFGSBSolver.html#a420f4521286e2ac37a37f41b9f5767a9',1,'LBFGSpp::LBFGSBSolver::minimize()']]]
 ];
