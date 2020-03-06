@@ -151,6 +151,9 @@ public:
 
         // Iterations
         IndexSet L_set, U_set, P_set, yL_set, yU_set, yP_set;
+        L_set.reserve(nfree / 3); yL_set.reserve(nfree / 3);
+        U_set.reserve(nfree / 3); yU_set.reserve(nfree / 3);
+        P_set.reserve(nfree); yP_set.reserve(nfree);
         int k;
         for(k = 0; k < maxit; k++)
         {
