@@ -233,7 +233,7 @@ public:
 
             } else if(gt * (fI_lo - step) > Scalar(0)) {
                 // Case 2: ft <= fl, gt * (al - at) > 0
-                const Scalar new_step = std::min(step_max, step + delta * (step - I_hi));
+                const Scalar new_step = std::min(step_max, step + delta * (step - I_lo));
 
                 I_lo = step;
                 fI_lo = ft;
