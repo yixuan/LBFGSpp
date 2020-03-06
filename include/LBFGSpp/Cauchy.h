@@ -35,7 +35,7 @@ class ArgSort
 {
 private:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Eigen::Matrix<int, Eigen::Dynamic, 1> IntVector;
+    typedef std::vector<int> IndexSet;
 
     const Scalar* values;
 
@@ -45,9 +45,9 @@ public:
     {}
 
     inline bool operator()(int key1, int key2) { return values[key1] < values[key2]; }
-    inline void sort_key(IntVector& key_vec) const
+    inline void sort_key(IndexSet& key_vec) const
     {
-        std::sort(key_vec.data(), key_vec.data() + key_vec.size(), *this);
+        std::sort(key_vec.begin(), key_vec.end(), *this);
     }
 };
 
@@ -62,11 +62,11 @@ private:
 
     // Find the smallest index i such that brk[ord[i]] > t, assuming brk[ord] is already sorted.
     // If the return value equals n, then all values are <= t.
-    static int search_greater(const Vector& brk, const IntVector& ord, const Scalar& t, int start = 0)
+    static int search_greater(const Vector& brk, const IndexSet& ord, const Scalar& t, int start = 0)
     {
-        const int n = brk.size();
+        const int nord = ord.size();
         int i;
-        for(i = start; i < n; i++)
+        for(i = start; i < nord; i++)
         {
             if(brk[ord[i]] > t)
                 break;
@@ -103,7 +103,11 @@ public:
 
         // Construct break points
         Vector brk(n), vecd(n);
-        IntVector ord = IntVector::LinSpaced(n, 0, n - 1);
+        // If brk[i] == 0, i belongs to active set
+        // If brk[i] == Inf, i belongs to free variable set
+        // Others are currently undecided
+        IndexSet ord;
+        const Scalar inf = std::numeric_limits<Scalar>::infinity();
         for(int i = 0; i < n; i++)
         {
             if(g[i] < Scalar(0))
@@ -111,9 +115,17 @@ public:
             else if(g[i] > Scalar(0))
                 brk[i] = (x0[i] - lb[i]) / g[i];
             else
-                brk[i] = std::numeric_limits<Scalar>::infinity();
+                brk[i] = inf;
 
-            vecd[i] = (brk[i] == Scalar(0)) ? Scalar(0) : -g[i];
+            const bool iszero = (brk[i] == Scalar(0));
+            vecd[i] = iszero ? Scalar(0) : -g[i];
+
+            if(iszero)
+                act_set.push_back(i);
+            else if(brk[i] == inf)
+                fv_set.push_back(i);
+            else
+                ord.push_back(i);
         }
 
         // Sort indices of break points
@@ -123,17 +135,17 @@ public:
         // Break points `brko := brk[ord]` are in increasing order
         // `ord` contains the coordinates that define the corresponding break points
         // brk[i] == 0 <=> The i-th coordinate is on the boundary
-        if(brk[ord[n - 1]] <= Scalar(0))
+        const int nord = ord.size();
+        const int nfree = fv_set.size();
+        if( (nfree < 1) && (nord < 1) )
         {
-            for(int i = 0; i < n; i++)
-                act_set.push_back(i);
             /* std::cout << "** All coordinates at boundary **\n";
             std::cout << "\n========================= Leaving GCP search =========================\n\n"; */
             return;
         }
 
-        // First interval: [il=0, iu=brko[b]], where b is the smallest index such that brko[b] > il
-        // The corresponding coordinate that defines this break point is ord[b]
+        // First interval: [il=0, iu=brk[ord[0]]]
+        // In case ord is empty, we take iu=Inf
 
         // p = W'd, c = 0
         Vector vecp;
@@ -151,12 +163,9 @@ public:
         // Limit on the current interval
         Scalar il = Scalar(0);
         // We have excluded the case that max(brk) <= 0
-        int b = search_greater(brk, ord, il, 0);
-        Scalar iu = brk[ord[b]];
+        int b = 0;
+        Scalar iu = (nord < 1) ? inf : brk[ord[b]];
         Scalar deltat = iu - il;
-        // Coordinates before b belong to active set
-        for(int i = 0; i < b; i++)
-            act_set.push_back(ord[i]);
 
         /* int iter = 0;
         std::cout << "** Iter " << iter << " **\n";
@@ -184,9 +193,9 @@ public:
             const int act_begin = b;
             const int act_end = search_greater(brk, ord, iu, b) - 1;
 
-            // If act_end == n - 1, then we have crossed all coordinates
+            // If nfree == 0 and act_end == nord-1, then we have crossed all coordinates
             // We only need to update xcp from ord[b] to ord[bp], and then exit
-            if(act_end == n - 1)
+            if( (nfree == 0) && (act_end == nord - 1) )
             {
                 // std::cout << "** [ ";
                 for(int i = act_begin; i <= act_end; i++)
@@ -227,14 +236,18 @@ public:
             // std::cout << "] become active **\n\n";
 
             // Step 4
+            // Theoretical step size to move
+            deltatmin = -fp / fpp;
             // Update interval bound
             il = iu;
             b = act_end + 1;
+            // If we have visited all finite-valued break points, and have not exited earlier,
+            // then the next iu will be infinity. Simply exit the loop now
+            if(b >= nord)
+                break;
             iu = brk[ord[b]];
             // Width of the current interval
             deltat = iu - il;
-            // Theoretical step size to move
-            deltatmin = -fp / fpp;
 
             /* iter++;
             std::cout << "** Iter " << iter << " **\n";
@@ -248,7 +261,13 @@ public:
             deltatmin = std::max(deltatmin, Scalar(0));
             vecc.noalias() += deltatmin * vecp;
             const Scalar tfinal = il + deltatmin;
-            for(int i = b; i < n; i++)
+            // Update xcp on free variable coordinates
+            for(int i = 0; i < nfree; i++)
+            {
+                const int coord = fv_set[i];
+                xcp[coord] = x0[coord] + tfinal * vecd[coord];
+            }
+            for(int i = b; i < nord; i++)
             {
                 const int coord = ord[i];
                 xcp[coord] = x0[coord] + tfinal * vecd[coord];
