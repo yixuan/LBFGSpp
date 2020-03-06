@@ -6,9 +6,9 @@
 # 'jekyll serve'. If you change this file, please restart the server process.
 
 # Site settings
-title: "LBFGS++: A Header-only C++ Library for L-BFGS Algorithm"
+title: "LBFGS++: A Header-only C++ Library for L-BFGS and L-BFGS-B Algorithms"
 email: yixuan.qiu@cos.name
-description: A Header-only C++ Library for L-BFGS Algorithm
+description: A Header-only C++ Library for L-BFGS and L-BFGS-B Algorithms
 
 # Build settings
 markdown: kramdown
