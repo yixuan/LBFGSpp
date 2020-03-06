@@ -99,7 +99,9 @@ public:
         vecc.resize(2 * bfgs.num_corrections());
         vecc.setZero();
         act_set.clear();
+        act_set.reserve(n / 2 + 1);
         fv_set.clear();
+        fv_set.reserve(n);
 
         // Construct break points
         Vector brk(n), vecd(n);
@@ -107,6 +109,7 @@ public:
         // If brk[i] == Inf, i belongs to free variable set
         // Others are currently undecided
         IndexSet ord;
+        ord.reserve(n);
         const Scalar inf = std::numeric_limits<Scalar>::infinity();
         for(int i = 0; i < n; i++)
         {
