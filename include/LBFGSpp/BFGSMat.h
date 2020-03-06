@@ -230,14 +230,37 @@ public:
     // Compute W'Pv
     // W [n x (2*ncorr)], v [nP x 1], res [(2*ncorr) x 1]
     // res preserves the ordering of Y and S columns
-    inline void apply_WtPv(const IndexSet& P_set, const Vector& v, Vector& res) const
+    // Returns false if the result is known to be zero
+    inline bool apply_WtPv(const IndexSet& P_set, const Vector& v, Vector& res, bool test_zero = false) const
     {
-        const int nP = P_set.size();
+        const int* Pptr = P_set.data();
+        const Scalar* vptr = v.data();
+        int nP = P_set.size();
+
+        // Remove zeros in v to save computation
+        IndexSet P_reduced;
+        std::vector<Scalar> v_reduced;
+        if(test_zero)
+        {
+            P_reduced.reserve(nP);
+            for(int i = 0; i < nP; i++)
+            {
+                if(vptr[i] != Scalar(0))
+                {
+                    P_reduced.push_back(Pptr[i]);
+                    v_reduced.push_back(vptr[i]);
+                }
+            }
+            Pptr = P_reduced.data();
+            vptr = v_reduced.data();
+            nP = P_reduced.size();
+        }
+
         res.resize(2 * m_ncorr);
         if(m_ncorr < 1 || nP < 1)
         {
             res.setZero();
-            return;
+            return false;
         }
 
         for(int j = 0; j < m_ncorr; j++)
@@ -247,25 +270,27 @@ public:
             const Scalar* sptr = &m_s(0, j);
             for(int i = 0; i < nP; i++)
             {
-                const int row = P_set[i];
-                resy += yptr[row] * v[i];
-                ress += sptr[row] * v[i];
+                const int row = Pptr[i];
+                resy += yptr[row] * vptr[i];
+                ress += sptr[row] * vptr[i];
             }
             res[j] = resy;
             res[m_ncorr + j] = ress;
         }
         res.tail(m_ncorr) *= m_theta;
+        return true;
     }
 
     // Compute s * P'WMv
     // Assume that v[2*ncorr x 1] has the same ordering (permutation) as W and M
-    inline void apply_PtWMv(const IndexSet& P_set, const Vector& v, Vector& res, const Scalar& scale) const
+    // Returns false if the result is known to be zero
+    inline bool apply_PtWMv(const IndexSet& P_set, const Vector& v, Vector& res, const Scalar& scale) const
     {
         const int nP = P_set.size();
         res.resize(nP);
         res.setZero();
         if(m_ncorr < 1 || nP < 1)
-            return;
+            return false;
 
         Vector Mv;
         apply_Mv(v, Mv);
@@ -283,16 +308,17 @@ public:
             }
         }
         res *= scale;
+        return true;
     }
     // If the P'W matrix has been explicitly formed, do a direct matrix multiplication
-    inline void apply_PtWMv(const Matrix& WP, const Vector& v, Vector& res, const Scalar& scale) const
+    inline bool apply_PtWMv(const Matrix& WP, const Vector& v, Vector& res, const Scalar& scale) const
     {
         const int nP = WP.rows();
         res.resize(nP);
         if(m_ncorr < 1 || nP < 1)
         {
             res.setZero();
-            return;
+            return false;
         }
 
         Vector Mv;
@@ -300,6 +326,7 @@ public:
         // WP * Mv
         Mv.tail(m_ncorr) *= m_theta;
         res.noalias() = scale * (WP * Mv);
+        return true;
     }
 
     // Compute F'BAb = -(F'W)M(W'AA'd)
