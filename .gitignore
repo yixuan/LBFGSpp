@@ -1,3 +1,9 @@
 *.o
 *.out
 include/Eigen/*
+archive/*
+.settings/*
+.project
+.cproject
+/Debug/
+/Release/
