@@ -1,5 +1,8 @@
 # LBFGS++ <img src="https://statr.me/images/sticker-lbfgspp.png" alt="LBFGS++" height="150px" align="right" />
 
+> **UPDATE on 2020-03-06**: **LBFGS++** now includes a new L-BFGS-B solver for
+> box-constrained optimization problems. Check the example below for its usage.
+
 **LBFGS++** is a header-only C++ library that implements the Limited-memory
 BFGS algorithm (L-BFGS) for unconstrained minimization problems, and a modified
 version of the L-BFGS-B algorithm for box-constrained ones.
