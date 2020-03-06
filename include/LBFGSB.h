@@ -195,7 +195,8 @@ public:
             m_gradp.noalias() = m_grad;
 
             // Line search to update x, fx and gradient
-            const Scalar step_max = std::min(m_param.max_step, max_step_size(x, m_drt, lb, ub));
+            Scalar step_max = max_step_size(x, m_drt, lb, ub);
+            step_max = std::min(m_param.max_step, step_max);
             Scalar step = Scalar(1);
             step = std::min(step, step_max);
             LineSearch<Scalar>::LineSearch(f, fx, x, m_grad, step, step_max, m_drt, m_xp, m_param);

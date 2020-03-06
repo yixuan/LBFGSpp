@@ -299,9 +299,8 @@ public:
         apply_Mv(v, Mv);
         // WP * Mv
         Mv.tail(m_ncorr) *= m_theta;
-        res.noalias() = scale * WP * Mv;
+        res.noalias() = scale * (WP * Mv);
     }
-
 
     // Compute F'BAb = -(F'W)M(W'AA'd)
     // W'd is known, and AA'+FF'=I, so W'AA'd = W'd - W'FF'd
@@ -350,33 +349,34 @@ public:
         WL.resize(nL, 2 * m_ncorr);
         WU.resize(nU, 2 * m_ncorr);
 
-        // Y part
         for(int j = 0; j < m_ncorr; j++)
         {
             const Scalar* Yptr = &m_y(0, j);
-            Scalar* Pptr = WP.data() + j * nP;
-            Scalar* Lptr = WL.data() + j * nL;
-            Scalar* Uptr = WU.data() + j * nU;
-            for(int i = 0; i < nP; i++)
-                Pptr[i] = Yptr[P_set[i]];
-            for(int i = 0; i < nL; i++)
-                Lptr[i] = Yptr[L_set[i]];
-            for(int i = 0; i < nU; i++)
-                Uptr[i] = Yptr[U_set[i]];
-        }
-        // S part
-        for(int j = 0; j < m_ncorr; j++)
-        {
             const Scalar* Sptr = &m_s(0, j);
-            Scalar* Pptr = WP.data() + (m_ncorr + j) * nP;
-            Scalar* Lptr = WL.data() + (m_ncorr + j) * nL;
-            Scalar* Uptr = WU.data() + (m_ncorr + j) * nU;
+            Scalar* PYptr = WP.data() + j * nP;
+            Scalar* PSptr = PYptr + m_ncorr * nP;
+            Scalar* LYptr = WL.data() + j * nL;
+            Scalar* LSptr = LYptr + m_ncorr * nL;
+            Scalar* UYptr = WU.data() + j * nU;
+            Scalar* USptr = UYptr + m_ncorr * nU;
             for(int i = 0; i < nP; i++)
-                Pptr[i] = Sptr[P_set[i]];
+            {
+                const int row = P_set[i];
+                PYptr[i] = Yptr[row];
+                PSptr[i] = Sptr[row];
+            }
             for(int i = 0; i < nL; i++)
-                Lptr[i] = Sptr[L_set[i]];
+            {
+                const int row = L_set[i];
+                LYptr[i] = Yptr[row];
+                LSptr[i] = Sptr[row];
+            }
             for(int i = 0; i < nU; i++)
-                Uptr[i] = Sptr[U_set[i]];
+            {
+                const int row = U_set[i];
+                UYptr[i] = Yptr[row];
+                USptr[i] = Sptr[row];
+            }
         }
     }
 
