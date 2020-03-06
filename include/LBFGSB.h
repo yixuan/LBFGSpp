@@ -170,8 +170,8 @@ public:
 
         // Compute generalized Cauchy point
         Vector xcp(n), vecc;
-        IndexSet act_set, fv_set;
-        Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp, vecc, act_set, fv_set);
+        IndexSet newact_set, fv_set;
+        Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp, vecc, newact_set, fv_set);
 
         /* Vector gcp(n);
         Scalar fcp = f(xcp, gcp);
@@ -238,7 +238,7 @@ public:
                 m_bfgs.add_correction(vecs, vecy);
 
             force_bounds(x, lb, ub);
-            Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp, vecc, act_set, fv_set);
+            Cauchy<Scalar>::get_cauchy_point(m_bfgs, x, m_grad, lb, ub, xcp, vecc, newact_set, fv_set);
 
             /*Vector gcp(n);
             Scalar fcp = f(xcp, gcp);
@@ -247,7 +247,7 @@ public:
             std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;*/
 
             SubspaceMin<Scalar>::subspace_minimize(m_bfgs, x, xcp, m_grad, lb, ub,
-                vecc, act_set, fv_set, m_param.max_submin, m_drt);
+                vecc, newact_set, fv_set, m_param.max_submin, m_drt);
 
             /*Vector gsm(n);
             Scalar fsm = f(x + m_drt, gsm);

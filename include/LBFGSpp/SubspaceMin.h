@@ -98,20 +98,20 @@ private:
     }
 
 public:
-    // bfgs:    An object that represents the BFGS approximation matrix.
-    // x0:      Current parameter vector.
-    // xcp:     Computed generalized Cauchy point.
-    // g:       Gradient at x0.
-    // lb:      Lower bounds for x.
-    // ub:      Upper bounds for x.
-    // Wd:      W'(xcp - x0)
-    // act_set: Active set.
-    // fv_set:  Free variable set.
-    // maxit:   Maximum number of iterations.
-    // drt:     The output direction vector, drt = xsm - x0.
+    // bfgs:       An object that represents the BFGS approximation matrix.
+    // x0:         Current parameter vector.
+    // xcp:        Computed generalized Cauchy point.
+    // g:          Gradient at x0.
+    // lb:         Lower bounds for x.
+    // ub:         Upper bounds for x.
+    // Wd:         W'(xcp - x0)
+    // newact_set: Coordinates that newly become active during the GCP procedure.
+    // fv_set:     Free variable set.
+    // maxit:      Maximum number of iterations.
+    // drt:        The output direction vector, drt = xsm - x0.
     static void subspace_minimize(
         const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& xcp, const Vector& g,
-        const Vector& lb, const Vector& ub, const Vector& Wd, const IndexSet& act_set, const IndexSet& fv_set, int maxit,
+        const Vector& lb, const Vector& ub, const Vector& Wd, const IndexSet& newact_set, const IndexSet& fv_set, int maxit,
         Vector& drt
     )
     {
@@ -128,14 +128,12 @@ public:
             return;
         }
 
-        // std::cout << "Active set = [ "; for(std::size_t i = 0; i < act_set.size(); i++)  std::cout << act_set[i] << " "; std::cout << "]\n";
+        // std::cout << "New active set = [ "; for(std::size_t i = 0; i < newact_set.size(); i++)  std::cout << newact_set[i] << " "; std::cout << "]\n";
         // std::cout << "Free variable set = [ "; for(std::size_t i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
 
-        // Compute b = A'd
-        Vector vecb = subvec(drt, act_set);
         // Compute F'BAb = -F'WMW'AA'd
         Vector vecc(nfree);
-        bfgs.compute_FtBAb(fv_set, act_set, Wd, drt, vecb, vecc);
+        bfgs.compute_FtBAb(fv_set, newact_set, Wd, drt, vecc);
         // Set the vector y=F'd containing free variables, vector c=F'BAb+F'g for linear term,
         // and vectors l and u for the new bounds
         Vector vecy(nfree), vecl(nfree), vecu(nfree);

@@ -76,18 +76,18 @@ private:
     }
 
 public:
-    // bfgs:    An object that represents the BFGS approximation matrix.
-    // x0:      Current parameter vector.
-    // g:       Gradient at x0.
-    // lb:      Lower bounds for x.
-    // ub:      Upper bounds for x.
-    // xcp:     The output generalized Cauchy point.
-    // vecc:    c = W'(xcp - x0), used in the subspace minimization routine.
-    // act_set: Active set.
-    // fv_set:  Free variable set.
+    // bfgs:       An object that represents the BFGS approximation matrix.
+    // x0:         Current parameter vector.
+    // g:          Gradient at x0.
+    // lb:         Lower bounds for x.
+    // ub:         Upper bounds for x.
+    // xcp:        The output generalized Cauchy point.
+    // vecc:       c = W'(xcp - x0), used in the subspace minimization routine.
+    // newact_set: Coordinates that newly become active during the GCP procedure.
+    // fv_set:     Free variable set.
     static void get_cauchy_point(
         const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub,
-        Vector& xcp, Vector& vecc, IndexSet& act_set, IndexSet& fv_set
+        Vector& xcp, Vector& vecc, IndexSet& newact_set, IndexSet& fv_set
     )
     {
         // std::cout << "========================= Entering GCP search =========================\n\n";
@@ -98,8 +98,8 @@ public:
         xcp.noalias() = x0;
         vecc.resize(2 * bfgs.num_corrections());
         vecc.setZero();
-        act_set.clear();
-        act_set.reserve(n / 2 + 1);
+        newact_set.clear();
+        newact_set.reserve(n);
         fv_set.clear();
         fv_set.reserve(n);
 
@@ -123,11 +123,9 @@ public:
             const bool iszero = (brk[i] == Scalar(0));
             vecd[i] = iszero ? Scalar(0) : -g[i];
 
-            if(iszero)
-                act_set.push_back(i);
-            else if(brk[i] == inf)
+            if(brk[i] == inf)
                 fv_set.push_back(i);
-            else
+            else if(!iszero)
                 ord.push_back(i);
         }
 
@@ -205,7 +203,7 @@ public:
                 {
                     const int act = ord[i];
                     xcp[act] = (vecd[act] > Scalar(0)) ? ub[act] : lb[act];
-                    act_set.push_back(act);
+                    newact_set.push_back(act);
                     // std::cout << act + 1 << " ";
                 }
                 // std::cout << "] become active **\n\n";
@@ -233,7 +231,7 @@ public:
                 fpp -= (bfgs.theta() * ggact + 2 * gact * cache.dot(vecp) + ggact * cache.dot(wact));
                 vecp.noalias() += gact * wact;
                 vecd[act] = Scalar(0);
-                act_set.push_back(act);
+                newact_set.push_back(act);
                 // std::cout << act + 1 << " ";
             }
             // std::cout << "] become active **\n\n";

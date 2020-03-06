@@ -304,14 +304,15 @@ public:
 
     // Compute F'BAb = -(F'W)M(W'AA'd)
     // W'd is known, and AA'+FF'=I, so W'AA'd = W'd - W'FF'd
-    // If act_set is smaller, compute W'AA'd = WA' * b
-    // If fv_set is smaller, compute W'AA'd = W'd - WF' * (F'd)
+    // Usually d contains many zeros, so we fist compute number of nonzero elements in A set and F set,
+    // denoted as nnz_act and nnz_fv, respectively
+    // If nnz_act is smaller, compute W'AA'd = WA' (A'd) directly
+    // If nnz_fv is smaller, compute W'AA'd = W'd - WF' * (F'd)
     inline void compute_FtBAb(
-        const IndexSet& fv_set, const IndexSet& act_set, const Vector& Wd, const Vector& vecd, const Vector& vecb,
-        Vector& res
+        const IndexSet& fv_set, const IndexSet& newact_set, const Vector& Wd, const Vector& drt, Vector& res
     ) const
     {
-        const int nact = act_set.size();
+        const int nact = newact_set.size();
         const int nfree = fv_set.size();
         res.resize(nfree);
         if(m_ncorr < 1 || nact < 1 || nfree < 1)
@@ -324,12 +325,16 @@ public:
         Vector rhs(2 * m_ncorr);
         if(nact <= nfree)
         {
-            apply_WtPv(act_set, vecb, rhs);
+            // Construct A'd
+            Vector Ad(nfree);
+            for(int i = 0; i < nact; i++)
+                Ad[i] = drt[newact_set[i]];
+            apply_WtPv(newact_set, Ad, rhs);
         } else {
             // Construct F'd
             Vector Fd(nfree);
             for(int i = 0; i < nfree; i++)
-                Fd[i] = vecd[fv_set[i]];
+                Fd[i] = drt[fv_set[i]];
             // Compute W'AA'd = W'd - WF' * (F'd)
             apply_WtPv(fv_set, Fd, rhs);
             rhs.noalias() = Wd - rhs;
