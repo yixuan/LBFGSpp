@@ -201,7 +201,8 @@ public:
             bool converged = true;
             for(int i = 0; i < nP; i++)
             {
-                if(vecy[i] < vecl[i] || vecy[i] > vecu[i])
+                const int coord = yP_set[i];
+                if(vecy[coord] < vecl[coord] || vecy[coord] > vecu[coord])
                 {
                     converged = false;
                     break;
@@ -212,7 +213,8 @@ public:
 
             for(int i = 0; i < nL; i++)
             {
-                if(lambda[i] < Scalar(0))
+                const int coord = yL_set[i];
+                if(lambda[coord] < Scalar(0))
                 {
                     converged = false;
                     break;
@@ -223,7 +225,8 @@ public:
             
             for(int i = 0; i < nU; i++)
             {
-                if(mu[i] < Scalar(0))
+                const int coord = yU_set[i];
+                if(mu[coord] < Scalar(0))
                 {
                     converged = false;
                     break;
