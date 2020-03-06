@@ -58,6 +58,45 @@ private:
             v[ind[i]] = rhs[i];
     }
 
+    // Test convergence of P set
+    static bool P_converged(const IndexSet& yP_set, const Vector& vecy, const Vector& vecl, const Vector& vecu)
+    {
+        const int nP = yP_set.size();
+        for(int i = 0; i < nP; i++)
+        {
+            const int coord = yP_set[i];
+            if(vecy[coord] < vecl[coord] || vecy[coord] > vecu[coord])
+                return false;
+        }
+        return true;
+    }
+
+    // Test convergence of L set
+    static bool L_converged(const IndexSet& yL_set, const Vector& lambda)
+    {
+        const int nL = yL_set.size();
+        for(int i = 0; i < nL; i++)
+        {
+            const int coord = yL_set[i];
+            if(lambda[coord] < Scalar(0))
+                return false;
+        }
+        return true;
+    }
+
+    // Test convergence of L set
+    static bool U_converged(const IndexSet& yU_set, const Vector& mu)
+    {
+        const int nU = yU_set.size();
+        for(int i = 0; i < nU; i++)
+        {
+            const int coord = yU_set[i];
+            if(mu[coord] < Scalar(0))
+                return false;
+        }
+        return true;
+    }
+
 public:
     // bfgs:    An object that represents the BFGS approximation matrix.
     // x0:      Current parameter vector.
@@ -198,41 +237,7 @@ public:
             }
 
             // Test convergence
-            bool converged = true;
-            for(int i = 0; i < nP; i++)
-            {
-                const int coord = yP_set[i];
-                if(vecy[coord] < vecl[coord] || vecy[coord] > vecu[coord])
-                {
-                    converged = false;
-                    break;
-                }
-            }
-            if(!converged)
-                continue;
-
-            for(int i = 0; i < nL; i++)
-            {
-                const int coord = yL_set[i];
-                if(lambda[coord] < Scalar(0))
-                {
-                    converged = false;
-                    break;
-                }
-            }
-            if(!converged)
-                continue;
-            
-            for(int i = 0; i < nU; i++)
-            {
-                const int coord = yU_set[i];
-                if(mu[coord] < Scalar(0))
-                {
-                    converged = false;
-                    break;
-                }
-            }
-            if(converged)
+            if( L_converged(yL_set, lambda) && U_converged(yU_set, mu) && P_converged(yP_set, vecy, vecl, vecu) )
                 break;
         }
 
