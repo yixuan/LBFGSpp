@@ -359,11 +359,12 @@ public:
     // If nnz_act is smaller, compute W'AA'd = WA' (A'd) directly
     // If nnz_fv is smaller, compute W'AA'd = W'd - WF' * (F'd)
     inline void compute_FtBAb(
-        const IndexSet& fv_set, const IndexSet& newact_set, const Vector& Wd, const Vector& drt, Vector& res
+        const Matrix& WF, const IndexSet& fv_set, const IndexSet& newact_set, const Vector& Wd, const Vector& drt,
+        Vector& res
     ) const
     {
         const int nact = newact_set.size();
-        const int nfree = fv_set.size();
+        const int nfree = WF.rows();
         res.resize(nfree);
         if(m_ncorr < 1 || nact < 1 || nfree < 1)
         {
@@ -386,11 +387,12 @@ public:
             for(int i = 0; i < nfree; i++)
                 Fd[i] = drt[fv_set[i]];
             // Compute W'AA'd = W'd - WF' * (F'd)
-            apply_WtPv(fv_set, Fd, rhs);
+            rhs.noalias() = WF.transpose() * Fd;
+            rhs.tail(m_ncorr) *= m_theta;
             rhs.noalias() = Wd - rhs;
         }
 
-        apply_PtWMv(fv_set, rhs, res, Scalar(-1));
+        apply_PtWMv(WF, rhs, res, Scalar(-1));
     }
 
     // Compute inv(P'BP) * v

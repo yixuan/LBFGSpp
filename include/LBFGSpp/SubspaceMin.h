@@ -58,6 +58,18 @@ private:
             v[ind[i]] = rhs[i];
     }
 
+    // Check whether the vector is within the bounds
+    static bool in_bounds(const Vector& x, const Vector& lb, const Vector& ub)
+    {
+        const int n = x.size();
+        for(int i = 0; i < n; i++)
+        {
+            if(x[i] < lb[i] || x[i] > ub[i])
+                return false;
+        }
+        return true;
+    }
+
     // Test convergence of P set
     static bool P_converged(const IndexSet& yP_set, const Vector& vecy, const Vector& vecl, const Vector& vecu)
     {
@@ -131,21 +143,34 @@ public:
         // std::cout << "New active set = [ "; for(std::size_t i = 0; i < newact_set.size(); i++)  std::cout << newact_set[i] << " "; std::cout << "]\n";
         // std::cout << "Free variable set = [ "; for(std::size_t i = 0; i < fv_set.size(); i++)  std::cout << fv_set[i] << " "; std::cout << "]\n\n";
 
+        // Extract the rows of W in the free variable set
+        Matrix WF = bfgs.Wb(fv_set);
         // Compute F'BAb = -F'WMW'AA'd
         Vector vecc(nfree);
-        bfgs.compute_FtBAb(fv_set, newact_set, Wd, drt, vecc);
-        // Set the vector y=F'd containing free variables, vector c=F'BAb+F'g for linear term,
-        // and vectors l and u for the new bounds
-        Vector vecy(nfree), vecl(nfree), vecu(nfree);
+        bfgs.compute_FtBAb(WF, fv_set, newact_set, Wd, drt, vecc);
+        // Set the vector c=F'BAb+F'g for linear term, and vectors l and u for the new bounds
+        Vector vecl(nfree), vecu(nfree);
         for(int i = 0; i < nfree; i++)
         {
             const int coord = fv_set[i];
-            vecy[i] = drt[coord];
             vecl[i] = lb[coord] - x0[coord];
             vecu[i] = ub[coord] - x0[coord];
             vecc[i] += g[coord];
         }
+        // Solve y = -inv(B[F, F]) * c
+        Vector vecy(nfree);
+        bfgs.solve_PtBP(WF, -vecc, vecy);
+        // Test feasibility
+        // If yes, then the solution has been found
+        if(in_bounds(vecy, vecl, vecu))
+        {
+            subvec_assign(drt, fv_set, vecy);
+            return;
+        }
+        // Otherwise, enter the iterations
 
+        // Make a copy of y as a fallback solution
+        Vector yfallback = vecy;
         // Dual variables
         Vector lambda = Vector::Zero(nfree), mu = Vector::Zero(nfree);
 
@@ -243,8 +268,20 @@ public:
                 break;
         }
 
+        // If the iterations do not converge, try the projection
         if(k >= maxit)
-            throw std::runtime_error("the subspace minimization routine reached the maximum number of iterations");
+        {
+            vecy.noalias() = vecy.cwiseMax(vecl).cwiseMin(vecu);
+            subvec_assign(drt, fv_set, vecy);
+            // Test whether drt is a descent direction
+            // If not, fall back to the unconstrained solution
+            const Scalar dg = drt.dot(g);
+            if(dg > -std::numeric_limits<Scalar>::epsilon())
+            {
+                subvec_assign(drt, fv_set, yfallback);
+            }
+            return;
+        }
 
         // std::cout << "** Minimization finished in " << k + 1 << " iteration(s) **\n\n";
         // std::cout << "========================= Leaving subspace minimization =========================\n\n";
