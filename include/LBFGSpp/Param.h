@@ -263,7 +263,7 @@ public:
     ///
     /// The maximum number of iterations in the subspace minimization.
     /// This parameter controls the number of iterations in the subspace
-    /// minimization routine. The default value is \c 20.
+    /// minimization routine. The default value is \c 10.
     ///
     int    max_submin;
     ///
@@ -311,7 +311,7 @@ public:
         past           = 1;
         delta          = Scalar(1e-10);
         max_iterations = 0;
-        max_submin     = 20;
+        max_submin     = 10;
         max_linesearch = 20;
         min_step       = Scalar(1e-20);
         max_step       = Scalar(1e+20);
