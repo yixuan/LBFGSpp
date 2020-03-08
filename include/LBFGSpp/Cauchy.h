@@ -113,7 +113,9 @@ public:
         const Scalar inf = std::numeric_limits<Scalar>::infinity();
         for(int i = 0; i < n; i++)
         {
-            if(g[i] < Scalar(0))
+            if(lb[i] == ub[i])
+                brk[i] = Scalar(0);
+            else if(g[i] < Scalar(0))
                 brk[i] = (x0[i] - ub[i]) / g[i];
             else if(g[i] > Scalar(0))
                 brk[i] = (x0[i] - lb[i]) / g[i];
