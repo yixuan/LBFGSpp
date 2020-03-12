@@ -81,14 +81,23 @@ public:
     ///
     int    m;
     ///
-    /// Tolerance for convergence test.
-    /// This parameter determines the accuracy with which the solution is to
-    /// be found. A minimization terminates when
-    /// \f$||g|| < \epsilon\cdot\max(1, ||x||)\f$,
+    /// Absolute tolerance for convergence test.
+    /// This parameter determines the absolute accuracy \f$\epsilon_{abs}\f$
+    /// with which the solution is to be found. A minimization terminates when
+    /// \f$||g|| < \max\{\epsilon_{abs}, \epsilon_{rel}||x||\}\f$,
     /// where \f$||\cdot||\f$ denotes the Euclidean (L2) norm. The default value is
     /// \c 1e-5.
     ///
     Scalar epsilon;
+    ///
+    /// Relative tolerance for convergence test.
+    /// This parameter determines the relative accuracy \f$\epsilon_{rel}\f$
+    /// with which the solution is to be found. A minimization terminates when
+    /// \f$||g|| < \max\{\epsilon_{abs}, \epsilon_{rel}||x||\}\f$,
+    /// where \f$||\cdot||\f$ denotes the Euclidean (L2) norm. The default value is
+    /// \c 1e-5.
+    ///
+    Scalar epsilon_rel;
     ///
     /// Distance for delta-based convergence test.
     /// This parameter determines the distance \f$d\f$ to compute the
@@ -163,6 +172,7 @@ public:
     {
         m              = 6;
         epsilon        = Scalar(1e-5);
+        epsilon_rel    = Scalar(1e-5);
         past           = 0;
         delta          = Scalar(0);
         max_iterations = 0;
@@ -183,8 +193,10 @@ public:
     {
         if(m <= 0)
             throw std::invalid_argument("'m' must be positive");
-        if(epsilon <= 0)
-            throw std::invalid_argument("'epsilon' must be positive");
+        if(epsilon < 0)
+            throw std::invalid_argument("'epsilon' must be non-negative");
+        if(epsilon_rel < 0)
+            throw std::invalid_argument("'epsilon_rel' must be non-negative");
         if(past < 0)
             throw std::invalid_argument("'past' must be non-negative");
         if(delta < 0)
@@ -225,15 +237,25 @@ public:
     ///
     int    m;
     ///
-    /// Tolerance for convergence test.
-    /// This parameter determines the accuracy with which the solution is to
-    /// be found. A minimization terminates when
-    /// \f$||Pg||_{\infty} < \epsilon\cdot\max(1, ||x||)\f$,
+    /// Absolute tolerance for convergence test.
+    /// This parameter determines the absolute accuracy \f$\epsilon_{abs}\f$
+    /// with which the solution is to be found. A minimization terminates when
+    /// \f$||Pg||_{\infty} < \max\{\epsilon_{abs}, \epsilon_{rel}||x||\}\f$,
     /// where \f$||x||\f$ denotes the Euclidean (L2) norm of \f$x\f$, and
     /// \f$Pg=P(x-g,l,u)-x\f$ is the projected gradient. The default value is
     /// \c 1e-5.
     ///
     Scalar epsilon;
+    ///
+    /// Relative tolerance for convergence test.
+    /// This parameter determines the relative accuracy \f$\epsilon_{rel}\f$
+    /// with which the solution is to be found. A minimization terminates when
+    /// \f$||Pg||_{\infty} < \max\{\epsilon_{abs}, \epsilon_{rel}||x||\}\f$,
+    /// where \f$||x||\f$ denotes the Euclidean (L2) norm of \f$x\f$, and
+    /// \f$Pg=P(x-g,l,u)-x\f$ is the projected gradient. The default value is
+    /// \c 1e-5.
+    ///
+    Scalar epsilon_rel;
     ///
     /// Distance for delta-based convergence test.
     /// This parameter determines the distance \f$d\f$ to compute the
@@ -308,6 +330,7 @@ public:
     {
         m              = 6;
         epsilon        = Scalar(1e-5);
+        epsilon_rel    = Scalar(1e-5);
         past           = 1;
         delta          = Scalar(1e-10);
         max_iterations = 0;
@@ -328,8 +351,10 @@ public:
     {
         if(m <= 0)
             throw std::invalid_argument("'m' must be positive");
-        if(epsilon <= 0)
-            throw std::invalid_argument("'epsilon' must be positive");
+        if(epsilon < 0)
+            throw std::invalid_argument("'epsilon' must be non-negative");
+        if(epsilon_rel < 0)
+            throw std::invalid_argument("'epsilon_rel' must be non-negative");
         if(past < 0)
             throw std::invalid_argument("'past' must be non-negative");
         if(delta < 0)

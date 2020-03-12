@@ -89,13 +89,12 @@ public:
 
         // Evaluate function and compute gradient
         fx = f(x, m_grad);
-        Scalar xnorm = x.norm();
         Scalar gnorm = m_grad.norm();
         if(fpast > 0)
             m_fx[0] = fx;
 
         // Early exit if the initial x is already a minimizer
-        if(gnorm <= m_param.epsilon * std::max(xnorm, Scalar(1)))
+        if(gnorm <= m_param.epsilon || gnorm <= m_param.epsilon_rel * x.norm())
         {
             return 1;
         }
@@ -116,12 +115,11 @@ public:
             // Line search to update x, fx and gradient
             LineSearch<Scalar>::LineSearch(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
 
-            // New x norm and gradient norm
-            xnorm = x.norm();
+            // New gradient norm
             gnorm = m_grad.norm();
 
             // Convergence test -- gradient
-            if(gnorm <= m_param.epsilon * std::max(xnorm, Scalar(1)))
+            if(gnorm <= m_param.epsilon || gnorm <= m_param.epsilon_rel * x.norm())
             {
                 return k;
             }

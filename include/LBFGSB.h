@@ -154,7 +154,6 @@ public:
 
         // Evaluate function and compute gradient
         fx = f(x, m_grad);
-        Scalar xnorm = x.norm();
         Scalar projgnorm = proj_grad_norm(x, m_grad, lb, ub);
         if(fpast > 0)
             m_fx[0] = fx;
@@ -163,7 +162,7 @@ public:
         // std::cout << "f(x0) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl;
 
         // Early exit if the initial x is already a minimizer
-        if(projgnorm <= m_param.epsilon * std::max(xnorm, Scalar(1)))
+        if(projgnorm <= m_param.epsilon || projgnorm <= m_param.epsilon_rel * x.norm())
         {
             return 1;
         }
@@ -201,8 +200,7 @@ public:
             step = std::min(step, step_max);
             LineSearch<Scalar>::LineSearch(f, fx, x, m_grad, step, step_max, m_drt, m_xp, m_param);
 
-            // New x norm and projected gradient norm
-            xnorm = x.norm();
+            // New projected gradient norm
             projgnorm = proj_grad_norm(x, m_grad, lb, ub);
 
             /* std::cout << "** Iteration " << k << std::endl;
@@ -210,7 +208,7 @@ public:
             std::cout << "   f(x) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl; */
 
             // Convergence test -- gradient
-            if(projgnorm <= m_param.epsilon * std::max(xnorm, Scalar(1)))
+            if(projgnorm <= m_param.epsilon || projgnorm <= m_param.epsilon_rel * x.norm())
             {
                 return k;
             }
