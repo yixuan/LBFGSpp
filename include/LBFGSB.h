@@ -52,18 +52,6 @@ private:
             m_fx.resize(m_param.past);
     }
 
-    // Check whether the vector is within the bounds
-    static bool in_bounds(const Vector& x, const Vector& lb, const Vector& ub)
-    {
-        const int n = x.size();
-        for(int i = 0; i < n; i++)
-        {
-            if(x[i] < lb[i] || x[i] > ub[i])
-                return false;
-        }
-        return true;
-    }
-
     // Project the vector x to the bound constraint set
     static void force_bounds(Vector& x, const Vector& lb, const Vector& ub)
     {
@@ -135,8 +123,8 @@ public:
             throw std::invalid_argument("'lb' and 'ub' must have the same size as 'x'");
 
         // Check whether the initial vector is within the bounds
-        if(!in_bounds(x, lb, ub))
-            throw std::invalid_argument("initial 'x' is out of the bounds");
+        // If not, project to the feasible set
+        force_bounds(x, lb, ub);
 
         // Initialization
         reset(n);
