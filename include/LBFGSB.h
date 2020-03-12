@@ -74,15 +74,7 @@ private:
     // ||P(x-g, l, u) - x||_inf
     static Scalar proj_grad_norm(const Vector& x, const Vector& g, const Vector& lb, const Vector& ub)
     {
-        const int n = x.size();
-        Scalar res = Scalar(0);
-        for(int i = 0; i < n; i++)
-        {
-            Scalar proj = std::max(lb[i], x[i] - g[i]);
-            proj = std::min(ub[i], proj);
-            res = std::max(res, std::abs(proj - x[i]));
-        }
-        return res;
+        return ((x - g).cwiseMax(lb).cwiseMin(ub) - x).cwiseAbs().maxCoeff();
     }
 
     // The maximum step size alpha such that x0 + alpha * d stays within the bounds
