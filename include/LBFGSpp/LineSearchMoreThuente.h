@@ -221,12 +221,6 @@ public:
             // std::cout << "========================= Leaving line search =========================\n\n";
             return;
         }
-        if(step >= step_max)
-        {
-            // std::cout << "** Maximum step size reached\n\n";
-            // std::cout << "========================= Leaving line search =========================\n\n";
-            return;
-        }
 
         // Extrapolation factor
         const Scalar delta = Scalar(1.1);
@@ -240,37 +234,34 @@ public:
             const Scalar gt = dg - param.ftol * dg_init;
 
             // Update bracketing interval and step size
+            Scalar new_step;
             if(ft > fI_lo)
             {
                 // Case 1: ft > fl
-                const Scalar new_step = step_selection( I_lo,  I_hi, step,
-                                                       fI_lo, fI_hi, ft,
-                                                       gI_lo, gI_hi, gt);
+                new_step = step_selection( I_lo,  I_hi, step,
+                                          fI_lo, fI_hi, ft,
+                                          gI_lo, gI_hi, gt);
                 I_hi = step;
                 fI_hi = ft;
                 gI_hi = gt;
 
-                step = new_step;
-
-                // std::cout << "Case 1: new step = " << step;
+                // std::cout << "Case 1: new step = " << new_step;
 
             } else if(gt * (fI_lo - step) > Scalar(0)) {
                 // Case 2: ft <= fl, gt * (al - at) > 0
-                const Scalar new_step = std::min(step_max, step + delta * (step - I_lo));
+                new_step = std::min(step_max, step + delta * (step - I_lo));
 
                 I_lo = step;
                 fI_lo = ft;
                 gI_lo = gt;
 
-                step = new_step;
-
-                // std::cout << "Case 2: new step = " << step;
+                // std::cout << "Case 2: new step = " << new_step;
 
             } else {
                 // Case 3: ft <= fl, gt * (al - at) <= 0
-                const Scalar new_step = step_selection( I_lo,  I_hi, step,
-                                                       fI_lo, fI_hi, ft,
-                                                       gI_lo, gI_hi, gt);
+                new_step = step_selection( I_lo,  I_hi, step,
+                                          fI_lo, fI_hi, ft,
+                                          gI_lo, gI_hi, gt);
                 I_hi = I_lo;
                 fI_hi = fI_lo;
                 gI_hi = gI_lo;
@@ -279,10 +270,18 @@ public:
                 fI_lo = ft;
                 gI_lo = gt;
 
-                step = new_step;
-
-                // std::cout << "Case 3: new step = " << step;
+                // std::cout << "Case 3: new step = " << new_step;
             }
+
+            // In case step, new_step, and step_max are equal, directly return the computed x and fx
+            if(step == step_max && new_step >= step_max)
+            {
+                // std::cout << "** Maximum step size reached\n\n";
+                // std::cout << "========================= Leaving line search =========================\n\n";
+                return;
+            }
+            // Otherwise, recompute x and fx based on new_step
+            step = new_step;
 
             if(step < param.min_step)
                 throw std::runtime_error("the line search step became smaller than the minimum value allowed");
@@ -306,9 +305,9 @@ public:
             }
             if(step >= step_max)
             {
-                 // std::cout << "** Maximum step size reached\n\n";
-                 // std::cout << "========================= Leaving line search =========================\n\n";
-                 return;
+                // std::cout << "** Maximum step size reached\n\n";
+                // std::cout << "========================= Leaving line search =========================\n\n";
+                return;
             }
         }
 
