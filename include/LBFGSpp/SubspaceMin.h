@@ -274,12 +274,20 @@ public:
             vecy.noalias() = vecy.cwiseMax(vecl).cwiseMin(vecu);
             subvec_assign(drt, fv_set, vecy);
             // Test whether drt is a descent direction
-            // If not, fall back to the unconstrained solution
-            const Scalar dg = drt.dot(g);
-            if(dg > -std::numeric_limits<Scalar>::epsilon())
-            {
-                subvec_assign(drt, fv_set, yfallback);
-            }
+            Scalar dg = drt.dot(g);
+            // If yes, return the result
+            if(dg <= -std::numeric_limits<Scalar>::epsilon())
+                return;
+
+            // If not, fall back to the projected unconstrained solution
+            vecy.noalias() = yfallback.cwiseMax(vecl).cwiseMin(vecu);
+            subvec_assign(drt, fv_set, vecy);
+            dg = drt.dot(g);
+            if(dg <= -std::numeric_limits<Scalar>::epsilon())
+                return;
+
+            // If still not, fall back to the unconstrained solution
+            subvec_assign(drt, fv_set, yfallback);
             return;
         }
 
