@@ -48,44 +48,67 @@ private:
     // Assume that a != b
     static Scalar cubic_interp(const Scalar& a, const Scalar& b, const Scalar& fa, const Scalar& fb, const Scalar& ga, const Scalar& gb)
     {
+        using std::abs;
+        using std::sqrt;
+
+        if(a == b)
+            return a;
+
         const Scalar ba = b - a;
         const Scalar ba2 = ba * ba;
         const Scalar ba3 = ba2 * ba;
         const Scalar fba = fb - fa;
-        // q(x) = c0 + c1 * x + c2 * x^2 + c3 * x^3
-        // Solve c0, c1, c2, c3 such that q(a) = fa, q(b) = fb, q'(a) = ga, and q'(b) = gb
-        const Scalar c3 = (ga + gb) / ba2 - Scalar(2) * fba / ba3;
-        const Scalar c2 = fba / ba2 - ga / ba - (Scalar(2) * a + b) * c3;
-        const Scalar c1 = fba / ba - (a + b) * c2 - (a * a + a * b + b * b) * c3;
-        const Scalar c0 = fa - c1 * a - c2 * a * a - c3 * a * a * a;
+        const Scalar z = (ga + gb) * ba - Scalar(2) * fba;
+        const Scalar w = fba * ba - ga * ba2;
 
-        // q'(x) = c1 + 2 * c2 * x + 3 * c3 * x^2
+        // If c3 = z/(b-a)^3 == 0, reduce to quadratic problem
+        const Scalar endmin = (fa < fb) ? a : b;
+        if(abs(z) < std::numeric_limits<Scalar>::epsilon())
+        {
+            const Scalar c2 = fba / ba2 - ga / ba;
+            const Scalar c1 = fba / ba - (a + b) * c2;
+            // Global minimum, can be infinity
+            const Scalar globmin = -c1 / (Scalar(2) * c2);
+            // If c2 <= 0, or globmin is outside [a, b], then the minimum is achieved at one end point
+            return (c2 > Scalar(0) && globmin >= a && globmin <= b) ? globmin : endmin;
+        }
+
+        // v = c1 / c2
+        const Scalar v = (-Scalar(2) * a * w + ga * ba3 + a * (a + Scalar(2) * b) * z) /
+            (w - (Scalar(2) * a + b) * z);
+        // u = c2 / (3 * c3), may be very large if c3 ~= 0
+        const Scalar u = (w / z - (Scalar(2) * a + b)) / Scalar(3);
+        // q'(x) = c1 + 2 * c2 * x + 3 * c3 * x^2 = 0
+        // x1 = -u * (1 + sqrt(1 - v/u))
+        // x2 = -u * (1 - sqrt(1 - v/u)) = -v / (1 + sqrt(1 - v/u))
+
         // If q'(x) = 0 has no solution in [a, b], q(x) is monotone in [a, b]
-        // Case I: no solution globally
-        const Scalar delta = Scalar(4) * c2 * c2 - Scalar(12) * c1 * c3;
-        if(delta < Scalar(0))
-            return (fa < fb) ? a : b;
-        // Case II: no solution in (a, b)
-        const Scalar sdelta = std::sqrt(delta);
-        const Scalar sol1 = (-Scalar(2) * c2 - sdelta) / (Scalar(6) * c3);
-        const Scalar sol2 = (-Scalar(2) * c2 + sdelta) / (Scalar(6) * c3);
+        // Case I: no solution globally, 1 - v/u <= 0
+        if(v / u >= Scalar(1))
+            return endmin;
+        // Case II: no solution in [a, b]
+        const Scalar vu = Scalar(1) + sqrt(Scalar(1) - v / u);
+        const Scalar sol1 = -u * vu;
+        const Scalar sol2 = -v / vu;
         if( (sol1 - a) * (sol1 - b) >= Scalar(0) && (sol2 - a) * (sol2 - b) >= Scalar(0) )
-            return (fa < fb) ? a : b;
+            return endmin;
 
         // Now at least one solution is in (a, b)
         // Check the second derivative
         // q''(x) = 2 * c2 + 6 * c3 * x;
+        const Scalar c3 = z / ba3;
+        const Scalar c2 = Scalar(3) * c3 * u;
         const Scalar qpp1 = Scalar(2) * c2 + Scalar(6) * c3 * sol1;
         const Scalar sol = (qpp1 > Scalar(0)) ? sol1 : sol2;
         // If the local minimum is not in [a, b], return one of the end points
         if((sol - a) * (sol - b) >= Scalar(0))
-            return (fa < fb) ? a : b;
+            return endmin;
 
         // Compare the local minimum with the end points
-        const Scalar fsol = c0 + c1 * sol + c2 * sol * sol + c3 * sol * sol * sol;
-        Scalar res = (fa < fb) ? a : b;
-        res = (fsol < std::min(fa, fb)) ? sol : res;
-        return res;
+        const Scalar c1 = v * c2;
+        const Scalar fsol = fa + c1 * (sol- a) + c2 * (sol * sol - a * a) +
+            c3 * (sol * sol * sol - a * a * a);
+        return (fsol < std::min(fa, fb)) ? sol : endmin;
     }
 
     static Scalar step_selection(
