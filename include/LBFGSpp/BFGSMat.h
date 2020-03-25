@@ -72,6 +72,7 @@ public:
         if(LBFGSB)
         {
             m_permMinv.resize(2 * m, 2 * m);
+            m_permMinv.setZero();
             m_permMinv.diagonal().setOnes();
         }
     }
