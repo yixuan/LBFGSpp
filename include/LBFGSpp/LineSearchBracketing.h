@@ -63,7 +63,8 @@ public:
         Scalar step_lo = 0,
                step_hi = std::numeric_limits<Scalar>::infinity();
 
-        for( int iter = 0; iter < param.max_linesearch; iter++ )
+        int iter;
+        for(iter = 0; iter < param.max_linesearch; iter++)
         {
             // x_{k+1} = x_k + step * d_k
             x.noalias() = xp + step * drt;
@@ -99,9 +100,6 @@ public:
 
             assert( step_lo < step_hi );
 
-            if(iter >= param.max_linesearch)
-                throw std::runtime_error("the line search routine reached the maximum number of iterations");
-
             if(step < param.min_step)
                 throw std::runtime_error("the line search step became smaller than the minimum value allowed");
 
@@ -111,6 +109,9 @@ public:
             // continue search in mid of current search range
             step = std::isinf(step_hi) ? 2*step : step_lo/2 + step_hi/2;
         }
+
+        if(iter >= param.max_linesearch)
+            throw std::runtime_error("the line search routine reached the maximum number of iterations");
     }
 };
 

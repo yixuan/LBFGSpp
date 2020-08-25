@@ -97,9 +97,6 @@ public:
                 }
             }
 
-            if(iter >= param.max_linesearch)
-                throw std::runtime_error("the line search routine reached the maximum number of iterations");
-
             if(step < param.min_step)
                 throw std::runtime_error("the line search step became smaller than the minimum value allowed");
 
@@ -108,6 +105,9 @@ public:
 
             step *= width;
         }
+
+        if(iter >= param.max_linesearch)
+            throw std::runtime_error("the line search routine reached the maximum number of iterations");
     }
 };
 
