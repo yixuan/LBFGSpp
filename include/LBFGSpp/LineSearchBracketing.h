@@ -71,7 +71,7 @@ public:
             // Evaluate this candidate
             fx = f(x, grad);
 
-            if(fx > fx_init + step * test_decr)
+            if(fx > fx_init + step * test_decr || (fx != fx))
             {
                 step_hi = step;
             } else {
