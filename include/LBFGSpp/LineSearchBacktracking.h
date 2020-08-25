@@ -49,7 +49,7 @@ public:
 
         // Check the value of step
         if(step <= Scalar(0))
-            std::invalid_argument("'step' must be positive");
+            throw std::invalid_argument("'step' must be positive");
 
         // Save the function value at the current x
         const Scalar fx_init = fx;
@@ -57,7 +57,7 @@ public:
         const Scalar dg_init = grad.dot(drt);
         // Make sure d points to a descent direction
         if(dg_init > 0)
-            std::logic_error("the moving direction increases the objective function value");
+            throw std::logic_error("the moving direction increases the objective function value");
 
         const Scalar test_decr = param.ftol * dg_init;
         Scalar width;

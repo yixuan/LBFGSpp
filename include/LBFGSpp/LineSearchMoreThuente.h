@@ -182,9 +182,9 @@ public:
 
         // Check the value of step
         if(step <= Scalar(0))
-            std::invalid_argument("'step' must be positive");
+            throw std::invalid_argument("'step' must be positive");
         if(step > step_max)
-            std::invalid_argument("'step' exceeds 'step_max'");
+            throw std::invalid_argument("'step' exceeds 'step_max'");
 
         // Save the function value at the current x
         const Scalar fx_init = fx;
@@ -195,7 +195,7 @@ public:
 
         // Make sure d points to a descent direction
         if(dg_init >= 0)
-            std::logic_error("the moving direction does not decrease the objective function value");
+            throw std::logic_error("the moving direction does not decrease the objective function value");
 
         // Tolerance for convergence test
         // Sufficient decrease
