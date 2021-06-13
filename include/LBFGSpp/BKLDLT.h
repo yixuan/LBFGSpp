@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2020-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef BK_LDLT_H
