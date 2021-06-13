@@ -258,6 +258,12 @@ public:
             std::cout << "   il = " << il << ", iu = " << iu << ", deltat = " << deltat << std::endl; */
         }
 
+        // In some rare cases fpp is numerically zero, making deltatmin equal to Inf
+        // If this happens, force fpp to be the machine precision
+        const Scalar eps = std::numeric_limits<Scalar>::epsilon();
+        if(fpp < eps)
+            deltatmin = -fp / eps;
+
         // Last step
         if(!crossed_all)
         {
