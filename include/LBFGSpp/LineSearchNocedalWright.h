@@ -2,8 +2,8 @@
 // Copyright (C) 2016-2021 Dirk Toewe <DirkToewe@GoogleMail.com>
 // Under MIT license
 
-#ifndef LINE_SEARCH_NOCEDAL_WRIGHT_H
-#define LINE_SEARCH_NOCEDAL_WRIGHT_H
+#ifndef LBFGSPP_LINE_SEARCH_NOCEDAL_WRIGHT_H
+#define LBFGSPP_LINE_SEARCH_NOCEDAL_WRIGHT_H
 
 #include <Eigen/Core>
 #include <stdexcept>
@@ -65,8 +65,8 @@ public:
         // phi        | fx
         // phi'       | dg
 
-        // the rate, by which the 
-        const Scalar expansion = Scalar(2);      
+        // the rate, by which the
+        const Scalar expansion = Scalar(2);
 
         // Save the function value at the current x
         const Scalar fx_init = fx;
@@ -112,7 +112,7 @@ public:
             return;
 
           step_hi = step_lo;
-            fx_hi =   fx_lo;   
+            fx_hi =   fx_lo;
             dg_hi =   dg_lo;
           step_lo = step;
             fx_lo =   fx;
@@ -191,4 +191,4 @@ public:
 
 } // namespace LBFGSpp
 
-#endif // LINE_SEARCH_NOCEDAL_WRIGHT_H
+#endif // LBFGSPP_LINE_SEARCH_NOCEDAL_WRIGHT_H

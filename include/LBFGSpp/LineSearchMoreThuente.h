@@ -1,8 +1,8 @@
 // Copyright (C) 2020-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef LINE_SEARCH_MORE_THUENTE_H
-#define LINE_SEARCH_MORE_THUENTE_H
+#ifndef LBFGSPP_LINE_SEARCH_MORE_THUENTE_H
+#define LBFGSPP_LINE_SEARCH_MORE_THUENTE_H
 
 #include <stdexcept>  // std::invalid_argument, std::runtime_error
 #include <Eigen/Core>
@@ -22,7 +22,7 @@ namespace LBFGSpp {
 /// only need the first stage to guarantee the convergence.
 ///
 /// Reference:
-/// [1] Moré, J. J., & Thuente, D. J. (1994). Line search algorithms with guaranteed sufficient decrease. 
+/// [1] Moré, J. J., & Thuente, D. J. (1994). Line search algorithms with guaranteed sufficient decrease.
 ///
 template <typename Scalar>
 class LineSearchMoreThuente
@@ -319,4 +319,4 @@ public:
 
 } // namespace LBFGSpp
 
-#endif // LINE_SEARCH_MORE_THUENTE_H
+#endif // LBFGSPP_LINE_SEARCH_MORE_THUENTE_H

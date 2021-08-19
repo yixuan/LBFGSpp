@@ -1,8 +1,8 @@
 // Copyright (C) 2020-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef BK_LDLT_H
-#define BK_LDLT_H
+#ifndef LBFGSPP_BK_LDLT_H
+#define LBFGSPP_BK_LDLT_H
 
 #include <vector>
 #include <stdexcept>
@@ -527,4 +527,4 @@ public:
 
 /// \endcond
 
-#endif // BK_LDLT_H
+#endif // LBFGSPP_BK_LDLT_H

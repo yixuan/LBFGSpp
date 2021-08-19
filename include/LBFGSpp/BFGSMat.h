@@ -1,8 +1,8 @@
 // Copyright (C) 2020-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef BFGS_MAT_H
-#define BFGS_MAT_H
+#ifndef LBFGSPP_BFGS_MAT_H
+#define LBFGSPP_BFGS_MAT_H
 
 #include <vector>
 #include <Eigen/Core>
@@ -495,4 +495,4 @@ public:
 
 /// \endcond
 
-#endif // BFGS_MAT_H
+#endif // LBFGSPP_BFGS_MAT_H

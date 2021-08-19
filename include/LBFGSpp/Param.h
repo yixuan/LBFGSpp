@@ -1,8 +1,8 @@
 // Copyright (C) 2016-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef PARAM_H
-#define PARAM_H
+#ifndef LBFGSPP_PARAM_H
+#define LBFGSPP_PARAM_H
 
 #include <Eigen/Core>
 #include <stdexcept>  // std::invalid_argument
@@ -379,4 +379,4 @@ public:
 
 } // namespace LBFGSpp
 
-#endif // PARAM_H
+#endif // LBFGSPP_PARAM_H

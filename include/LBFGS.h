@@ -1,8 +1,8 @@
 // Copyright (C) 2016-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef LBFGS_H
-#define LBFGS_H
+#ifndef LBFGSPP_LBFGS_H
+#define LBFGSPP_LBFGS_H
 
 #include <Eigen/Core>
 #include "LBFGSpp/Param.h"
@@ -158,4 +158,4 @@ public:
 
 } // namespace LBFGSpp
 
-#endif // LBFGS_H
+#endif // LBFGSPP_LBFGS_H

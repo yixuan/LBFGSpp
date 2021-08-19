@@ -2,8 +2,8 @@
 // Copyright (C) 2016-2021 Dirk Toewe <DirkToewe@GoogleMail.com>
 // Under MIT license
 
-#ifndef LINE_SEARCH_BRACKETING_H
-#define LINE_SEARCH_BRACKETING_H
+#ifndef LBFGSPP_LINE_SEARCH_BRACKETING_H
+#define LBFGSPP_LINE_SEARCH_BRACKETING_H
 
 #include <Eigen/Core>
 #include <stdexcept>  // std::runtime_error
@@ -118,5 +118,5 @@ public:
 
 } // namespace LBFGSpp
 
-#endif // LINE_SEARCH_BRACKETING_H
+#endif // LBFGSPP_LINE_SEARCH_BRACKETING_H
 

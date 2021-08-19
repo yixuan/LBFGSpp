@@ -1,8 +1,8 @@
 // Copyright (C) 2020-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef SUBSPACE_MIN_H
-#define SUBSPACE_MIN_H
+#ifndef LBFGSPP_SUBSPACE_MIN_H
+#define LBFGSPP_SUBSPACE_MIN_H
 
 #include <stdexcept>
 #include <vector>
@@ -303,4 +303,4 @@ public:
 
 /// \endcond
 
-#endif // SUBSPACE_MIN_H
+#endif // LBFGSPP_SUBSPACE_MIN_H

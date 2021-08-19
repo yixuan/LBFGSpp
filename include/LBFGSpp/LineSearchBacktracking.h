@@ -1,8 +1,8 @@
 // Copyright (C) 2016-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef LINE_SEARCH_BACKTRACKING_H
-#define LINE_SEARCH_BACKTRACKING_H
+#ifndef LBFGSPP_LINE_SEARCH_BACKTRACKING_H
+#define LBFGSPP_LINE_SEARCH_BACKTRACKING_H
 
 #include <Eigen/Core>
 #include <stdexcept>  // std::runtime_error
@@ -114,4 +114,4 @@ public:
 
 } // namespace LBFGSpp
 
-#endif // LINE_SEARCH_BACKTRACKING_H
+#endif // LBFGSPP_LINE_SEARCH_BACKTRACKING_H

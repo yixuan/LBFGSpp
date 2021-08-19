@@ -1,8 +1,8 @@
 // Copyright (C) 2020-2021 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
-#ifndef CAUCHY_H
-#define CAUCHY_H
+#ifndef LBFGSPP_CAUCHY_H
+#define LBFGSPP_CAUCHY_H
 
 #include <vector>
 #include <Eigen/Core>
@@ -292,4 +292,4 @@ public:
 
 /// \endcond
 
-#endif // CAUCHY_H
+#endif // LBFGSPP_CAUCHY_H
