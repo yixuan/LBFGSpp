@@ -127,7 +127,7 @@ public:
     ///
     /// The line search termination condition.
     /// This parameter specifies the line search termination condition that will be used
-    /// by the LBFGS routine. The default value is `LBFGS_LINESEARCH_BACKTRACKING_ARMIJO`.
+    /// by the LBFGS routine. The default value is `LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE`.
     ///
     int    linesearch;
     ///
@@ -176,7 +176,7 @@ public:
         past           = 0;
         delta          = Scalar(0);
         max_iterations = 0;
-        linesearch     = LBFGS_LINESEARCH_BACKTRACKING_ARMIJO;
+        linesearch     = LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE;
         max_linesearch = 20;
         min_step       = Scalar(1e-20);
         max_step       = Scalar(1e+20);
