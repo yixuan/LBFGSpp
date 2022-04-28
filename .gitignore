@@ -2,6 +2,7 @@
 *.out
 include/Eigen/*
 archive/*
+issues/*
 .settings/*
 .project
 .cproject
