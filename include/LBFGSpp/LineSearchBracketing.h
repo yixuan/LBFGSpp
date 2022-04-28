@@ -1,5 +1,5 @@
-// Copyright (C) 2016-2021 Yixuan Qiu <yixuan.qiu@cos.name>
-// Copyright (C) 2016-2021 Dirk Toewe <DirkToewe@GoogleMail.com>
+// Copyright (C) 2016-2022 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2022 Dirk Toewe <DirkToewe@GoogleMail.com>
 // Under MIT license
 
 #ifndef LBFGSPP_LINE_SEARCH_BRACKETING_H
