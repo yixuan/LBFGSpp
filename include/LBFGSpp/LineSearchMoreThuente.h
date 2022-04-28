@@ -247,7 +247,7 @@ public:
 
                 // std::cout << "Case 1: new step = " << new_step;
 
-            } else if(gt * (fI_lo - step) > Scalar(0)) {
+            } else if(gt * (I_lo - step) > Scalar(0)) {
                 // Case 2: ft <= fl, gt * (al - at) > 0
                 new_step = std::min(step_max, step + delta * (step - I_lo));
 

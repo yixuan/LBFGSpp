@@ -250,17 +250,17 @@ public:
             {
                 Vector res;
                 bfgs.apply_PtWMv(L_set, Fy, res, Scalar(-1));
-                res.noalias() += subvec(vecc, yL_set);
+                res.noalias() += subvec(vecc, yL_set) + bfgs.theta() * subvec(vecy, yL_set);
                 subvec_assign(lambda, yL_set, res);
             }
 
             // Solve mu[U] = -B[U, F] * y - c[U]
             if(nU > 0)
             {
-                Vector res;
-                bfgs.apply_PtWMv(U_set, Fy, res, Scalar(-1));
-                res.noalias() = -res - subvec(vecc, yU_set);
-                subvec_assign(mu, yU_set, res);
+                Vector negRes;
+                bfgs.apply_PtWMv(U_set, Fy, negRes, Scalar(-1));
+                negRes.noalias() += subvec(vecc, yU_set) + bfgs.theta() * subvec(vecy, yU_set);
+                subvec_assign(mu, yU_set, -negRes);
             }
 
             // Test convergence
