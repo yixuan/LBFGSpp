@@ -9,6 +9,9 @@
   [#15](https://github.com/yixuan/LBFGSpp/issues/15),
   [#21](https://github.com/yixuan/LBFGSpp/issues/21)), with big thanks to
   [@mpayrits](https://github.com/mpayrits) ([#25](https://github.com/yixuan/LBFGSpp/pull/25))
+- Fixed one inconsistency with Moré and Thuente (1994) in the `LineSearchMoreThuente`
+  line search algorithm, pointed out by [@mpayrits](https://github.com/mpayrits)
+  ([#23](https://github.com/yixuan/LBFGSpp/issues/23))
 
 
 
