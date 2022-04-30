@@ -12,6 +12,7 @@
 - Fixed one inconsistency with Moré and Thuente (1994) in the `LineSearchMoreThuente`
   line search algorithm, pointed out by [@mpayrits](https://github.com/mpayrits)
   ([#23](https://github.com/yixuan/LBFGSpp/issues/23))
+- The source code is now formatted using [Clang-Format](https://clang.llvm.org/docs/ClangFormat.html)
 
 
 
