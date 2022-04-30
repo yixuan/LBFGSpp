@@ -8,11 +8,9 @@
 #include <Eigen/Core>
 #include "BKLDLT.h"
 
-
 /// \cond
 
 namespace LBFGSpp {
-
 
 //
 // An *implicit* representation of the BFGS approximation to the Hessian matrix B
@@ -33,14 +31,14 @@ private:
     typedef Eigen::Ref<const Vector> RefConstVec;
     typedef std::vector<int> IndexSet;
 
-    int    m_m;      // Maximum number of correction vectors
+    int m_m;         // Maximum number of correction vectors
     Scalar m_theta;  // theta * I is the initial approximation to the Hessian matrix
     Matrix m_s;      // History of the s vectors
     Matrix m_y;      // History of the y vectors
     Vector m_ys;     // History of the s'y values
     Vector m_alpha;  // Temporary values used in computing H * v
-    int    m_ncorr;  // Number of correction vectors in the history, m_ncorr <= m
-    int    m_ptr;    // A Pointer to locate the most recent history, 1 <= m_ptr <= m
+    int m_ncorr;     // Number of correction vectors in the history, m_ncorr <= m
+    int m_ptr;       // A Pointer to locate the most recent history, 1 <= m_ptr <= m
                      // Details: s and y vectors are stored in cyclic order.
                      //          For example, if the current s-vector is stored in m_s[, m-1],
                      //          then in the next iteration m_s[, 0] will be overwritten.
@@ -48,8 +46,8 @@ private:
                      //          and m_s[, m_ptr % m] points to the most distant one.
 
     //========== The following members are only used in L-BFGS-B algorithm ==========//
-    Matrix                      m_permMinv;     // Permutated M inverse
-    BKLDLT<Scalar>              m_permMsolver;  // Represents the permutated M matrix
+    Matrix m_permMinv;             // Permutated M inverse
+    BKLDLT<Scalar> m_permMsolver;  // Represents the permutated M matrix
 
 public:
     // Constructor
@@ -69,7 +67,7 @@ public:
         m_ncorr = 0;
         m_ptr = m;  // This makes sure that m_ptr % m == 0 in the first step
 
-        if(LBFGSB)
+        if (LBFGSB)
         {
             m_permMinv.resize(2 * m, 2 * m);
             m_permMinv.setZero();
@@ -91,12 +89,12 @@ public:
 
         m_theta = m_y.col(loc).squaredNorm() / ys;
 
-        if(m_ncorr < m_m)
+        if (m_ncorr < m_m)
             m_ncorr++;
 
         m_ptr = loc + 1;
 
-        if(LBFGSB)
+        if (LBFGSB)
         {
             // Minv = [-D         L']
             //        [ L  theta*S'S]
@@ -126,14 +124,14 @@ public:
             //          [s[m]'y[1] ... ... ... ... ... s[m]'y[m-1]  0]
             const int len = m_ncorr - 1;
             // First zero out the column of oldest y
-            if(m_ncorr >= m_m)
+            if (m_ncorr >= m_m)
                 m_permMinv.block(m_m, loc, m_m, 1).setZero();
             // Compute the row associated with new s
             // The current row is loc
             // End with column (loc + m - 1) % m
             // Length is len
             int yloc = (loc + m_m - 1) % m_m;
-            for(int i = 0; i < len; i++)
+            for (int i = 0; i < len; i++)
             {
                 m_permMinv(m_m + loc, yloc) = m_s.col(loc).dot(m_y.col(yloc));
                 yloc = (yloc + m_m - 1) % m_m;
@@ -158,7 +156,7 @@ public:
         // Loop 1
         res.noalias() = a * v;
         int j = m_ptr % m_m;
-        for(int i = 0; i < m_ncorr; i++)
+        for (int i = 0; i < m_ncorr; i++)
         {
             j = (j + m_m - 1) % m_m;
             m_alpha[j] = m_s.col(j).dot(res) / m_ys[j];
@@ -169,7 +167,7 @@ public:
         res /= m_theta;
 
         // Loop 2
-        for(int i = 0; i < m_ncorr; i++)
+        for (int i = 0; i < m_ncorr; i++)
         {
             const Scalar beta = m_y.col(j).dot(res) / m_ys[j];
             res.noalias() += (m_alpha[j] - beta) * m_s.col(j);
@@ -201,7 +199,7 @@ public:
     inline Vector Wb(int b) const
     {
         Vector res(2 * m_ncorr);
-        for(int j = 0; j < m_ncorr; j++)
+        for (int j = 0; j < m_ncorr; j++)
         {
             res[j] = m_y(b, j);
             res[m_ncorr + j] = m_s(b, j);
@@ -217,13 +215,13 @@ public:
         const int* bptr = b.data();
         Matrix res(nb, 2 * m_ncorr);
 
-        for(int j = 0; j < m_ncorr; j++)
+        for (int j = 0; j < m_ncorr; j++)
         {
             const Scalar* Yptr = &m_y(0, j);
             const Scalar* Sptr = &m_s(0, j);
             Scalar* resYptr = res.data() + j * nb;
             Scalar* resSptr = resYptr + m_ncorr * nb;
-            for(int i = 0; i < nb; i++)
+            for (int i = 0; i < nb; i++)
             {
                 const int row = bptr[i];
                 resYptr[i] = Yptr[row];
@@ -237,7 +235,7 @@ public:
     inline void apply_Mv(const Vector& v, Vector& res) const
     {
         res.resize(2 * m_ncorr);
-        if(m_ncorr < 1)
+        if (m_ncorr < 1)
             return;
 
         Vector vpadding = Vector::Zero(2 * m_m);
@@ -264,12 +262,12 @@ public:
         // Remove zeros in v to save computation
         IndexSet P_reduced;
         std::vector<Scalar> v_reduced;
-        if(test_zero)
+        if (test_zero)
         {
             P_reduced.reserve(nP);
-            for(int i = 0; i < nP; i++)
+            for (int i = 0; i < nP; i++)
             {
-                if(vptr[i] != Scalar(0))
+                if (vptr[i] != Scalar(0))
                 {
                     P_reduced.push_back(Pptr[i]);
                     v_reduced.push_back(vptr[i]);
@@ -281,18 +279,18 @@ public:
         }
 
         res.resize(2 * m_ncorr);
-        if(m_ncorr < 1 || nP < 1)
+        if (m_ncorr < 1 || nP < 1)
         {
             res.setZero();
             return false;
         }
 
-        for(int j = 0; j < m_ncorr; j++)
+        for (int j = 0; j < m_ncorr; j++)
         {
             Scalar resy = Scalar(0), ress = Scalar(0);
             const Scalar* yptr = &m_y(0, j);
             const Scalar* sptr = &m_s(0, j);
-            for(int i = 0; i < nP; i++)
+            for (int i = 0; i < nP; i++)
             {
                 const int row = Pptr[i];
                 resy += yptr[row] * vptr[i];
@@ -313,19 +311,19 @@ public:
         const int nP = P_set.size();
         res.resize(nP);
         res.setZero();
-        if(m_ncorr < 1 || nP < 1)
+        if (m_ncorr < 1 || nP < 1)
             return false;
 
         Vector Mv;
         apply_Mv(v, Mv);
         // WP * Mv
         Mv.tail(m_ncorr) *= m_theta;
-        for(int j = 0; j < m_ncorr; j++)
+        for (int j = 0; j < m_ncorr; j++)
         {
             const Scalar* yptr = &m_y(0, j);
             const Scalar* sptr = &m_s(0, j);
             const Scalar Mvy = Mv[j], Mvs = Mv[m_ncorr + j];
-            for(int i = 0; i < nP; i++)
+            for (int i = 0; i < nP; i++)
             {
                 const int row = P_set[i];
                 res[i] += Mvy * yptr[row] + Mvs * sptr[row];
@@ -339,7 +337,7 @@ public:
     {
         const int nP = WP.rows();
         res.resize(nP);
-        if(m_ncorr < 1 || nP < 1)
+        if (m_ncorr < 1 || nP < 1)
         {
             res.setZero();
             return false;
@@ -361,13 +359,12 @@ public:
     // If nnz_fv is smaller, compute W'AA'd = W'd - WF' * (F'd)
     inline void compute_FtBAb(
         const Matrix& WF, const IndexSet& fv_set, const IndexSet& newact_set, const Vector& Wd, const Vector& drt,
-        Vector& res
-    ) const
+        Vector& res) const
     {
         const int nact = newact_set.size();
         const int nfree = WF.rows();
         res.resize(nfree);
-        if(m_ncorr < 1 || nact < 1 || nfree < 1)
+        if (m_ncorr < 1 || nact < 1 || nfree < 1)
         {
             res.setZero();
             return;
@@ -375,17 +372,19 @@ public:
 
         // W'AA'd
         Vector rhs(2 * m_ncorr);
-        if(nact <= nfree)
+        if (nact <= nfree)
         {
             // Construct A'd
             Vector Ad(nfree);
-            for(int i = 0; i < nact; i++)
+            for (int i = 0; i < nact; i++)
                 Ad[i] = drt[newact_set[i]];
             apply_WtPv(newact_set, Ad, rhs);
-        } else {
+        }
+        else
+        {
             // Construct F'd
             Vector Fd(nfree);
-            for(int i = 0; i < nfree; i++)
+            for (int i = 0; i < nfree; i++)
                 Fd[i] = drt[fv_set[i]];
             // Compute W'AA'd = W'd - WF' * (F'd)
             rhs.noalias() = WF.transpose() * Fd;
@@ -405,7 +404,7 @@ public:
     {
         const int nP = WP.rows();
         res.resize(nP);
-        if(m_ncorr < 1 || nP < 1)
+        if (m_ncorr < 1 || nP < 1)
         {
             res.noalias() = v / m_theta;
             return;
@@ -415,7 +414,7 @@ public:
         // Remember that W = [Y, theta * S], but we do not store theta in WP
         Matrix mid(2 * m_ncorr, 2 * m_ncorr);
         // [0:(ncorr - 1), 0:(ncorr - 1)]
-        for(int j = 0; j < m_ncorr; j++)
+        for (int j = 0; j < m_ncorr; j++)
         {
             mid.col(j).segment(j, m_ncorr - j).noalias() = m_permMinv.col(j).segment(j, m_ncorr - j) -
                 WP.block(0, j, nP, m_ncorr - j).transpose() * WP.col(j) / m_theta;
@@ -424,7 +423,7 @@ public:
         mid.block(m_ncorr, 0, m_ncorr, m_ncorr).noalias() = m_permMinv.block(m_m, 0, m_ncorr, m_ncorr) -
             WP.rightCols(m_ncorr).transpose() * WP.leftCols(m_ncorr);
         // [ncorr:(2 * ncorr - 1), ncorr:(2 * ncorr - 1)]
-        for(int j = 0; j < m_ncorr; j++)
+        for (int j = 0; j < m_ncorr; j++)
         {
             mid.col(m_ncorr + j).segment(m_ncorr + j, m_ncorr - j).noalias() = m_theta *
                 (m_permMinv.col(m_m + j).segment(m_m + j, m_ncorr - j) - WP.rightCols(m_ncorr - j).transpose() * WP.col(m_ncorr + j));
@@ -447,7 +446,7 @@ public:
         const int nP = WP.rows();
         const int nQ = Q_set.size();
         res.resize(nP);
-        if(m_ncorr < 1 || nP < 1 || nQ < 1)
+        if (m_ncorr < 1 || nP < 1 || nQ < 1)
         {
             res.setZero();
             return false;
@@ -455,7 +454,7 @@ public:
 
         Vector WQtv;
         bool nonzero = apply_WtPv(Q_set, v, WQtv, test_zero);
-        if(!nonzero)
+        if (!nonzero)
         {
             res.setZero();
             return false;
@@ -473,7 +472,7 @@ public:
         const int nP = WP.rows();
         const int nQ = WQ.rows();
         res.resize(nP);
-        if(m_ncorr < 1 || nP < 1 || nQ < 1)
+        if (m_ncorr < 1 || nP < 1 || nQ < 1)
         {
             res.setZero();
             return false;
@@ -490,9 +489,8 @@ public:
     }
 };
 
-
-} // namespace LBFGSpp
+}  // namespace LBFGSpp
 
 /// \endcond
 
-#endif // LBFGSPP_BFGS_MAT_H
+#endif  // LBFGSPP_BFGS_MAT_H

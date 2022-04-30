@@ -7,9 +7,7 @@
 #include <Eigen/Core>
 #include <stdexcept>  // std::invalid_argument
 
-
 namespace LBFGSpp {
-
 
 ///
 /// \defgroup Enumerations
@@ -63,7 +61,6 @@ enum LINE_SEARCH_TERMINATION_CONDITION
     LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE = 3
 };
 
-
 ///
 /// Parameters to control the L-BFGS algorithm.
 ///
@@ -79,7 +76,7 @@ public:
     /// (corrections). The default value is \c 6. Values less than \c 3 are
     /// not recommended. Large values will result in excessive computing time.
     ///
-    int    m;
+    int m;
     ///
     /// Absolute tolerance for convergence test.
     /// This parameter determines the absolute accuracy \f$\epsilon_{abs}\f$
@@ -106,7 +103,7 @@ public:
     /// step. If the value of this parameter is zero, the delta-based convergence
     /// test will not be performed. The default value is \c 0.
     ///
-    int    past;
+    int past;
     ///
     /// Delta for convergence test.
     /// The algorithm stops when the following condition is met,
@@ -123,19 +120,19 @@ public:
     /// optimization process until a convergence or error. The default value
     /// is \c 0.
     ///
-    int    max_iterations;
+    int max_iterations;
     ///
     /// The line search termination condition.
     /// This parameter specifies the line search termination condition that will be used
     /// by the LBFGS routine. The default value is `LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE`.
     ///
-    int    linesearch;
+    int linesearch;
     ///
     /// The maximum number of trials for the line search.
     /// This parameter controls the number of function and gradients evaluations
     /// per iteration for the line search routine. The default value is \c 20.
     ///
-    int    max_linesearch;
+    int max_linesearch;
     ///
     /// The minimum step length allowed in the line search.
     /// The default value is \c 1e-20. Usually this value does not need to be
@@ -170,6 +167,7 @@ public:
     ///
     LBFGSParam()
     {
+        // clang-format off
         m              = 6;
         epsilon        = Scalar(1e-5);
         epsilon_rel    = Scalar(1e-5);
@@ -182,6 +180,7 @@ public:
         max_step       = Scalar(1e+20);
         ftol           = Scalar(1e-4);
         wolfe          = Scalar(0.9);
+        // clang-format on
     }
 
     ///
@@ -191,34 +190,33 @@ public:
     ///
     inline void check_param() const
     {
-        if(m <= 0)
+        if (m <= 0)
             throw std::invalid_argument("'m' must be positive");
-        if(epsilon < 0)
+        if (epsilon < 0)
             throw std::invalid_argument("'epsilon' must be non-negative");
-        if(epsilon_rel < 0)
+        if (epsilon_rel < 0)
             throw std::invalid_argument("'epsilon_rel' must be non-negative");
-        if(past < 0)
+        if (past < 0)
             throw std::invalid_argument("'past' must be non-negative");
-        if(delta < 0)
+        if (delta < 0)
             throw std::invalid_argument("'delta' must be non-negative");
-        if(max_iterations < 0)
+        if (max_iterations < 0)
             throw std::invalid_argument("'max_iterations' must be non-negative");
-        if(linesearch < LBFGS_LINESEARCH_BACKTRACKING_ARMIJO ||
-           linesearch > LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE)
-           throw std::invalid_argument("unsupported line search termination condition");
-        if(max_linesearch <= 0)
+        if (linesearch < LBFGS_LINESEARCH_BACKTRACKING_ARMIJO ||
+            linesearch > LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE)
+            throw std::invalid_argument("unsupported line search termination condition");
+        if (max_linesearch <= 0)
             throw std::invalid_argument("'max_linesearch' must be positive");
-        if(min_step < 0)
+        if (min_step < 0)
             throw std::invalid_argument("'min_step' must be positive");
-        if(max_step < min_step )
+        if (max_step < min_step)
             throw std::invalid_argument("'max_step' must be greater than 'min_step'");
-        if(ftol <= 0 || ftol >= 0.5)
+        if (ftol <= 0 || ftol >= 0.5)
             throw std::invalid_argument("'ftol' must satisfy 0 < ftol < 0.5");
-        if(wolfe <= ftol || wolfe >= 1)
+        if (wolfe <= ftol || wolfe >= 1)
             throw std::invalid_argument("'wolfe' must satisfy ftol < wolfe < 1");
     }
 };
-
 
 ///
 /// Parameters to control the L-BFGS-B algorithm.
@@ -235,7 +233,7 @@ public:
     /// (corrections). The default value is \c 6. Values less than \c 3 are
     /// not recommended. Large values will result in excessive computing time.
     ///
-    int    m;
+    int m;
     ///
     /// Absolute tolerance for convergence test.
     /// This parameter determines the absolute accuracy \f$\epsilon_{abs}\f$
@@ -264,7 +262,7 @@ public:
     /// step. If the value of this parameter is zero, the delta-based convergence
     /// test will not be performed. The default value is \c 1.
     ///
-    int    past;
+    int past;
     ///
     /// Delta for convergence test.
     /// The algorithm stops when the following condition is met,
@@ -281,19 +279,19 @@ public:
     /// optimization process until a convergence or error. The default value
     /// is \c 0.
     ///
-    int    max_iterations;
+    int max_iterations;
     ///
     /// The maximum number of iterations in the subspace minimization.
     /// This parameter controls the number of iterations in the subspace
     /// minimization routine. The default value is \c 10.
     ///
-    int    max_submin;
+    int max_submin;
     ///
     /// The maximum number of trials for the line search.
     /// This parameter controls the number of function and gradients evaluations
     /// per iteration for the line search routine. The default value is \c 20.
     ///
-    int    max_linesearch;
+    int max_linesearch;
     ///
     /// The minimum step length allowed in the line search.
     /// The default value is \c 1e-20. Usually this value does not need to be
@@ -328,6 +326,7 @@ public:
     ///
     LBFGSBParam()
     {
+        // clang-format off
         m              = 6;
         epsilon        = Scalar(1e-5);
         epsilon_rel    = Scalar(1e-5);
@@ -340,6 +339,7 @@ public:
         max_step       = Scalar(1e+20);
         ftol           = Scalar(1e-4);
         wolfe          = Scalar(0.9);
+        // clang-format on
     }
 
     ///
@@ -349,34 +349,33 @@ public:
     ///
     inline void check_param() const
     {
-        if(m <= 0)
+        if (m <= 0)
             throw std::invalid_argument("'m' must be positive");
-        if(epsilon < 0)
+        if (epsilon < 0)
             throw std::invalid_argument("'epsilon' must be non-negative");
-        if(epsilon_rel < 0)
+        if (epsilon_rel < 0)
             throw std::invalid_argument("'epsilon_rel' must be non-negative");
-        if(past < 0)
+        if (past < 0)
             throw std::invalid_argument("'past' must be non-negative");
-        if(delta < 0)
+        if (delta < 0)
             throw std::invalid_argument("'delta' must be non-negative");
-        if(max_iterations < 0)
+        if (max_iterations < 0)
             throw std::invalid_argument("'max_iterations' must be non-negative");
-        if(max_submin < 0)
+        if (max_submin < 0)
             throw std::invalid_argument("'max_submin' must be non-negative");
-        if(max_linesearch <= 0)
+        if (max_linesearch <= 0)
             throw std::invalid_argument("'max_linesearch' must be positive");
-        if(min_step < 0)
+        if (min_step < 0)
             throw std::invalid_argument("'min_step' must be positive");
-        if(max_step < min_step )
+        if (max_step < min_step)
             throw std::invalid_argument("'max_step' must be greater than 'min_step'");
-        if(ftol <= 0 || ftol >= 0.5)
+        if (ftol <= 0 || ftol >= 0.5)
             throw std::invalid_argument("'ftol' must satisfy 0 < ftol < 0.5");
-        if(wolfe <= ftol || wolfe >= 1)
+        if (wolfe <= ftol || wolfe >= 1)
             throw std::invalid_argument("'wolfe' must satisfy ftol < wolfe < 1");
     }
 };
 
+}  // namespace LBFGSpp
 
-} // namespace LBFGSpp
-
-#endif // LBFGSPP_PARAM_H
+#endif  // LBFGSPP_PARAM_H

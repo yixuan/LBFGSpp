@@ -9,11 +9,9 @@
 #include <Eigen/Core>
 #include "BFGSMat.h"
 
-
 /// \cond
 
 namespace LBFGSpp {
-
 
 //
 // Subspace minimization procedure of the L-BFGS-B algorithm,
@@ -45,7 +43,7 @@ private:
     {
         const int nsub = ind.size();
         Vector res(nsub);
-        for(int i = 0; i < nsub; i++)
+        for (int i = 0; i < nsub; i++)
             res[i] = v[ind[i]];
         return res;
     }
@@ -54,7 +52,7 @@ private:
     static void subvec_assign(Vector& v, const IndexSet& ind, const Vector& rhs)
     {
         const int nsub = ind.size();
-        for(int i = 0; i < nsub; i++)
+        for (int i = 0; i < nsub; i++)
             v[ind[i]] = rhs[i];
     }
 
@@ -62,9 +60,9 @@ private:
     static bool in_bounds(const Vector& x, const Vector& lb, const Vector& ub)
     {
         const int n = x.size();
-        for(int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
-            if(x[i] < lb[i] || x[i] > ub[i])
+            if (x[i] < lb[i] || x[i] > ub[i])
                 return false;
         }
         return true;
@@ -74,10 +72,10 @@ private:
     static bool P_converged(const IndexSet& yP_set, const Vector& vecy, const Vector& vecl, const Vector& vecu)
     {
         const int nP = yP_set.size();
-        for(int i = 0; i < nP; i++)
+        for (int i = 0; i < nP; i++)
         {
             const int coord = yP_set[i];
-            if(vecy[coord] < vecl[coord] || vecy[coord] > vecu[coord])
+            if (vecy[coord] < vecl[coord] || vecy[coord] > vecu[coord])
                 return false;
         }
         return true;
@@ -87,10 +85,10 @@ private:
     static bool L_converged(const IndexSet& yL_set, const Vector& lambda)
     {
         const int nL = yL_set.size();
-        for(int i = 0; i < nL; i++)
+        for (int i = 0; i < nL; i++)
         {
             const int coord = yL_set[i];
-            if(lambda[coord] < Scalar(0))
+            if (lambda[coord] < Scalar(0))
                 return false;
         }
         return true;
@@ -100,10 +98,10 @@ private:
     static bool U_converged(const IndexSet& yU_set, const Vector& mu)
     {
         const int nU = yU_set.size();
-        for(int i = 0; i < nU; i++)
+        for (int i = 0; i < nU; i++)
         {
             const int coord = yU_set[i];
-            if(mu[coord] < Scalar(0))
+            if (mu[coord] < Scalar(0))
                 return false;
         }
         return true;
@@ -124,8 +122,7 @@ public:
     static void subspace_minimize(
         const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& xcp, const Vector& g,
         const Vector& lb, const Vector& ub, const Vector& Wd, const IndexSet& newact_set, const IndexSet& fv_set, int maxit,
-        Vector& drt
-    )
+        Vector& drt)
     {
         // std::cout << "========================= Entering subspace minimization =========================\n\n";
 
@@ -134,7 +131,7 @@ public:
         // Size of free variables
         const int nfree = fv_set.size();
         // If there is no free variable, simply return drt
-        if(nfree < 1)
+        if (nfree < 1)
         {
             // std::cout << "========================= (Early) leaving subspace minimization =========================\n\n";
             return;
@@ -150,7 +147,7 @@ public:
         bfgs.compute_FtBAb(WF, fv_set, newact_set, Wd, drt, vecc);
         // Set the vector c=F'BAb+F'g for linear term, and vectors l and u for the new bounds
         Vector vecl(nfree), vecu(nfree);
-        for(int i = 0; i < nfree; i++)
+        for (int i = 0; i < nfree; i++)
         {
             const int coord = fv_set[i];
             vecl[i] = lb[coord] - x0[coord];
@@ -162,7 +159,7 @@ public:
         bfgs.solve_PtBP(WF, -vecc, vecy);
         // Test feasibility
         // If yes, then the solution has been found
-        if(in_bounds(vecy, vecl, vecu))
+        if (in_bounds(vecy, vecl, vecu))
         {
             subvec_assign(drt, fv_set, vecy);
             return;
@@ -176,11 +173,14 @@ public:
 
         // Iterations
         IndexSet L_set, U_set, P_set, yL_set, yU_set, yP_set;
-        L_set.reserve(nfree / 3); yL_set.reserve(nfree / 3);
-        U_set.reserve(nfree / 3); yU_set.reserve(nfree / 3);
-        P_set.reserve(nfree); yP_set.reserve(nfree);
+        L_set.reserve(nfree / 3);
+        yL_set.reserve(nfree / 3);
+        U_set.reserve(nfree / 3);
+        yU_set.reserve(nfree / 3);
+        P_set.reserve(nfree);
+        yP_set.reserve(nfree);
         int k;
-        for(k = 0; k < maxit; k++)
+        for (k = 0; k < maxit; k++)
         {
             // Construct the L, U, and P sets, and then update values
             // Indices in original drt vector
@@ -191,22 +191,26 @@ public:
             yL_set.clear();
             yU_set.clear();
             yP_set.clear();
-            for(int i = 0; i < nfree; i++)
+            for (int i = 0; i < nfree; i++)
             {
                 const int coord = fv_set[i];
                 const Scalar li = vecl[i], ui = vecu[i];
-                if( (vecy[i] < li) || (vecy[i] == li && lambda[i] >= Scalar(0)) )
+                if ((vecy[i] < li) || (vecy[i] == li && lambda[i] >= Scalar(0)))
                 {
                     L_set.push_back(coord);
                     yL_set.push_back(i);
                     vecy[i] = li;
                     mu[i] = Scalar(0);
-                } else if( (vecy[i] > ui) || (vecy[i] == ui && mu[i] >= Scalar(0)) ) {
+                }
+                else if ((vecy[i] > ui) || (vecy[i] == ui && mu[i] >= Scalar(0)))
+                {
                     U_set.push_back(coord);
                     yU_set.push_back(i);
                     vecy[i] = ui;
                     lambda[i] = Scalar(0);
-                } else {
+                }
+                else
+                {
                     P_set.push_back(coord);
                     yP_set.push_back(i);
                     lambda[i] = Scalar(0);
@@ -223,17 +227,17 @@ public:
             Matrix WP = bfgs.Wb(P_set);
             // Solve y[P] = -inv(B[P, P]) * (B[P, L] * l[L] + B[P, U] * u[U] + c[P])
             const int nP = P_set.size();
-            if(nP > 0)
+            if (nP > 0)
             {
                 Vector rhs = subvec(vecc, yP_set);
                 Vector lL = subvec(vecl, yL_set);
                 Vector uU = subvec(vecu, yU_set);
                 Vector tmp(nP);
                 bool nonzero = bfgs.apply_PtBQv(WP, L_set, lL, tmp, true);
-                if(nonzero)
+                if (nonzero)
                     rhs.noalias() += tmp;
                 nonzero = bfgs.apply_PtBQv(WP, U_set, uU, tmp, true);
-                if(nonzero)
+                if (nonzero)
                     rhs.noalias() += tmp;
 
                 bfgs.solve_PtBP(WP, -rhs, tmp);
@@ -244,9 +248,9 @@ public:
             const int nL = L_set.size();
             const int nU = U_set.size();
             Vector Fy;
-            if(nL > 0 || nU > 0)
+            if (nL > 0 || nU > 0)
                 bfgs.apply_WtPv(fv_set, vecy, Fy);
-            if(nL > 0)
+            if (nL > 0)
             {
                 Vector res;
                 bfgs.apply_PtWMv(L_set, Fy, res, Scalar(-1));
@@ -255,7 +259,7 @@ public:
             }
 
             // Solve mu[U] = -B[U, F] * y - c[U]
-            if(nU > 0)
+            if (nU > 0)
             {
                 Vector negRes;
                 bfgs.apply_PtWMv(U_set, Fy, negRes, Scalar(-1));
@@ -264,26 +268,26 @@ public:
             }
 
             // Test convergence
-            if( L_converged(yL_set, lambda) && U_converged(yU_set, mu) && P_converged(yP_set, vecy, vecl, vecu) )
+            if (L_converged(yL_set, lambda) && U_converged(yU_set, mu) && P_converged(yP_set, vecy, vecl, vecu))
                 break;
         }
 
         // If the iterations do not converge, try the projection
-        if(k >= maxit)
+        if (k >= maxit)
         {
             vecy.noalias() = vecy.cwiseMax(vecl).cwiseMin(vecu);
             subvec_assign(drt, fv_set, vecy);
             // Test whether drt is a descent direction
             Scalar dg = drt.dot(g);
             // If yes, return the result
-            if(dg <= -std::numeric_limits<Scalar>::epsilon())
+            if (dg <= -std::numeric_limits<Scalar>::epsilon())
                 return;
 
             // If not, fall back to the projected unconstrained solution
             vecy.noalias() = yfallback.cwiseMax(vecl).cwiseMin(vecu);
             subvec_assign(drt, fv_set, vecy);
             dg = drt.dot(g);
-            if(dg <= -std::numeric_limits<Scalar>::epsilon())
+            if (dg <= -std::numeric_limits<Scalar>::epsilon())
                 return;
 
             // If still not, fall back to the unconstrained solution
@@ -298,9 +302,8 @@ public:
     }
 };
 
-
-} // namespace LBFGSpp
+}  // namespace LBFGSpp
 
 /// \endcond
 
-#endif // LBFGSPP_SUBSPACE_MIN_H
+#endif  // LBFGSPP_SUBSPACE_MIN_H

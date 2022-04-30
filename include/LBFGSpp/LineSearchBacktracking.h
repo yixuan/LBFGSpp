@@ -7,9 +7,7 @@
 #include <Eigen/Core>
 #include <stdexcept>  // std::runtime_error
 
-
 namespace LBFGSpp {
-
 
 ///
 /// The backtracking line search algorithm for L-BFGS. Mainly for internal use.
@@ -48,7 +46,7 @@ public:
         const Scalar inc = 2.1;
 
         // Check the value of step
-        if(step <= Scalar(0))
+        if (step <= Scalar(0))
             throw std::invalid_argument("'step' must be positive");
 
         // Save the function value at the current x
@@ -56,62 +54,67 @@ public:
         // Projection of gradient on the search direction
         const Scalar dg_init = grad.dot(drt);
         // Make sure d points to a descent direction
-        if(dg_init > 0)
+        if (dg_init > 0)
             throw std::logic_error("the moving direction increases the objective function value");
 
         const Scalar test_decr = param.ftol * dg_init;
         Scalar width;
 
         int iter;
-        for(iter = 0; iter < param.max_linesearch; iter++)
+        for (iter = 0; iter < param.max_linesearch; iter++)
         {
             // x_{k+1} = x_k + step * d_k
             x.noalias() = xp + step * drt;
             // Evaluate this candidate
             fx = f(x, grad);
 
-            if(fx > fx_init + step * test_decr || (fx != fx))
+            if (fx > fx_init + step * test_decr || (fx != fx))
             {
                 width = dec;
-            } else {
+            }
+            else
+            {
                 // Armijo condition is met
-                if(param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_ARMIJO)
+                if (param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_ARMIJO)
                     break;
 
                 const Scalar dg = grad.dot(drt);
-                if(dg < param.wolfe * dg_init)
+                if (dg < param.wolfe * dg_init)
                 {
                     width = inc;
-                } else {
+                }
+                else
+                {
                     // Regular Wolfe condition is met
-                    if(param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_WOLFE)
+                    if (param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_WOLFE)
                         break;
 
-                    if(dg > -param.wolfe * dg_init)
+                    if (dg > -param.wolfe * dg_init)
                     {
                         width = dec;
-                    } else {
+                    }
+                    else
+                    {
                         // Strong Wolfe condition is met
                         break;
                     }
                 }
             }
 
-            if(step < param.min_step)
+            if (step < param.min_step)
                 throw std::runtime_error("the line search step became smaller than the minimum value allowed");
 
-            if(step > param.max_step)
+            if (step > param.max_step)
                 throw std::runtime_error("the line search step became larger than the maximum value allowed");
 
             step *= width;
         }
 
-        if(iter >= param.max_linesearch)
+        if (iter >= param.max_linesearch)
             throw std::runtime_error("the line search routine reached the maximum number of iterations");
     }
 };
 
+}  // namespace LBFGSpp
 
-} // namespace LBFGSpp
-
-#endif // LBFGSPP_LINE_SEARCH_BACKTRACKING_H
+#endif  // LBFGSPP_LINE_SEARCH_BACKTRACKING_H

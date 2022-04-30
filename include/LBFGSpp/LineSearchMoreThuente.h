@@ -8,9 +8,7 @@
 #include <Eigen/Core>
 #include "LBFGSpp/Param.h"
 
-
 namespace LBFGSpp {
-
 
 ///
 /// The line search algorithm by Moré and Thuente (1994), currently used for the L-BFGS-B algorithm.
@@ -55,7 +53,7 @@ private:
     // that interpolates fa, ga, fb and gb, assuming a != b
     // Also sets a flag indicating whether the minimizer exists
     static Scalar cubic_minimizer(const Scalar& a, const Scalar& b, const Scalar& fa, const Scalar& fb,
-        const Scalar& ga, const Scalar& gb, bool& exists)
+                                  const Scalar& ga, const Scalar& gb, bool& exists)
     {
         using std::abs;
         using std::sqrt;
@@ -73,7 +71,7 @@ private:
 
         // If c3 = z/(b-a)^3 == 0, reduce to quadratic problem
         const Scalar eps = std::numeric_limits<Scalar>::epsilon();
-        if(abs(z3) < eps * abs(z2) || abs(z3) < eps * abs(z1))
+        if (abs(z3) < eps * abs(z2) || abs(z3) < eps * abs(z1))
         {
             // Minimizer exists if c2 > 0
             exists = (z2 * ba > Scalar(0));
@@ -90,7 +88,7 @@ private:
         const Scalar u = z2 / (Scalar(3) * z3), v = z1 / z2;
         const Scalar vu = v / u;
         exists = (vu <= Scalar(1));
-        if(!exists)
+        if (!exists)
             return b;
 
         // We need to find a numerically stable way to compute the roots, as z3 may still be small
@@ -102,12 +100,14 @@ private:
         // r = -u (+-) sqrt(delta), where
         // sqrt(delta) = sqrt(|u|) * sqrt(|v|) * sqrt(1-u/v)
         Scalar r1 = Scalar(0), r2 = Scalar(0);
-        if(abs(u) >= abs(v))
+        if (abs(u) >= abs(v))
         {
             const Scalar w = Scalar(1) + sqrt(Scalar(1) - vu);
             r1 = -u * w;
             r2 = -v / w;
-        } else {
+        }
+        else
+        {
             const Scalar sqrtd = sqrt(abs(u)) * sqrt(abs(v)) * sqrt(1 - u / v);
             r1 = -u - sqrtd;
             r2 = -u + sqrtd;
@@ -124,7 +124,8 @@ private:
     {
         using std::abs;
 
-        if(al == au)  return al;
+        if (al == au)
+            return al;
 
         // ac: cubic interpolation of fl, ft, gl, gt
         // aq: quadratic interpolation of fl, gl, ft
@@ -134,10 +135,11 @@ private:
         const Scalar aq = quadratic_minimizer(al, at, fl, gl, ft);
         // std::cout << "ac = " << ac << ", aq = " << aq << std::endl;
         // Case 1: ft > fl
-        if(ft > fl)
+        if (ft > fl)
         {
             // This should not happen if ft > fl, but just to be safe
-            if(!ac_exists)  return aq;
+            if (!ac_exists)
+                return aq;
             // Then use the scheme described in the paper
             return (abs(ac - al) < abs(aq - al)) ? ac : ((aq + ac) / Scalar(2));
         }
@@ -145,12 +147,12 @@ private:
         // as: quadratic interpolation of gl and gt
         const Scalar as = quadratic_minimizer(al, at, gl, gt);
         // Case 2: ft <= fl, gt * gl < 0
-        if(gt * gl < Scalar(0))
+        if (gt * gl < Scalar(0))
             return (abs(ac - at) >= abs(as - at)) ? ac : as;
 
         // Case 3: ft <= fl, gt * gl >= 0, |gt| < |gl|
         const Scalar delta = Scalar(0.66);
-        if(abs(gt) < abs(gl))
+        if (abs(gt) < abs(gl))
         {
             // We choose either ac or as
             // The case for ac: 1. It exists, and
@@ -159,11 +161,13 @@ private:
             // Cases for as: otherwise
             const Scalar res = (ac_exists &&
                                 (ac - at) * (at - al) > Scalar(0) &&
-                                abs(ac - at) < abs(as - at)) ? ac : as;
+                                abs(ac - at) < abs(as - at)) ?
+                ac :
+                as;
             // Postprocessing the chosen step
             return (at > al) ?
-                   std::min(at + delta * (au - at), res) :
-                   std::max(at + delta * (au - at), res);
+                std::min(at + delta * (au - at), res) :
+                std::max(at + delta * (au - at), res);
         }
 
         // ae: cubic interpolation of ft, fu, gt, gu
@@ -172,8 +176,8 @@ private:
         // Case 4: ft <= fl, gt * gl >= 0, |gt| >= |gl|
         // The following is not used in the paper, but it seems to be a reasonable safeguard
         return (at > al) ?
-               std::min(at + delta * (au - at), ae) :
-               std::max(at + delta * (au - at), ae);
+            std::min(at + delta * (au - at), ae) :
+            std::max(at + delta * (au - at), ae);
     }
 
 public:
@@ -203,9 +207,9 @@ public:
         // std::cout << "========================= Entering line search =========================\n\n";
 
         // Check the value of step
-        if(step <= Scalar(0))
+        if (step <= Scalar(0))
             throw std::invalid_argument("'step' must be positive");
-        if(step > step_max)
+        if (step > step_max)
             throw std::invalid_argument("'step' exceeds 'step_max'");
 
         // Save the function value at the current x
@@ -216,7 +220,7 @@ public:
         // std::cout << "fx_init = " << fx_init << ", dg_init = " << dg_init << std::endl << std::endl;
 
         // Make sure d points to a descent direction
-        if(dg_init >= 0)
+        if (dg_init >= 0)
             throw std::logic_error("the moving direction does not decrease the objective function value");
 
         // Tolerance for convergence test
@@ -226,8 +230,8 @@ public:
         const Scalar test_curv = -param.wolfe * dg_init;
 
         // The bracketing interval
-        Scalar  I_lo = Scalar(0),                           I_hi = std::numeric_limits<Scalar>::infinity();
-        Scalar fI_lo = Scalar(0),                          fI_hi = std::numeric_limits<Scalar>::infinity();
+        Scalar I_lo = Scalar(0), I_hi = std::numeric_limits<Scalar>::infinity();
+        Scalar fI_lo = Scalar(0), fI_hi = std::numeric_limits<Scalar>::infinity();
         Scalar gI_lo = (Scalar(1) - param.ftol) * dg_init, gI_hi = std::numeric_limits<Scalar>::infinity();
         // Function value and gradient at the current step size
         x.noalias() = xp + step * drt;
@@ -237,7 +241,7 @@ public:
         // std::cout << "max_step = " << step_max << ", step = " << step << ", fx = " << fx << ", dg = " << dg << std::endl;
 
         // Convergence test
-        if(fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
+        if (fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
         {
             // std::cout << "** Criteria met\n\n";
             // std::cout << "========================= Leaving line search =========================\n\n";
@@ -247,7 +251,7 @@ public:
         // Extrapolation factor
         const Scalar delta = Scalar(1.1);
         int iter;
-        for(iter = 0; iter < param.max_linesearch; iter++)
+        for (iter = 0; iter < param.max_linesearch; iter++)
         {
             // ft = psi(step) = f(xp + step * drt) - f(xp) - step * test_decr
             // gt = psi'(step) = dg - mu * dg_init
@@ -257,10 +261,10 @@ public:
 
             // Update bracketing interval and step size
             Scalar new_step;
-            if(ft > fI_lo)
+            if (ft > fI_lo)
             {
                 // Case 1: ft > fl
-                new_step = step_selection( I_lo,  I_hi, step,
+                new_step = step_selection(I_lo, I_hi, step,
                                           fI_lo, fI_hi, ft,
                                           gI_lo, gI_hi, gt);
                 I_hi = step;
@@ -268,8 +272,9 @@ public:
                 gI_hi = gt;
 
                 // std::cout << "Case 1: new step = " << new_step << std::endl;
-
-            } else if(gt * (I_lo - step) > Scalar(0)) {
+            }
+            else if (gt * (I_lo - step) > Scalar(0))
+            {
                 // Case 2: ft <= fl, gt * (al - at) > 0
                 new_step = std::min(step_max, step + delta * (step - I_lo));
 
@@ -278,10 +283,11 @@ public:
                 gI_lo = gt;
 
                 // std::cout << "Case 2: new step = " << new_step << std::endl;
-
-            } else {
+            }
+            else
+            {
                 // Case 3: ft <= fl, gt * (al - at) <= 0
-                new_step = step_selection( I_lo,  I_hi, step,
+                new_step = step_selection(I_lo, I_hi, step,
                                           fI_lo, fI_hi, ft,
                                           gI_lo, gI_hi, gt);
                 I_hi = I_lo;
@@ -296,7 +302,7 @@ public:
             }
 
             // In case step, new_step, and step_max are equal, directly return the computed x and fx
-            if(step == step_max && new_step >= step_max)
+            if (step == step_max && new_step >= step_max)
             {
                 // std::cout << "** Maximum step size reached\n\n";
                 // std::cout << "========================= Leaving line search =========================\n\n";
@@ -305,10 +311,10 @@ public:
             // Otherwise, recompute x and fx based on new_step
             step = new_step;
 
-            if(step < param.min_step)
+            if (step < param.min_step)
                 throw std::runtime_error("the line search step became smaller than the minimum value allowed");
 
-            if(step > param.max_step)
+            if (step > param.max_step)
                 throw std::runtime_error("the line search step became larger than the maximum value allowed");
 
             // Update parameter, function value, and gradient
@@ -319,13 +325,13 @@ public:
             // std::cout << ", fx = " << fx << std::endl;
 
             // Convergence test
-            if(fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
+            if (fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
             {
                 // std::cout << "** Criteria met\n\n";
                 // std::cout << "========================= Leaving line search =========================\n\n";
                 return;
             }
-            if(step >= step_max)
+            if (step >= step_max)
             {
                 // std::cout << "** Maximum step size reached\n\n";
                 // std::cout << "========================= Leaving line search =========================\n\n";
@@ -333,12 +339,11 @@ public:
             }
         }
 
-        if(iter >= param.max_linesearch)
+        if (iter >= param.max_linesearch)
             throw std::runtime_error("the line search routine reached the maximum number of iterations");
     }
 };
 
+}  // namespace LBFGSpp
 
-} // namespace LBFGSpp
-
-#endif // LBFGSPP_LINE_SEARCH_MORE_THUENTE_H
+#endif  // LBFGSPP_LINE_SEARCH_MORE_THUENTE_H

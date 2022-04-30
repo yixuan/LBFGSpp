@@ -8,11 +8,9 @@
 #include <Eigen/Core>
 #include "BFGSMat.h"
 
-
 /// \cond
 
 namespace LBFGSpp {
-
 
 //
 // Class to compute the generalized Cauchy point (GCP) for the L-BFGS-B algorithm,
@@ -66,9 +64,9 @@ private:
     {
         const int nord = ord.size();
         int i;
-        for(i = start; i < nord; i++)
+        for (i = start; i < nord; i++)
         {
-            if(brk[ord[i]] > t)
+            if (brk[ord[i]] > t)
                 break;
         }
 
@@ -87,8 +85,7 @@ public:
     // fv_set:     Free variable set.
     static void get_cauchy_point(
         const BFGSMat<Scalar, true>& bfgs, const Vector& x0, const Vector& g, const Vector& lb, const Vector& ub,
-        Vector& xcp, Vector& vecc, IndexSet& newact_set, IndexSet& fv_set
-    )
+        Vector& xcp, Vector& vecc, IndexSet& newact_set, IndexSet& fv_set)
     {
         // std::cout << "========================= Entering GCP search =========================\n\n";
 
@@ -111,13 +108,13 @@ public:
         IndexSet ord;
         ord.reserve(n);
         const Scalar inf = std::numeric_limits<Scalar>::infinity();
-        for(int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
-            if(lb[i] == ub[i])
+            if (lb[i] == ub[i])
                 brk[i] = Scalar(0);
-            else if(g[i] < Scalar(0))
+            else if (g[i] < Scalar(0))
                 brk[i] = (x0[i] - ub[i]) / g[i];
-            else if(g[i] > Scalar(0))
+            else if (g[i] > Scalar(0))
                 brk[i] = (x0[i] - lb[i]) / g[i];
             else
                 brk[i] = inf;
@@ -125,9 +122,9 @@ public:
             const bool iszero = (brk[i] == Scalar(0));
             vecd[i] = iszero ? Scalar(0) : -g[i];
 
-            if(brk[i] == inf)
+            if (brk[i] == inf)
                 fv_set.push_back(i);
-            else if(!iszero)
+            else if (!iszero)
                 ord.push_back(i);
         }
 
@@ -140,7 +137,7 @@ public:
         // brk[i] == 0 <=> The i-th coordinate is on the boundary
         const int nord = ord.size();
         const int nfree = fv_set.size();
-        if( (nfree < 1) && (nord < 1) )
+        if ((nfree < 1) && (nord < 1))
         {
             /* std::cout << "** All coordinates at boundary **\n";
             std::cout << "\n========================= Leaving GCP search =========================\n\n"; */
@@ -183,7 +180,7 @@ public:
         bool crossed_all = false;
         const int ncorr = bfgs.num_corrections();
         Vector wact(2 * ncorr);
-        while(deltatmin >= deltat)
+        while (deltatmin >= deltat)
         {
             // Step 1
             vecc.noalias() += deltat * vecp;
@@ -198,10 +195,10 @@ public:
 
             // If nfree == 0 and act_end == nord-1, then we have crossed all coordinates
             // We only need to update xcp from ord[b] to ord[bp], and then exit
-            if( (nfree == 0) && (act_end == nord - 1) )
+            if ((nfree == 0) && (act_end == nord - 1))
             {
                 // std::cout << "** [ ";
-                for(int i = act_begin; i <= act_end; i++)
+                for (int i = act_begin; i <= act_end; i++)
                 {
                     const int act = ord[i];
                     xcp[act] = (vecd[act] > Scalar(0)) ? ub[act] : lb[act];
@@ -219,7 +216,7 @@ public:
             // Update xcp and d on active coordinates
             // std::cout << "** [ ";
             fp += deltat * fpp;
-            for(int i = act_begin; i <= act_end; i++)
+            for (int i = act_begin; i <= act_end; i++)
             {
                 const int act = ord[i];
                 xcp[act] = (vecd[act] > Scalar(0)) ? ub[act] : lb[act];
@@ -246,7 +243,7 @@ public:
             b = act_end + 1;
             // If we have visited all finite-valued break points, and have not exited earlier,
             // then the next iu will be infinity. Simply exit the loop now
-            if(b >= nord)
+            if (b >= nord)
                 break;
             iu = brk[ord[b]];
             // Width of the current interval
@@ -261,22 +258,22 @@ public:
         // In some rare cases fpp is numerically zero, making deltatmin equal to Inf
         // If this happens, force fpp to be the machine precision
         const Scalar eps = std::numeric_limits<Scalar>::epsilon();
-        if(fpp < eps)
+        if (fpp < eps)
             deltatmin = -fp / eps;
 
         // Last step
-        if(!crossed_all)
+        if (!crossed_all)
         {
             deltatmin = std::max(deltatmin, Scalar(0));
             vecc.noalias() += deltatmin * vecp;
             const Scalar tfinal = il + deltatmin;
             // Update xcp on free variable coordinates
-            for(int i = 0; i < nfree; i++)
+            for (int i = 0; i < nfree; i++)
             {
                 const int coord = fv_set[i];
                 xcp[coord] = x0[coord] + tfinal * vecd[coord];
             }
-            for(int i = b; i < nord; i++)
+            for (int i = b; i < nord; i++)
             {
                 const int coord = ord[i];
                 xcp[coord] = x0[coord] + tfinal * vecd[coord];
@@ -287,9 +284,8 @@ public:
     }
 };
 
-
-} // namespace LBFGSpp
+}  // namespace LBFGSpp
 
 /// \endcond
 
-#endif // LBFGSPP_CAUCHY_H
+#endif  // LBFGSPP_CAUCHY_H

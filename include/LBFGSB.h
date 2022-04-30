@@ -13,15 +13,13 @@
 #include "LBFGSpp/SubspaceMin.h"
 #include "LBFGSpp/LineSearchMoreThuente.h"
 
-
 namespace LBFGSpp {
-
 
 ///
 /// L-BFGS-B solver for box-constrained numerical optimization
 ///
-template < typename Scalar,
-           template<class> class LineSearch = LineSearchMoreThuente >
+template <typename Scalar,
+          template <class> class LineSearch = LineSearchMoreThuente>
 class LBFGSBSolver
 {
 private:
@@ -31,12 +29,12 @@ private:
     typedef std::vector<int> IndexSet;
 
     const LBFGSBParam<Scalar>& m_param;  // Parameters to control the LBFGS algorithm
-    BFGSMat<Scalar, true>      m_bfgs;   // Approximation to the Hessian matrix
-    Vector                     m_fx;     // History of the objective function values
-    Vector                     m_xp;     // Old x
-    Vector                     m_grad;   // New gradient
-    Vector                     m_gradp;  // Old gradient
-    Vector                     m_drt;    // Moving direction
+    BFGSMat<Scalar, true> m_bfgs;        // Approximation to the Hessian matrix
+    Vector m_fx;                         // History of the objective function values
+    Vector m_xp;                         // Old x
+    Vector m_grad;                       // New gradient
+    Vector m_gradp;                      // Old gradient
+    Vector m_drt;                        // Moving direction
 
     // Reset internal variables
     // n: dimension of the vector to be optimized
@@ -48,7 +46,7 @@ private:
         m_grad.resize(n);
         m_gradp.resize(n);
         m_drt.resize(n);
-        if(m_param.past > 0)
+        if (m_param.past > 0)
             m_fx.resize(m_param.past);
     }
 
@@ -71,12 +69,14 @@ private:
         const int n = x0.size();
         Scalar step = std::numeric_limits<Scalar>::infinity();
 
-        for(int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
-            if(drt[i] > Scalar(0))
+            if (drt[i] > Scalar(0))
             {
                 step = std::min(step, (ub[i] - x0[i]) / drt[i]);
-            } else if(drt[i] < Scalar(0)) {
+            }
+            else if (drt[i] < Scalar(0))
+            {
                 step = std::min(step, (lb[i] - x0[i]) / drt[i]);
             }
         }
@@ -119,7 +119,7 @@ public:
 
         // Dimension of the vector
         const int n = x.size();
-        if(lb.size() != n || ub.size() != n)
+        if (lb.size() != n || ub.size() != n)
             throw std::invalid_argument("'lb' and 'ub' must have the same size as 'x'");
 
         // Check whether the initial vector is within the bounds
@@ -135,14 +135,14 @@ public:
         // Evaluate function and compute gradient
         fx = f(x, m_grad);
         Scalar projgnorm = proj_grad_norm(x, m_grad, lb, ub);
-        if(fpast > 0)
+        if (fpast > 0)
             m_fx[0] = fx;
 
         // std::cout << "x0 = " << x.transpose() << std::endl;
         // std::cout << "f(x0) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl;
 
         // Early exit if the initial x is already a minimizer
-        if(projgnorm <= m_param.epsilon || projgnorm <= m_param.epsilon_rel * x.norm())
+        if (projgnorm <= m_param.epsilon || projgnorm <= m_param.epsilon_rel * x.norm())
         {
             return 1;
         }
@@ -167,7 +167,7 @@ public:
         Vector vecs(n), vecy(n);
         // Number of iterations used
         int k = 1;
-        for( ; ; )
+        for (;;)
         {
             // Save the curent x and gradient
             m_xp.noalias() = x;
@@ -188,21 +188,21 @@ public:
             std::cout << "   f(x) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl; */
 
             // Convergence test -- gradient
-            if(projgnorm <= m_param.epsilon || projgnorm <= m_param.epsilon_rel * x.norm())
+            if (projgnorm <= m_param.epsilon || projgnorm <= m_param.epsilon_rel * x.norm())
             {
                 return k;
             }
             // Convergence test -- objective function value
-            if(fpast > 0)
+            if (fpast > 0)
             {
                 const Scalar fxd = m_fx[k % fpast];
-                if(k >= fpast && abs(fxd - fx) <= m_param.delta * std::max(std::max(abs(fx), abs(fxd)), Scalar(1)))
+                if (k >= fpast && abs(fxd - fx) <= m_param.delta * std::max(std::max(abs(fx), abs(fxd)), Scalar(1)))
                     return k;
 
                 m_fx[k % fpast] = fx;
             }
             // Maximum number of iterations
-            if(m_param.max_iterations != 0 && k >= m_param.max_iterations)
+            if (m_param.max_iterations != 0 && k >= m_param.max_iterations)
             {
                 return k;
             }
@@ -212,7 +212,7 @@ public:
             // y_{k+1} = g_{k+1} - g_k
             vecs.noalias() = x - m_xp;
             vecy.noalias() = m_grad - m_gradp;
-            if(vecs.dot(vecy) > eps * vecy.squaredNorm())
+            if (vecs.dot(vecy) > eps * vecy.squaredNorm())
                 m_bfgs.add_correction(vecs, vecy);
 
             force_bounds(x, lb, ub);
@@ -225,7 +225,7 @@ public:
             std::cout << "f(xcp) = " << fcp << ", ||proj_grad|| = " << projgcpnorm << std::endl << std::endl;*/
 
             SubspaceMin<Scalar>::subspace_minimize(m_bfgs, x, xcp, m_grad, lb, ub,
-                vecc, newact_set, fv_set, m_param.max_submin, m_drt);
+                                                   vecc, newact_set, fv_set, m_param.max_submin, m_drt);
 
             /*Vector gsm(n);
             Scalar fsm = f(x + m_drt, gsm);
@@ -240,7 +240,6 @@ public:
     }
 };
 
+}  // namespace LBFGSpp
 
-} // namespace LBFGSpp
-
-#endif // LBFGSPP_LBFGSB_H
+#endif  // LBFGSPP_LBFGSB_H
