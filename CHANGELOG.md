@@ -5,6 +5,9 @@
   contributed by [@steinmig](https://github.com/steinmig)
 
 ### Changed
+- The default line search method for `LBFGSSolver` has been changed from `LineSearchBacktracking`
+  to `LineSearchNocedalWright`, per the suggestion of [@mpayrits](https://github.com/mpayrits)
+  ([#25](https://github.com/yixuan/LBFGSpp/pull/25))
 - Fixed a few critical issues ([#9](https://github.com/yixuan/LBFGSpp/issues/9),
   [#15](https://github.com/yixuan/LBFGSpp/issues/15),
   [#21](https://github.com/yixuan/LBFGSpp/issues/21)), with big thanks to
