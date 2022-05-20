@@ -187,23 +187,26 @@ public:
     /// \param f        A function object such that `f(x, grad)` returns the
     ///                 objective function value at `x`, and overwrites `grad` with
     ///                 the gradient.
+    /// \param param    Parameters for the L-BFGS-B algorithm.
+    /// \param xp       The current point.
+    /// \param drt      The current moving direction.
+    /// \param step_max The upper bound for the step size that makes x feasible.
+    /// \param step     In: The initial step length.
+    ///                 Out: The calculated step length.
     /// \param fx       In: The objective function value at the current point.
     ///                 Out: The function value at the new point.
+    /// \param grad     In: The current gradient vector.
+    ///                 Out: The gradient at the new point.
+    /// \param dg       In: The inner product between drt and grad.
+    ///                 Out: The inner product between drt and the new gradient.
     /// \param x        Out: The new point moved to.
-    /// \param grad     In: The current gradient vector. Out: The gradient at the
-    ///                 new point.
-    /// \param step     In: The initial step length. Out: The calculated step length.
-    /// \param step_max The upper bound for the step size.
-    /// \param drt      The current moving direction.
-    /// \param xp       The current point.
-    /// \param param    Parameters for the LBFGS algorithm
     ///
     template <typename Foo>
-    static void LineSearch(Foo& f, Scalar& fx, Vector& x, Vector& grad,
-                           Scalar& step, const Scalar& step_max,
-                           const Vector& drt, const Vector& xp,
-                           const LBFGSBParam<Scalar>& param)
+    static void LineSearch(Foo& f, const LBFGSBParam<Scalar>& param,
+                           const Vector& xp, const Vector& drt, const Scalar& step_max,
+                           Scalar& step, Scalar& fx, Vector& grad, Scalar& dg, Vector& x)
     {
+        using std::abs;
         // std::cout << "========================= Entering line search =========================\n\n";
 
         // Check the value of step
@@ -215,7 +218,7 @@ public:
         // Save the function value at the current x
         const Scalar fx_init = fx;
         // Projection of gradient on the search direction
-        const Scalar dg_init = grad.dot(drt);
+        const Scalar dg_init = dg;
 
         // std::cout << "fx_init = " << fx_init << ", dg_init = " << dg_init << std::endl << std::endl;
 
@@ -233,15 +236,16 @@ public:
         Scalar I_lo = Scalar(0), I_hi = std::numeric_limits<Scalar>::infinity();
         Scalar fI_lo = Scalar(0), fI_hi = std::numeric_limits<Scalar>::infinity();
         Scalar gI_lo = (Scalar(1) - param.ftol) * dg_init, gI_hi = std::numeric_limits<Scalar>::infinity();
+
         // Function value and gradient at the current step size
         x.noalias() = xp + step * drt;
         fx = f(x, grad);
-        Scalar dg = grad.dot(drt);
+        dg = grad.dot(drt);
 
         // std::cout << "max_step = " << step_max << ", step = " << step << ", fx = " << fx << ", dg = " << dg << std::endl;
 
         // Convergence test
-        if (fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
+        if (fx <= fx_init + step * test_decr && abs(dg) <= test_curv)
         {
             // std::cout << "** Criteria met\n\n";
             // std::cout << "========================= Leaving line search =========================\n\n";

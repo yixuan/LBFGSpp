@@ -173,13 +173,15 @@ public:
             // Save the curent x and gradient
             m_xp.noalias() = x;
             m_gradp.noalias() = m_grad;
+            Scalar dg = m_grad.dot(m_drt);
 
             // Line search to update x, fx and gradient
             Scalar step_max = max_step_size(x, m_drt, lb, ub);
             step_max = std::min(m_param.max_step, step_max);
             Scalar step = Scalar(1);
             step = std::min(step, step_max);
-            LineSearch<Scalar>::LineSearch(f, fx, x, m_grad, step, step_max, m_drt, m_xp, m_param);
+
+            LineSearch<Scalar>::LineSearch(f, m_param, m_xp, m_drt, step_max, step, fx, m_grad, dg, x);
 
             // New projected gradient norm
             m_projgnorm = proj_grad_norm(x, m_grad, lb, ub);
