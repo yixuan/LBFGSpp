@@ -175,12 +175,27 @@ public:
             m_gradp.noalias() = m_grad;
             Scalar dg = m_grad.dot(m_drt);
 
-            // Line search to update x, fx and gradient
+            // Maximum step size to make x feasible
             Scalar step_max = max_step_size(x, m_drt, lb, ub);
+            
+            // In some cases, the direction returned by the subspace minimization procedure
+            // in the previous iteration is pathological, leading to issues such as
+            // step_max~=0 and dg>=0. If this happens, we use xcp-x as the search direction,
+            // and reset the BFGS matrix. This is because xsm (the subspace minimizer)
+            // heavily depends on the BFGS matrix. If xsm is corrupted, then we may suspect
+            // there is something wrong in the BFGS matrix, and it is safer to reset the matrix.
+            // In contrast, xcp is obtained from a line search, which tends to be more robust
+            if (dg >= Scalar(0) || step_max <= m_param.min_step)
+            {
+                m_drt.noalias() = xcp - x;
+                m_bfgs.reset(n, m_param.m);
+                step_max = max_step_size(x, m_drt, lb, ub);
+            }
+
+            // Line search to update x, fx and gradient
             step_max = std::min(m_param.max_step, step_max);
             Scalar step = Scalar(1);
             step = std::min(step, step_max);
-
             LineSearch<Scalar>::LineSearch(f, m_param, m_xp, m_drt, step_max, step, fx, m_grad, dg, x);
 
             // New projected gradient norm

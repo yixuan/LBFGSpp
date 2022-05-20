@@ -223,7 +223,7 @@ public:
         // std::cout << "fx_init = " << fx_init << ", dg_init = " << dg_init << std::endl << std::endl;
 
         // Make sure d points to a descent direction
-        if (dg_init >= 0)
+        if (dg_init >= Scalar(0))
             throw std::logic_error("the moving direction does not decrease the objective function value");
 
         // Tolerance for convergence test
