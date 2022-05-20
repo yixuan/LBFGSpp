@@ -30,6 +30,7 @@ private:
     Vector m_fx;                        // History of the objective function values
     Vector m_xp;                        // Old x
     Vector m_grad;                      // New gradient
+    Scalar m_gnorm;                     // Norm of the gradient
     Vector m_gradp;                     // Old gradient
     Vector m_drt;                       // Moving direction
 
@@ -87,12 +88,12 @@ public:
 
         // Evaluate function and compute gradient
         fx = f(x, m_grad);
-        Scalar gnorm = m_grad.norm();
+        m_gnorm = m_grad.norm();
         if (fpast > 0)
             m_fx[0] = fx;
 
         // Early exit if the initial x is already a minimizer
-        if (gnorm <= m_param.epsilon || gnorm <= m_param.epsilon_rel * x.norm())
+        if (m_gnorm <= m_param.epsilon || m_gnorm <= m_param.epsilon_rel * x.norm())
         {
             return 1;
         }
@@ -114,10 +115,10 @@ public:
             LineSearch<Scalar>::LineSearch(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
 
             // New gradient norm
-            gnorm = m_grad.norm();
+            m_gnorm = m_grad.norm();
 
             // Convergence test -- gradient
-            if (gnorm <= m_param.epsilon || gnorm <= m_param.epsilon_rel * x.norm())
+            if (m_gnorm <= m_param.epsilon || m_gnorm <= m_param.epsilon_rel * x.norm())
             {
                 return k;
             }
@@ -151,6 +152,20 @@ public:
 
         return k;
     }
+
+    ///
+    /// Returning the gradient vector on the last iterate.
+    /// Typically used to debug and test convergence.
+    /// Should only be called after the `minimize()` function.
+    ///
+    /// \return A const reference to the gradient vector.
+    ///
+    const Vector& final_grad() const { return m_grad; }
+
+    ///
+    /// Returning the Euclidean norm of the final gradient.
+    ///
+    Scalar final_grad_norm() const { return m_gnorm; }
 };
 
 }  // namespace LBFGSpp

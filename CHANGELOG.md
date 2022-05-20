@@ -1,3 +1,12 @@
+## Unrealeased
+
+### Added
+- Added functions `final_grad()` and `final_grad_norm()` to `LBFGSSolver`
+  and `LBFGSBSolver` to retrieve the final gradient information
+  ([#12](https://github.com/yixuan/LBFGSpp/issues/12))
+
+
+
 ## [0.2.0] - 2022-05-20
 
 ### Added

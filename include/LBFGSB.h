@@ -33,6 +33,7 @@ private:
     Vector m_fx;                         // History of the objective function values
     Vector m_xp;                         // Old x
     Vector m_grad;                       // New gradient
+    Scalar m_projgnorm;                  // Projected gradient norm
     Vector m_gradp;                      // Old gradient
     Vector m_drt;                        // Moving direction
 
@@ -134,15 +135,15 @@ public:
 
         // Evaluate function and compute gradient
         fx = f(x, m_grad);
-        Scalar projgnorm = proj_grad_norm(x, m_grad, lb, ub);
+        m_projgnorm = proj_grad_norm(x, m_grad, lb, ub);
         if (fpast > 0)
             m_fx[0] = fx;
 
         // std::cout << "x0 = " << x.transpose() << std::endl;
-        // std::cout << "f(x0) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl;
+        // std::cout << "f(x0) = " << fx << ", ||proj_grad|| = " << m_projgnorm << std::endl << std::endl;
 
         // Early exit if the initial x is already a minimizer
-        if (projgnorm <= m_param.epsilon || projgnorm <= m_param.epsilon_rel * x.norm())
+        if (m_projgnorm <= m_param.epsilon || m_projgnorm <= m_param.epsilon_rel * x.norm())
         {
             return 1;
         }
@@ -181,14 +182,14 @@ public:
             LineSearch<Scalar>::LineSearch(f, fx, x, m_grad, step, step_max, m_drt, m_xp, m_param);
 
             // New projected gradient norm
-            projgnorm = proj_grad_norm(x, m_grad, lb, ub);
+            m_projgnorm = proj_grad_norm(x, m_grad, lb, ub);
 
             /* std::cout << "** Iteration " << k << std::endl;
             std::cout << "   x = " << x.transpose() << std::endl;
-            std::cout << "   f(x) = " << fx << ", ||proj_grad|| = " << projgnorm << std::endl << std::endl; */
+            std::cout << "   f(x) = " << fx << ", ||proj_grad|| = " << m_projgnorm << std::endl << std::endl; */
 
             // Convergence test -- gradient
-            if (projgnorm <= m_param.epsilon || projgnorm <= m_param.epsilon_rel * x.norm())
+            if (m_projgnorm <= m_param.epsilon || m_projgnorm <= m_param.epsilon_rel * x.norm())
             {
                 return k;
             }
@@ -238,6 +239,23 @@ public:
 
         return k;
     }
+
+    ///
+    /// Returning the gradient vector on the last iterate.
+    /// Typically used to debug and test convergence.
+    /// Should only be called after the `minimize()` function.
+    ///
+    /// \return A const reference to the gradient vector.
+    ///
+    const Vector& final_grad() const { return m_grad; }
+
+    ///
+    /// Returning the infinity norm of the final projected gradient.
+    /// The projected gradient is defined as \f$P(x-g,l,u)-x\f$, where \f$P(v,l,u)\f$ stands for
+    /// the projection of a vector \f$v\f$ onto the box specified by the lower bound vector \f$l\f$ and
+    /// upper bound vector \f$u\f$.
+    ///
+    Scalar final_grad_norm() const { return m_projgnorm; }
 };
 
 }  // namespace LBFGSpp

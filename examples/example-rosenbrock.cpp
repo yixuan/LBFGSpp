@@ -41,6 +41,8 @@ int main()
     std::cout << niter << " iterations" << std::endl;
     std::cout << "x = \n" << x.transpose() << std::endl;
     std::cout << "f(x) = " << fx << std::endl;
+    std::cout << "grad = " << solver.final_grad().transpose() << std::endl;
+    std::cout << "||grad|| = " << solver.final_grad_norm() << std::endl;
 
     return 0;
 }
