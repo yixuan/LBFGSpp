@@ -1,4 +1,4 @@
-## Unreleased
+## [0.2.0] - 2022-05-20
 
 ### Added
 - Added a CMake script for installation ([#24](https://github.com/yixuan/LBFGSpp/pull/24)),
