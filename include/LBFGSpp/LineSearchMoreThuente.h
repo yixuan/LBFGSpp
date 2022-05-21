@@ -126,6 +126,10 @@ private:
 
         if (al == au)
             return al;
+        
+        // If ft = Inf or gt = Inf, we return the middle point of al and at
+        if (!std::isfinite(ft) || !std::isfinite(gt))
+            return (al + at) / Scalar(2);
 
         // ac: cubic interpolation of fl, ft, gl, gt
         // aq: quadratic interpolation of fl, gl, ft
@@ -151,7 +155,7 @@ private:
             return (abs(ac - at) >= abs(as - at)) ? ac : as;
 
         // Case 3: ft <= fl, gt * gl >= 0, |gt| < |gl|
-        const Scalar delta = Scalar(0.66);
+        const Scalar deltal = Scalar(1.1), deltau = Scalar(0.66);
         if (abs(gt) < abs(gl))
         {
             // We choose either ac or as
@@ -166,9 +170,13 @@ private:
                 as;
             // Postprocessing the chosen step
             return (at > al) ?
-                std::min(at + delta * (au - at), res) :
-                std::max(at + delta * (au - at), res);
+                std::min(at + deltau * (au - at), res) :
+                std::max(at + deltau * (au - at), res);
         }
+
+        // Simple extrapolation if au, fu, or gu is infinity
+        if ((!std::isfinite(au)) || (!std::isfinite(fu)) || (!std::isfinite(gu)))
+            return at + deltal * (at - al);
 
         // ae: cubic interpolation of ft, fu, gt, gu
         bool ae_exists;
@@ -176,8 +184,8 @@ private:
         // Case 4: ft <= fl, gt * gl >= 0, |gt| >= |gl|
         // The following is not used in the paper, but it seems to be a reasonable safeguard
         return (at > al) ?
-            std::min(at + delta * (au - at), ae) :
-            std::max(at + delta * (au - at), ae);
+            std::min(at + deltau * (au - at), ae) :
+            std::max(at + deltau * (au - at), ae);
     }
 
 public:
@@ -263,14 +271,13 @@ public:
             const Scalar ft = fx - fx_init - step * test_decr;
             const Scalar gt = dg - param.ftol * dg_init;
 
-            // Update bracketing interval and step size
+            // Update step size and bracketing interval
             Scalar new_step;
             if (ft > fI_lo)
             {
                 // Case 1: ft > fl
-                new_step = step_selection(I_lo, I_hi, step,
-                                          fI_lo, fI_hi, ft,
-                                          gI_lo, gI_hi, gt);
+                new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);
+
                 I_hi = step;
                 fI_hi = ft;
                 gI_hi = gt;
@@ -280,7 +287,21 @@ public:
             else if (gt * (I_lo - step) > Scalar(0))
             {
                 // Case 2: ft <= fl, gt * (al - at) > 0
+                //
+                // Page 291 of Moré and Thuente (1994) suggests that
+                // newat = min(at + delta * (at - al), amax), delta in [1.1, 4]
                 new_step = std::min(step_max, step + delta * (step - I_lo));
+
+                // We can also consider the following scheme:
+                // First let step_selection() decide a value, and then project to the range above
+                //
+                // new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);
+                // const Scalar delta2 = Scalar(4)
+                // const Scalar t1 = step + delta * (step - I_lo);
+                // const Scalar t2 = step + delta2 * (step - I_lo);
+                // const Scalar tl = std::min(t1, t2), tu = std::max(t1, t2);
+                // new_step = std::min(tu, std::max(tl, new_step));
+                // new_step = std::min(step_max, new_step);
 
                 I_lo = step;
                 fI_lo = ft;
@@ -291,9 +312,8 @@ public:
             else
             {
                 // Case 3: ft <= fl, gt * (al - at) <= 0
-                new_step = step_selection(I_lo, I_hi, step,
-                                          fI_lo, fI_hi, ft,
-                                          gI_lo, gI_hi, gt);
+                new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);
+
                 I_hi = I_lo;
                 fI_hi = fI_lo;
                 gI_hi = gI_lo;
@@ -326,7 +346,7 @@ public:
             fx = f(x, grad);
             dg = grad.dot(drt);
 
-            // std::cout << ", fx = " << fx << std::endl;
+            // std::cout << "fx = " << fx << std::endl;
 
             // Convergence test
             if (fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
