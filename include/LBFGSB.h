@@ -187,8 +187,12 @@ public:
             // In contrast, xcp is obtained from a line search, which tends to be more robust
             if (dg >= Scalar(0) || step_max <= m_param.min_step)
             {
+               // Reset search direction
                 m_drt.noalias() = xcp - x;
+                // Reset BFGS matrix
                 m_bfgs.reset(n, m_param.m);
+                // Recompute dg and step_max
+                dg = m_grad.dot(m_drt);
                 step_max = max_step_size(x, m_drt, lb, ub);
             }
 
