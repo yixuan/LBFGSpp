@@ -325,6 +325,14 @@ public:
                 // std::cout << "Case 3: new step = " << new_step << std::endl;
             }
 
+            // Case 1 and 3 are interpolations, whereas Case 2 is extrapolation
+            // This means that Case 2 may return new_step = step_max,
+            // and we need to decide whether to accept this value
+            // 1. If both step and new_step equal to step_max, it means
+            //    step will have no further change, so we accept it
+            // 2. Otherwise, we need to test the function value and gradient
+            //    on step_max, and decide later
+
             // In case step, new_step, and step_max are equal, directly return the computed x and fx
             if (step == step_max && new_step >= step_max)
             {
@@ -346,20 +354,36 @@ public:
             fx = f(x, grad);
             dg = grad.dot(drt);
 
-            // std::cout << "fx = " << fx << std::endl;
+            // std::cout << "step = " << step << ", fx = " << fx << ", dg = " << dg << std::endl;
 
             // Convergence test
-            if (fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
+            if (fx <= fx_init + step * test_decr && abs(dg) <= test_curv)
             {
                 // std::cout << "** Criteria met\n\n";
                 // std::cout << "========================= Leaving line search =========================\n\n";
                 return;
             }
+
+            // Now assume step = step_max, and we need to decide whether to
+            // exit the line search (see the comments above regarding step_max)
+            // If we reach here, it means this step size does not pass the convergence
+            // test, so either the sufficient decrease condition or the curvature
+            // condition is not met yet
+            //
+            // Typically the curvature condition is harder to meet, and it is
+            // possible that no step size in [0, step_max] satisfies the condition
+            //
+            // But we need to make sure that its psi function value is smaller than
+            // the best one so far. If not, go to the next iteration and find a better one
             if (step >= step_max)
             {
-                // std::cout << "** Maximum step size reached\n\n";
-                // std::cout << "========================= Leaving line search =========================\n\n";
-                return;
+                const Scalar ft = fx - fx_init - step * test_decr;
+                if (ft <= fI_lo)
+                {
+                    // std::cout << "** Maximum step size reached\n\n";
+                    // std::cout << "========================= Leaving line search =========================\n\n";
+                    return;
+                }
             }
         }
 
