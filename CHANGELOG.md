@@ -1,4 +1,4 @@
-## Unrealeased
+## Unreleased
 
 ### Added
 - Added functions `final_grad()` and `final_grad_norm()` to `LBFGSSolver`
