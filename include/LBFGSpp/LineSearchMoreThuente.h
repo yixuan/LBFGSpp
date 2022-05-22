@@ -126,6 +126,10 @@ private:
 
         if (al == au)
             return al;
+        
+        // If ft = Inf or gt = Inf, we return the middle point of al and at
+        if (!std::isfinite(ft) || !std::isfinite(gt))
+            return (al + at) / Scalar(2);
 
         // ac: cubic interpolation of fl, ft, gl, gt
         // aq: quadratic interpolation of fl, gl, ft
@@ -151,7 +155,7 @@ private:
             return (abs(ac - at) >= abs(as - at)) ? ac : as;
 
         // Case 3: ft <= fl, gt * gl >= 0, |gt| < |gl|
-        const Scalar delta = Scalar(0.66);
+        const Scalar deltal = Scalar(1.1), deltau = Scalar(0.66);
         if (abs(gt) < abs(gl))
         {
             // We choose either ac or as
@@ -166,9 +170,13 @@ private:
                 as;
             // Postprocessing the chosen step
             return (at > al) ?
-                std::min(at + delta * (au - at), res) :
-                std::max(at + delta * (au - at), res);
+                std::min(at + deltau * (au - at), res) :
+                std::max(at + deltau * (au - at), res);
         }
+
+        // Simple extrapolation if au, fu, or gu is infinity
+        if ((!std::isfinite(au)) || (!std::isfinite(fu)) || (!std::isfinite(gu)))
+            return at + deltal * (at - al);
 
         // ae: cubic interpolation of ft, fu, gt, gu
         bool ae_exists;
@@ -176,8 +184,8 @@ private:
         // Case 4: ft <= fl, gt * gl >= 0, |gt| >= |gl|
         // The following is not used in the paper, but it seems to be a reasonable safeguard
         return (at > al) ?
-            std::min(at + delta * (au - at), ae) :
-            std::max(at + delta * (au - at), ae);
+            std::min(at + deltau * (au - at), ae) :
+            std::max(at + deltau * (au - at), ae);
     }
 
 public:
@@ -187,23 +195,26 @@ public:
     /// \param f        A function object such that `f(x, grad)` returns the
     ///                 objective function value at `x`, and overwrites `grad` with
     ///                 the gradient.
+    /// \param param    Parameters for the L-BFGS-B algorithm.
+    /// \param xp       The current point.
+    /// \param drt      The current moving direction.
+    /// \param step_max The upper bound for the step size that makes x feasible.
+    /// \param step     In: The initial step length.
+    ///                 Out: The calculated step length.
     /// \param fx       In: The objective function value at the current point.
     ///                 Out: The function value at the new point.
+    /// \param grad     In: The current gradient vector.
+    ///                 Out: The gradient at the new point.
+    /// \param dg       In: The inner product between drt and grad.
+    ///                 Out: The inner product between drt and the new gradient.
     /// \param x        Out: The new point moved to.
-    /// \param grad     In: The current gradient vector. Out: The gradient at the
-    ///                 new point.
-    /// \param step     In: The initial step length. Out: The calculated step length.
-    /// \param step_max The upper bound for the step size.
-    /// \param drt      The current moving direction.
-    /// \param xp       The current point.
-    /// \param param    Parameters for the LBFGS algorithm
     ///
     template <typename Foo>
-    static void LineSearch(Foo& f, Scalar& fx, Vector& x, Vector& grad,
-                           Scalar& step, const Scalar& step_max,
-                           const Vector& drt, const Vector& xp,
-                           const LBFGSBParam<Scalar>& param)
+    static void LineSearch(Foo& f, const LBFGSBParam<Scalar>& param,
+                           const Vector& xp, const Vector& drt, const Scalar& step_max,
+                           Scalar& step, Scalar& fx, Vector& grad, Scalar& dg, Vector& x)
     {
+        using std::abs;
         // std::cout << "========================= Entering line search =========================\n\n";
 
         // Check the value of step
@@ -215,12 +226,12 @@ public:
         // Save the function value at the current x
         const Scalar fx_init = fx;
         // Projection of gradient on the search direction
-        const Scalar dg_init = grad.dot(drt);
+        const Scalar dg_init = dg;
 
         // std::cout << "fx_init = " << fx_init << ", dg_init = " << dg_init << std::endl << std::endl;
 
         // Make sure d points to a descent direction
-        if (dg_init >= 0)
+        if (dg_init >= Scalar(0))
             throw std::logic_error("the moving direction does not decrease the objective function value");
 
         // Tolerance for convergence test
@@ -233,15 +244,16 @@ public:
         Scalar I_lo = Scalar(0), I_hi = std::numeric_limits<Scalar>::infinity();
         Scalar fI_lo = Scalar(0), fI_hi = std::numeric_limits<Scalar>::infinity();
         Scalar gI_lo = (Scalar(1) - param.ftol) * dg_init, gI_hi = std::numeric_limits<Scalar>::infinity();
+
         // Function value and gradient at the current step size
         x.noalias() = xp + step * drt;
         fx = f(x, grad);
-        Scalar dg = grad.dot(drt);
+        dg = grad.dot(drt);
 
         // std::cout << "max_step = " << step_max << ", step = " << step << ", fx = " << fx << ", dg = " << dg << std::endl;
 
         // Convergence test
-        if (fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
+        if (fx <= fx_init + step * test_decr && abs(dg) <= test_curv)
         {
             // std::cout << "** Criteria met\n\n";
             // std::cout << "========================= Leaving line search =========================\n\n";
@@ -259,14 +271,13 @@ public:
             const Scalar ft = fx - fx_init - step * test_decr;
             const Scalar gt = dg - param.ftol * dg_init;
 
-            // Update bracketing interval and step size
+            // Update step size and bracketing interval
             Scalar new_step;
             if (ft > fI_lo)
             {
                 // Case 1: ft > fl
-                new_step = step_selection(I_lo, I_hi, step,
-                                          fI_lo, fI_hi, ft,
-                                          gI_lo, gI_hi, gt);
+                new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);
+
                 I_hi = step;
                 fI_hi = ft;
                 gI_hi = gt;
@@ -276,7 +287,21 @@ public:
             else if (gt * (I_lo - step) > Scalar(0))
             {
                 // Case 2: ft <= fl, gt * (al - at) > 0
+                //
+                // Page 291 of Moré and Thuente (1994) suggests that
+                // newat = min(at + delta * (at - al), amax), delta in [1.1, 4]
                 new_step = std::min(step_max, step + delta * (step - I_lo));
+
+                // We can also consider the following scheme:
+                // First let step_selection() decide a value, and then project to the range above
+                //
+                // new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);
+                // const Scalar delta2 = Scalar(4)
+                // const Scalar t1 = step + delta * (step - I_lo);
+                // const Scalar t2 = step + delta2 * (step - I_lo);
+                // const Scalar tl = std::min(t1, t2), tu = std::max(t1, t2);
+                // new_step = std::min(tu, std::max(tl, new_step));
+                // new_step = std::min(step_max, new_step);
 
                 I_lo = step;
                 fI_lo = ft;
@@ -287,9 +312,8 @@ public:
             else
             {
                 // Case 3: ft <= fl, gt * (al - at) <= 0
-                new_step = step_selection(I_lo, I_hi, step,
-                                          fI_lo, fI_hi, ft,
-                                          gI_lo, gI_hi, gt);
+                new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);
+
                 I_hi = I_lo;
                 fI_hi = fI_lo;
                 gI_hi = gI_lo;
@@ -300,6 +324,14 @@ public:
 
                 // std::cout << "Case 3: new step = " << new_step << std::endl;
             }
+
+            // Case 1 and 3 are interpolations, whereas Case 2 is extrapolation
+            // This means that Case 2 may return new_step = step_max,
+            // and we need to decide whether to accept this value
+            // 1. If both step and new_step equal to step_max, it means
+            //    step will have no further change, so we accept it
+            // 2. Otherwise, we need to test the function value and gradient
+            //    on step_max, and decide later
 
             // In case step, new_step, and step_max are equal, directly return the computed x and fx
             if (step == step_max && new_step >= step_max)
@@ -322,20 +354,36 @@ public:
             fx = f(x, grad);
             dg = grad.dot(drt);
 
-            // std::cout << ", fx = " << fx << std::endl;
+            // std::cout << "step = " << step << ", fx = " << fx << ", dg = " << dg << std::endl;
 
             // Convergence test
-            if (fx <= fx_init + step * test_decr && std::abs(dg) <= test_curv)
+            if (fx <= fx_init + step * test_decr && abs(dg) <= test_curv)
             {
                 // std::cout << "** Criteria met\n\n";
                 // std::cout << "========================= Leaving line search =========================\n\n";
                 return;
             }
+
+            // Now assume step = step_max, and we need to decide whether to
+            // exit the line search (see the comments above regarding step_max)
+            // If we reach here, it means this step size does not pass the convergence
+            // test, so either the sufficient decrease condition or the curvature
+            // condition is not met yet
+            //
+            // Typically the curvature condition is harder to meet, and it is
+            // possible that no step size in [0, step_max] satisfies the condition
+            //
+            // But we need to make sure that its psi function value is smaller than
+            // the best one so far. If not, go to the next iteration and find a better one
             if (step >= step_max)
             {
-                // std::cout << "** Maximum step size reached\n\n";
-                // std::cout << "========================= Leaving line search =========================\n\n";
-                return;
+                const Scalar ft = fx - fx_init - step * test_decr;
+                if (ft <= fI_lo)
+                {
+                    // std::cout << "** Maximum step size reached\n\n";
+                    // std::cout << "========================= Leaving line search =========================\n\n";
+                    return;
+                }
             }
         }
 

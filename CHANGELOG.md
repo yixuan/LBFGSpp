@@ -1,10 +1,22 @@
-## Unreleased
+## Unrealeased
+
+### Added
+- Added functions `final_grad()` and `final_grad_norm()` to `LBFGSSolver`
+  and `LBFGSBSolver` to retrieve the final gradient information
+  ([#12](https://github.com/yixuan/LBFGSpp/issues/12))
+
+
+
+## [0.2.0] - 2022-05-20
 
 ### Added
 - Added a CMake script for installation ([#24](https://github.com/yixuan/LBFGSpp/pull/24)),
   contributed by [@steinmig](https://github.com/steinmig)
 
 ### Changed
+- The default line search method for `LBFGSSolver` has been changed from `LineSearchBacktracking`
+  to `LineSearchNocedalWright`, per the suggestion of [@mpayrits](https://github.com/mpayrits)
+  ([#25](https://github.com/yixuan/LBFGSpp/pull/25))
 - Fixed a few critical issues ([#9](https://github.com/yixuan/LBFGSpp/issues/9),
   [#15](https://github.com/yixuan/LBFGSpp/issues/15),
   [#21](https://github.com/yixuan/LBFGSpp/issues/21)), with big thanks to
