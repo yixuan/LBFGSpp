@@ -277,6 +277,10 @@ public:
             {
                 // Case 1: ft > fl
                 new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);
+                // Sanity check: if the computed new_step is too small, typically due to
+                // extremely large value of ft, switch to the middle point
+                if (new_step <= param.min_step)
+                    new_step = (I_lo + step) / Scalar(2);
 
                 I_hi = step;
                 fI_hi = ft;
