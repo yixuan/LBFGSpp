@@ -195,7 +195,8 @@ public:
     /// \param f        A function object such that `f(x, grad)` returns the
     ///                 objective function value at `x`, and overwrites `grad` with
     ///                 the gradient.
-    /// \param param    Parameters for the L-BFGS-B algorithm.
+    /// \param param    An `LBFGSParam` or `LBFGSBParam` object that stores the
+    ///                 parameters of the solver.
     /// \param xp       The current point.
     /// \param drt      The current moving direction.
     /// \param step_max The upper bound for the step size that makes x feasible.
@@ -209,8 +210,8 @@ public:
     ///                 Out: The inner product between drt and the new gradient.
     /// \param x        Out: The new point moved to.
     ///
-    template <typename Foo>
-    static void LineSearch(Foo& f, const LBFGSBParam<Scalar>& param,
+    template <typename Foo, typename SolverParam>
+    static void LineSearch(Foo& f, const SolverParam& param,
                            const Vector& xp, const Vector& drt, const Scalar& step_max,
                            Scalar& step, Scalar& fx, Vector& grad, Scalar& dg, Vector& x)
     {
