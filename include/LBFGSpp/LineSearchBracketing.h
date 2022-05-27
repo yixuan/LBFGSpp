@@ -25,24 +25,28 @@ public:
     /// except that it actively maintains an upper and lower bound of the
     /// current search range.
     ///
-    /// \param f      A function object such that `f(x, grad)` returns the
-    ///               objective function value at `x`, and overwrites `grad` with
-    ///               the gradient.
-    /// \param fx     In: The objective function value at the current point.
-    ///               Out: The function value at the new point.
-    /// \param x      Out: The new point moved to.
-    /// \param grad   In: The current gradient vector. Out: The gradient at the
-    ///               new point.
-    /// \param step   In: The initial step length. Out: The calculated step length.
-    /// \param drt    The current moving direction.
-    /// \param xp     The current point.
-    /// \param param  Parameters for the LBFGS algorithm
+    /// \param f        A function object such that `f(x, grad)` returns the
+    ///                 objective function value at `x`, and overwrites `grad` with
+    ///                 the gradient.
+    /// \param param    Parameters for the L-BFGS algorithm.
+    /// \param xp       The current point.
+    /// \param drt      The current moving direction.
+    /// \param step_max The upper bound for the step size that makes x feasible.
+    ///                 Can be ignored for the L-BFGS solver.
+    /// \param step     In: The initial step length.
+    ///                 Out: The calculated step length.
+    /// \param fx       In: The objective function value at the current point.
+    ///                 Out: The function value at the new point.
+    /// \param grad     In: The current gradient vector.
+    ///                 Out: The gradient at the new point.
+    /// \param dg       In: The inner product between drt and grad.
+    ///                 Out: The inner product between drt and the new gradient.
+    /// \param x        Out: The new point moved to.
     ///
     template <typename Foo>
-    static void LineSearch(Foo& f, Scalar& fx, Vector& x, Vector& grad,
-                           Scalar& step,
-                           const Vector& drt, const Vector& xp,
-                           const LBFGSParam<Scalar>& param)
+    static void LineSearch(Foo& f, const LBFGSParam<Scalar>& param,
+                           const Vector& xp, const Vector& drt, const Scalar& step_max,
+                           Scalar& step, Scalar& fx, Vector& grad, Scalar& dg, Vector& x)
     {
         // Check the value of step
         if (step <= Scalar(0))

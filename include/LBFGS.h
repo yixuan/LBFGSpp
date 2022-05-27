@@ -10,6 +10,7 @@
 #include "LBFGSpp/LineSearchBacktracking.h"
 #include "LBFGSpp/LineSearchBracketing.h"
 #include "LBFGSpp/LineSearchNocedalWright.h"
+#include "LBFGSpp/LineSearchMoreThuente.h"
 
 namespace LBFGSpp {
 
@@ -92,6 +93,9 @@ public:
         if (fpast > 0)
             m_fx[0] = fx;
 
+        // std::cout << "x0 = " << x.transpose() << std::endl;
+        // std::cout << "f(x0) = " << fx << ", ||grad|| = " << m_gnorm << std::endl << std::endl;
+
         // Early exit if the initial x is already a minimizer
         if (m_gnorm <= m_param.epsilon || m_gnorm <= m_param.epsilon_rel * x.norm())
         {
@@ -107,15 +111,23 @@ public:
         int k = 1;
         for (;;)
         {
+            // std::cout << "Iter " << k << " begins" << std::endl << std::endl;
+
             // Save the curent x and gradient
             m_xp.noalias() = x;
             m_gradp.noalias() = m_grad;
+            Scalar dg = m_grad.dot(m_drt);
+            const Scalar step_max = m_param.max_step;
 
             // Line search to update x, fx and gradient
-            LineSearch<Scalar>::LineSearch(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
+            LineSearch<Scalar>::LineSearch(f, m_param, m_xp, m_drt, step_max, step, fx, m_grad, dg, x);
 
             // New gradient norm
             m_gnorm = m_grad.norm();
+
+            // std::cout << "Iter " << k << " finished line search" << std::endl;
+            // std::cout << "   x = " << x.transpose() << std::endl;
+            // std::cout << "   f(x) = " << fx << ", ||grad|| = " << m_gnorm << std::endl << std::endl;
 
             // Convergence test -- gradient
             if (m_gnorm <= m_param.epsilon || m_gnorm <= m_param.epsilon_rel * x.norm())

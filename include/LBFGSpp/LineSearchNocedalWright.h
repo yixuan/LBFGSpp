@@ -27,24 +27,28 @@ public:
     ///
     /// Line search by Nocedal and Wright (2006).
     ///
-    /// \param f      A function object such that `f(x, grad)` returns the
-    ///               objective function value at `x`, and overwrites `grad` with
-    ///               the gradient.
-    /// \param fx     In: The objective function value at the current point.
-    ///               Out: The function value at the new point.
-    /// \param x      Out: The new point moved to.
-    /// \param grad   In: The current gradient vector. Out: The gradient at the
-    ///               new point.
-    /// \param step   In: The initial step length. Out: The calculated step length.
-    /// \param drt    The current moving direction.
-    /// \param xp     The current point.
-    /// \param param  Parameters for the LBFGS algorithm
+    /// \param f        A function object such that `f(x, grad)` returns the
+    ///                 objective function value at `x`, and overwrites `grad` with
+    ///                 the gradient.
+    /// \param param    Parameters for the L-BFGS algorithm.
+    /// \param xp       The current point.
+    /// \param drt      The current moving direction.
+    /// \param step_max The upper bound for the step size that makes x feasible.
+    ///                 Can be ignored for the L-BFGS solver.
+    /// \param step     In: The initial step length.
+    ///                 Out: The calculated step length.
+    /// \param fx       In: The objective function value at the current point.
+    ///                 Out: The function value at the new point.
+    /// \param grad     In: The current gradient vector.
+    ///                 Out: The gradient at the new point.
+    /// \param dg       In: The inner product between drt and grad.
+    ///                 Out: The inner product between drt and the new gradient.
+    /// \param x        Out: The new point moved to.
     ///
     template <typename Foo>
-    static void LineSearch(Foo& f, Scalar& fx, Vector& x, Vector& grad,
-                           Scalar& step,
-                           const Vector& drt, const Vector& xp,
-                           const LBFGSParam<Scalar>& param)
+    static void LineSearch(Foo& f, const LBFGSParam<Scalar>& param,
+                           const Vector& xp, const Vector& drt, const Scalar& step_max,
+                           Scalar& step, Scalar& fx, Vector& grad, Scalar& dg, Vector& x)
     {
         // Check the value of step
         if (step <= Scalar(0))
@@ -63,7 +67,7 @@ public:
         // phi        | fx
         // phi'       | dg
 
-        // the rate, by which the
+        // The expansion rate of the step size
         const Scalar expansion = Scalar(2);
 
         // Save the function value at the current x
@@ -131,8 +135,8 @@ public:
         //     "Numerical Optimization", "Algorithm 3.6 (Zoom)".
         for (;;)
         {
-            // use {fx_lo, fx_hi, dg_lo} to make a quadric interpolation of
-            // the function said interpolation is used to estimate the minimum
+            // Use {fx_lo, fx_hi, dg_lo} to make a quadratic interpolation of
+            // the function and estimate the minimum
             //
             // polynomial: p (x) = c0*(x - step)² + c1
             // conditions: p (step_hi) = fx_hi
@@ -141,7 +145,7 @@ public:
             step = (fx_hi - fx_lo) * step_lo - (step_hi * step_hi - step_lo * step_lo) * dg_lo / 2;
             step /= (fx_hi - fx_lo) - (step_hi - step_lo) * dg_lo;
 
-            // if interpolation fails, bisection is used
+            // If interpolation fails, bisection is used
             if (step <= std::min(step_lo, step_hi) ||
                 step >= std::max(step_lo, step_hi))
                 step = step_lo / 2 + step_hi / 2;
