@@ -41,7 +41,7 @@ int main()
 {
     LBFGSParam<double> param;
     param.    linesearch = LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE;
-    param.max_linesearch = 128;
+    param.max_linesearch = 256;
 
     LBFGSSolver<double, LineSearchBacktracking > solver_backtrack(param);
     LBFGSSolver<double, LineSearchBracketing   > solver_bracket  (param);

@@ -14,8 +14,8 @@ namespace LBFGSpp {
 /// A line search algorithm for the strong Wolfe condition. Implementation based on:
 ///
 ///   "Numerical Optimization" 2nd Edition,
-///   Jorge Nocedal Stephen J. Wright,
-///   Chapter 3. Line Search Methods, page 60f.
+///   Jorge Nocedal and Stephen J. Wright,
+///   Chapter 3. Line Search Methods, page 60.
 ///
 template <typename Scalar>
 class LineSearchNocedalWright
@@ -75,16 +75,15 @@ public:
         // Projection of gradient on the search direction
         const Scalar dg_init = grad.dot(drt);
         // Make sure d points to a descent direction
-        if (dg_init > 0)
+        if (dg_init > Scalar(0))
             throw std::logic_error("the moving direction increases the objective function value");
 
         const Scalar test_decr = param.ftol * dg_init,  // Sufficient decrease
             test_curv = -param.wolfe * dg_init;         // Curvature
 
         // Ends of the line search range (step_lo > step_hi is allowed)
-        Scalar step_hi, step_lo = 0,
-                        fx_hi, fx_lo = fx_init,
-                        dg_hi, dg_lo = dg_init;
+        Scalar step_hi, fx_hi, dg_hi;
+        Scalar step_lo = Scalar(0), fx_lo = fx_init, dg_lo = dg_init;
 
         // STEP 1: Bracketing Phase
         //   Find a range guaranteed to contain a step satisfying strong Wolfe.
@@ -94,22 +93,27 @@ public:
         int iter = 0;
         for (;;)
         {
+            // Evaluate the current step size
             x.noalias() = xp + step * drt;
             fx = f(x, grad);
 
-            if (iter++ >= param.max_linesearch)
-                return;
+            iter++;
+            if (iter >= param.max_linesearch)
+                throw std::runtime_error("the line search routine reached the maximum number of iterations");
 
             const Scalar dg = grad.dot(drt);
 
-            if (fx - fx_init > step * test_decr || (0 < step_lo && fx >= fx_lo))
+            // Test the sufficient decrease condition
+            if (fx - fx_init > step * test_decr || (Scalar(0) < step_lo && fx >= fx_lo))
             {
                 step_hi = step;
                 fx_hi = fx;
                 dg_hi = dg;
                 break;
             }
+            // If reaching here, then the sufficient decrease condition is satisfied
 
+            // Test the curvature condition
             if (std::abs(dg) <= test_curv)
                 return;
 
@@ -120,7 +124,7 @@ public:
             fx_lo = fx;
             dg_lo = dg;
 
-            if (dg >= 0)
+            if (dg >= Scalar(0))
                 break;
 
             step *= expansion;
@@ -136,28 +140,40 @@ public:
         for (;;)
         {
             // Use {fx_lo, fx_hi, dg_lo} to make a quadratic interpolation of
-            // the function and estimate the minimum
+            // the function, and the fitted quadratic function is used to
+            // estimate the minimum
             //
             // polynomial: p (x) = c0*(x - step)² + c1
             // conditions: p (step_hi) = fx_hi
             //             p (step_lo) = fx_lo
             //             p'(step_lo) = dg_lo
-            step = (fx_hi - fx_lo) * step_lo - (step_hi * step_hi - step_lo * step_lo) * dg_lo / 2;
-            step /= (fx_hi - fx_lo) - (step_hi - step_lo) * dg_lo;
+
+            // We allow fx_hi to be Inf, so first compute a candidate for step size,
+            // and test whether NaN occurs
+            const Scalar fdiff = fx_hi - fx_lo;
+            const Scalar sdiff = step_hi - step_lo;
+            const Scalar smid = (step_hi + step_lo) / Scalar(2);
+            Scalar step_candid = fdiff * step_lo - smid * sdiff * dg_lo;
+            step_candid = step_candid / (fdiff - sdiff * dg_lo);
+            const bool candid_nan = !(std::isfinite(step_candid));
 
             // If interpolation fails, bisection is used
-            if (step <= std::min(step_lo, step_hi) ||
-                step >= std::max(step_lo, step_hi))
-                step = step_lo / 2 + step_hi / 2;
+            const bool bisect = candid_nan ||
+                (step_candid <= std::min(step_lo, step_hi)) ||
+                (step_candid >= std::max(step_lo, step_hi));
+            step = bisect ? smid : step_candid;
 
+            // Evaluate the current step size
             x.noalias() = xp + step * drt;
             fx = f(x, grad);
 
-            if (iter++ >= param.max_linesearch)
-                return;
+            iter++;
+            if (iter >= param.max_linesearch)
+                throw std::runtime_error("the line search routine reached the maximum number of iterations");
 
             const Scalar dg = grad.dot(drt);
 
+            // Test the sufficient decrease condition
             if (fx - fx_init > step * test_decr || fx >= fx_lo)
             {
                 if (step == step_hi)
@@ -169,10 +185,11 @@ public:
             }
             else
             {
+                // Test the curvature condition
                 if (std::abs(dg) <= test_curv)
                     return;
 
-                if (dg * (step_hi - step_lo) >= 0)
+                if (dg * (step_hi - step_lo) >= Scalar(0))
                 {
                     step_hi = step_lo;
                     fx_hi = fx_lo;
