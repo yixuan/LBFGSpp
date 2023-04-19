@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2020-2023 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGSPP_LBFGSB_H
@@ -177,7 +177,7 @@ public:
 
             // Maximum step size to make x feasible
             Scalar step_max = max_step_size(x, m_drt, lb, ub);
-            
+
             // In some cases, the direction returned by the subspace minimization procedure
             // in the previous iteration is pathological, leading to issues such as
             // step_max~=0 and dg>=0. If this happens, we use xcp-x as the search direction,

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2020-2023 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGSPP_LINE_SEARCH_MORE_THUENTE_H
@@ -126,7 +126,7 @@ private:
 
         if (al == au)
             return al;
-        
+
         // If ft = Inf or gt = Inf, we return the middle point of al and at
         if (!std::isfinite(ft) || !std::isfinite(gt))
             return (al + at) / Scalar(2);
