@@ -11,6 +11,7 @@
 - The line search classes now have a unified API for both `LBFGSSolver` and `LBFGSBSolver`
 - The Moré-Thuente line search algorithm `LineSearchMoreThuente` now can also be used
   in the L-BFGS solver `LBFGSSolver`
+- Improved the numerical stability of `LineSearchNocedalWright`
 
 
 
