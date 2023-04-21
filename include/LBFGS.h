@@ -106,6 +106,10 @@ public:
         m_drt.noalias() = -m_grad;
         // Initial step size
         Scalar step = Scalar(1) / m_drt.norm();
+        // Tolerance for s'y >= eps * (y'y)
+        const Scalar eps = std::numeric_limits<Scalar>::epsilon();
+        // s and y vectors
+        Vector vecs(n), vecy(n);
 
         // Number of iterations used
         int k = 1;
@@ -152,7 +156,10 @@ public:
             // Update s and y
             // s_{k+1} = x_{k+1} - x_k
             // y_{k+1} = g_{k+1} - g_k
-            m_bfgs.add_correction(x - m_xp, m_grad - m_gradp);
+            vecs.noalias() = x - m_xp;
+            vecy.noalias() = m_grad - m_gradp;
+            if (vecs.dot(vecy) > eps * vecy.squaredNorm())
+                m_bfgs.add_correction(vecs, vecy);
 
             // Recursive formula to compute d = -H * g
             m_bfgs.apply_Hv(m_grad, -Scalar(1), m_drt);
