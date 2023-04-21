@@ -155,12 +155,17 @@ public:
             const Scalar smid = (step_hi + step_lo) / Scalar(2);
             Scalar step_candid = fdiff * step_lo - smid * sdiff * dg_lo;
             step_candid = step_candid / (fdiff - sdiff * dg_lo);
-            const bool candid_nan = !(std::isfinite(step_candid));
 
-            // If interpolation fails, bisection is used
+            // In some cases the interpolation is not a good choice
+            // This includes (a) NaN values; (b) too close to the end points; (c) outside the interval
+            // In such cases, a bisection search is used
+            const bool candid_nan = !(std::isfinite(step_candid));
+            const Scalar end_dist = std::min(std::abs(step_candid - step_lo), std::abs(step_candid - step_hi));
+            const bool near_end = end_dist < Scalar(0.01) * std::abs(sdiff);
             const bool bisect = candid_nan ||
                 (step_candid <= std::min(step_lo, step_hi)) ||
-                (step_candid >= std::max(step_lo, step_hi));
+                (step_candid >= std::max(step_lo, step_hi)) ||
+                near_end;
             step = bisect ? smid : step_candid;
 
             // Evaluate the current step size
