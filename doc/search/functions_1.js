@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['lbfgsbparam_38',['LBFGSBParam',['../classLBFGSpp_1_1LBFGSBParam.html#ade034e87974f849c1cfd31d97c95a089',1,'LBFGSpp::LBFGSBParam']]],
-  ['lbfgsbsolver_39',['LBFGSBSolver',['../classLBFGSpp_1_1LBFGSBSolver.html#af6f13d5faffe94686e9ba8710da1bb5a',1,'LBFGSpp::LBFGSBSolver']]],
-  ['lbfgsparam_40',['LBFGSParam',['../classLBFGSpp_1_1LBFGSParam.html#a7ff92a387ac0aad1002b09bc404f25c4',1,'LBFGSpp::LBFGSParam']]],
-  ['lbfgssolver_41',['LBFGSSolver',['../classLBFGSpp_1_1LBFGSSolver.html#a2a7734277fde68058fb37f73150e196e',1,'LBFGSpp::LBFGSSolver']]],
-  ['linesearch_42',['LineSearch',['../classLBFGSpp_1_1LineSearchBacktracking.html#ae393ce707cb1c4a7ce03a825845ebf7f',1,'LBFGSpp::LineSearchBacktracking::LineSearch()'],['../classLBFGSpp_1_1LineSearchBracketing.html#aa0c61a7177dd07e9ee03cc38801aee80',1,'LBFGSpp::LineSearchBracketing::LineSearch()'],['../classLBFGSpp_1_1LineSearchMoreThuente.html#a0c2a53555ae8b02fe38bf90926214c54',1,'LBFGSpp::LineSearchMoreThuente::LineSearch()'],['../classLBFGSpp_1_1LineSearchNocedalWright.html#a01a689503d53a1a96002875c1ae09325',1,'LBFGSpp::LineSearchNocedalWright::LineSearch()']]]
+  ['final_5fgrad_0',['final_grad',['../classLBFGSpp_1_1LBFGSSolver.html#a8f2300767858ba7778f2d0ecd8a188d1',1,'LBFGSpp::LBFGSSolver::final_grad()'],['../classLBFGSpp_1_1LBFGSBSolver.html#a197ad985627a9f84d93f431b32b56ec9',1,'LBFGSpp::LBFGSBSolver::final_grad()']]],
+  ['final_5fgrad_5fnorm_1',['final_grad_norm',['../classLBFGSpp_1_1LBFGSSolver.html#aac0283d58383e39d101bff2aeceb5423',1,'LBFGSpp::LBFGSSolver::final_grad_norm()'],['../classLBFGSpp_1_1LBFGSBSolver.html#ac2b249debcc55e0bb7edf43b11f6171d',1,'LBFGSpp::LBFGSBSolver::final_grad_norm()']]]
 ];

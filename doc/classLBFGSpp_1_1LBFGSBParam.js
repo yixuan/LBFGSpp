@@ -4,6 +4,7 @@ var classLBFGSpp_1_1LBFGSBParam =
     [ "check_param", "classLBFGSpp_1_1LBFGSBParam.html#afabdf4e46e816684acb7629330430c87", null ],
     [ "m", "classLBFGSpp_1_1LBFGSBParam.html#ae293bfac62405197b820d766e199fffe", null ],
     [ "epsilon", "classLBFGSpp_1_1LBFGSBParam.html#afb20e8fd6c6808c1f736218841ba6947", null ],
+    [ "epsilon_rel", "classLBFGSpp_1_1LBFGSBParam.html#a08e5aba4186fc879b43fa70c25fca581", null ],
     [ "past", "classLBFGSpp_1_1LBFGSBParam.html#a71be9c7a78db11dc8fad8f60b01f0db5", null ],
     [ "delta", "classLBFGSpp_1_1LBFGSBParam.html#a71cc95847890dce37198242253830798", null ],
     [ "max_iterations", "classLBFGSpp_1_1LBFGSBParam.html#a076281d66e09bfd0b2d32f66cab5269f", null ],
