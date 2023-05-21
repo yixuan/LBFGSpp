@@ -34,9 +34,9 @@ template <typename Scalar>
 class SubspaceMin
 {
 private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef std::vector<int> IndexSet;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using IndexSet = std::vector<int>;
 
     // v[ind]
     static Vector subvec(const Vector& v, const IndexSet& ind)

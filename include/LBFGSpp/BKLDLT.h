@@ -31,17 +31,17 @@ template <typename Scalar = double>
 class BKLDLT
 {
 private:
-    typedef Eigen::Index Index;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Eigen::Map<Vector> MapVec;
-    typedef Eigen::Map<const Vector> MapConstVec;
+    using Index = Eigen::Index;
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    using MapVec = Eigen::Map<Vector>;
+    using MapConstVec = Eigen::Map<const Vector>;
 
-    typedef Eigen::Matrix<Index, Eigen::Dynamic, 1> IntVector;
-    typedef Eigen::Ref<Vector> GenericVector;
-    typedef Eigen::Ref<Matrix> GenericMatrix;
-    typedef const Eigen::Ref<const Matrix> ConstGenericMatrix;
-    typedef const Eigen::Ref<const Vector> ConstGenericVector;
+    using IntVector = Eigen::Matrix<Index, Eigen::Dynamic, 1>;
+    using GenericVector = Eigen::Ref<Vector>;
+    using GenericMatrix = Eigen::Ref<Matrix>;
+    using ConstGenericMatrix = const Eigen::Ref<const Matrix>;
+    using ConstGenericVector = const Eigen::Ref<const Vector>;
 
     Index m_n;
     Vector m_data;                                  // storage for a lower-triangular matrix

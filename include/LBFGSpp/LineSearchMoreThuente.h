@@ -26,7 +26,7 @@ template <typename Scalar>
 class LineSearchMoreThuente
 {
 private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
     // Minimizer of a quadratic function q(x) = c0 + c1 * x + c2 * x^2
     // that interpolates fa, ga, and fb, assuming the minimizer exists

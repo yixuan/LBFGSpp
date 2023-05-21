@@ -17,7 +17,7 @@ template <typename Scalar>
 class LineSearchBracketing
 {
 private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
 public:
     ///

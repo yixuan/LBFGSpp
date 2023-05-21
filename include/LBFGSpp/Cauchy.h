@@ -32,8 +32,8 @@ template <typename Scalar>
 class ArgSort
 {
 private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef std::vector<int> IndexSet;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    using IndexSet = std::vector<int>;
 
     const Scalar* values;
 

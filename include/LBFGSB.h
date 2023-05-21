@@ -23,10 +23,10 @@ template <typename Scalar,
 class LBFGSBSolver
 {
 private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Map<Vector> MapVec;
-    typedef std::vector<int> IndexSet;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using MapVec = Eigen::Map<Vector>;
+    using IndexSet = std::vector<int>;
 
     const LBFGSBParam<Scalar>& m_param;  // Parameters to control the LBFGS algorithm
     BFGSMat<Scalar, true> m_bfgs;        // Approximation to the Hessian matrix
@@ -163,7 +163,7 @@ public:
         m_drt.noalias() = xcp - x;
         m_drt.normalize();
         // Tolerance for s'y >= eps * (y'y)
-        const Scalar eps = std::numeric_limits<Scalar>::epsilon();
+        constexpr Scalar eps = std::numeric_limits<Scalar>::epsilon();
         // s and y vectors
         Vector vecs(n), vecy(n);
         // Number of iterations used

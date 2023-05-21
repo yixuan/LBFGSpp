@@ -26,10 +26,10 @@ template <typename Scalar, bool LBFGSB = false>
 class BFGSMat
 {
 private:
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef Eigen::Ref<const Vector> RefConstVec;
-    typedef std::vector<int> IndexSet;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using RefConstVec = Eigen::Ref<const Vector>;
+    using IndexSet = std::vector<int>;
 
     int m_m;         // Maximum number of correction vectors
     Scalar m_theta;  // theta * I is the initial approximation to the Hessian matrix
