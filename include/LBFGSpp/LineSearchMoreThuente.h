@@ -245,6 +245,10 @@ public:
         Scalar I_lo = Scalar(0), I_hi = std::numeric_limits<Scalar>::infinity();
         Scalar fI_lo = Scalar(0), fI_hi = std::numeric_limits<Scalar>::infinity();
         Scalar gI_lo = (Scalar(1) - param.ftol) * dg_init, gI_hi = std::numeric_limits<Scalar>::infinity();
+        // We also need to save x and grad for step=I_lo, since we want to return the best
+        // step size along the path when strong Wolfe condition is not met
+        Vector x_lo = xp, grad_lo = grad;
+        Scalar fx_lo = fx_init, dg_lo = dg_init;
 
         // Function value and gradient at the current step size
         x.noalias() = xp + step * drt;
@@ -311,6 +315,11 @@ public:
                 I_lo = step;
                 fI_lo = ft;
                 gI_lo = gt;
+                // Move x and grad to x_lo and grad_lo, respectively
+                x_lo.swap(x);
+                grad_lo.swap(grad);
+                fx_lo = fx;
+                dg_lo = dg;
 
                 // std::cout << "Case 2: new step = " << new_step << std::endl;
             }
@@ -326,6 +335,11 @@ public:
                 I_lo = step;
                 fI_lo = ft;
                 gI_lo = gt;
+                // Move x and grad to x_lo and grad_lo, respectively
+                x_lo.swap(x);
+                grad_lo.swap(grad);
+                fx_lo = fx;
+                dg_lo = dg;
 
                 // std::cout << "Case 3: new step = " << new_step << std::endl;
             }
@@ -343,6 +357,10 @@ public:
             {
                 // std::cout << "** Maximum step size reached\n\n";
                 // std::cout << "========================= Leaving line search =========================\n\n";
+
+                // Move {x, grad}_lo back before returning
+                x.swap(x_lo);
+                grad.swap(grad_lo);
                 return;
             }
             // Otherwise, recompute x and fx based on new_step
@@ -392,8 +410,32 @@ public:
             }
         }
 
+        // If we have used up all line search iterations, then the strong Wolfe condition
+        // is not met. We choose not to raise an exception (unless no step satisfying
+        // sufficient decrease is found), but to return the best step size so far
         if (iter >= param.max_linesearch)
-            throw std::runtime_error("the line search routine reached the maximum number of iterations");
+        {
+            // throw std::runtime_error("the line search routine reached the maximum number of iterations");
+
+            // First test whether the last step is better than I_lo
+            // If yes, return the last step
+            const Scalar ft = fx - fx_init - step * test_decr;
+            if (ft <= fI_lo)
+                return;
+
+            // Then the best step size so far is I_lo, but it needs to be positive
+            if (I_lo <= Scalar(0))
+                throw std::runtime_error("the line search routine is unable to sufficiently decrease the function value");
+
+            // Return everything with _lo
+            step = I_lo;
+            fx = fx_lo;
+            dg = dg_lo;
+            // Move {x, grad}_lo back
+            x.swap(x_lo);
+            grad.swap(grad_lo);
+            return;
+        }
     }
 };
 
