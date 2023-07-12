@@ -14,6 +14,8 @@
   in the L-BFGS solver `LBFGSSolver`
 - Improved the numerical stability of `LineSearchNocedalWright`
   ([#27](https://github.com/yixuan/LBFGSpp/issues/27))
+- Removed the unused variable `dg_hi` in `LineSearchNocedalWright`
+  ([#35](https://github.com/yixuan/LBFGSpp/issues/35))
 
 
 

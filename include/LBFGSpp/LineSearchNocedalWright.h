@@ -117,7 +117,8 @@ public:
             test_curv = -param.wolfe * dg_init;         // Curvature
 
         // Ends of the line search range (step_lo > step_hi is allowed)
-        Scalar step_hi, fx_hi, dg_hi;
+        // We can also define dg_hi, but it will never be used
+        Scalar step_hi, fx_hi;
         Scalar step_lo = Scalar(0), fx_lo = fx_init, dg_lo = dg_init;
         // We also need to save x and grad for step=step_lo, since we want to return the best
         // step size along the path when strong Wolfe condition is not met
@@ -149,7 +150,7 @@ public:
                 // Case (1) and (2)
                 step_hi = step;
                 fx_hi = fx;
-                dg_hi = dg;
+                // dg_hi = dg;
                 break;
             }
             // If reaching here, then the sufficient decrease condition is satisfied
@@ -160,7 +161,7 @@ public:
 
             step_hi = step_lo;
             fx_hi = fx_lo;
-            dg_hi = dg_lo;
+            // dg_hi = dg_lo;
             step_lo = step;
             fx_lo = fx;
             dg_lo = dg;
@@ -224,7 +225,7 @@ public:
 
                 step_hi = step;
                 fx_hi = fx;
-                dg_hi = dg;
+                // dg_hi = dg;
             }
             else
             {
@@ -236,7 +237,7 @@ public:
                 {
                     step_hi = step_lo;
                     fx_hi = fx_lo;
-                    dg_hi = dg_lo;
+                    // dg_hi = dg_lo;
                 }
 
                 if (step == step_lo)
