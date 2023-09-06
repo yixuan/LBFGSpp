@@ -80,11 +80,12 @@ public:
             }
             else
             {
+                dg = grad.dot(drt);
+
                 // Armijo condition is met
                 if (param.linesearch == LBFGS_LINESEARCH_BACKTRACKING_ARMIJO)
                     break;
 
-                const Scalar dg = grad.dot(drt);
                 if (dg < param.wolfe * dg_init)
                 {
                     step_lo = step;

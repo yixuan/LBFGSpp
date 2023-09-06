@@ -1,4 +1,4 @@
-## Unreleased
+## [0.3.0] - 2023-09-06
 
 ### Added
 
@@ -14,6 +14,10 @@
   in the L-BFGS solver `LBFGSSolver`
 - Improved the numerical stability of `LineSearchNocedalWright`
   ([#27](https://github.com/yixuan/LBFGSpp/issues/27))
+- Removed the unused variable `dg_hi` in `LineSearchNocedalWright`
+  ([#35](https://github.com/yixuan/LBFGSpp/issues/35))
+- Fixed some compiler warnings regarding shadowed variables
+  ([#36](https://github.com/yixuan/LBFGSpp/issues/36))
 
 
 
