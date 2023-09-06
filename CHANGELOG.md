@@ -16,6 +16,8 @@
   ([#27](https://github.com/yixuan/LBFGSpp/issues/27))
 - Removed the unused variable `dg_hi` in `LineSearchNocedalWright`
   ([#35](https://github.com/yixuan/LBFGSpp/issues/35))
+- Fixed some compiler warnings regarding shadowed variables
+  ([#36](https://github.com/yixuan/LBFGSpp/issues/36))
 
 
 

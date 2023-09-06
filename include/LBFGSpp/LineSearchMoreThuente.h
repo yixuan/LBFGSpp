@@ -400,8 +400,8 @@ public:
             // the best one so far. If not, go to the next iteration and find a better one
             if (step >= step_max)
             {
-                const Scalar ft = fx - fx_init - step * test_decr;
-                if (ft <= fI_lo)
+                const Scalar ft_bound = fx - fx_init - step * test_decr;
+                if (ft_bound <= fI_lo)
                 {
                     // std::cout << "** Maximum step size reached\n\n";
                     // std::cout << "========================= Leaving line search =========================\n\n";
@@ -423,7 +423,7 @@ public:
             if (ft <= fI_lo)
                 return;
 
-            // Then the best step size so far is I_lo, but it needs to be positive
+            // If not, then the best step size so far is I_lo, but it needs to be positive
             if (I_lo <= Scalar(0))
                 throw std::runtime_error("the line search routine is unable to sufficiently decrease the function value");
 
