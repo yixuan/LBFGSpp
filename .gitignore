@@ -1,2 +1,9 @@
 include/*
+archive/*
+issues/*
+.settings/*
+.project
+.cproject
+/Debug/
+/Release/
 _site/*
