@@ -134,9 +134,9 @@ $(document).ready(function(){initNavTree('SubspaceMin_8h_source.html',''); initR
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">class </span>SubspaceMin</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>{</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keyword">typedef</span> Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt; Vector;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keyword">typedef</span> Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt; Matrix;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keyword">typedef</span> std::vector&lt;int&gt; IndexSet;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keyword">using </span>Vector = Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt;;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keyword">using </span>Matrix = Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt;;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keyword">using </span>IndexSet = std::vector&lt;int&gt;;</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="comment">// v[ind]</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">static</span> Vector subvec(<span class="keyword">const</span> Vector&amp; v, <span class="keyword">const</span> IndexSet&amp; ind)</div>

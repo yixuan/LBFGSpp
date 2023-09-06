@@ -120,9 +120,9 @@ $(document).ready(function(){initNavTree('LBFGS_8h_source.html',''); initResizab
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="classLBFGSpp_1_1LBFGSSolver.html">   22</a></span><span class="keyword">class </span><a class="code hl_class" href="classLBFGSpp_1_1LBFGSSolver.html">LBFGSSolver</a></div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>{</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keyword">typedef</span> Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt; Vector;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keyword">typedef</span> Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt; Matrix;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keyword">typedef</span> Eigen::Map&lt;Vector&gt; MapVec;</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keyword">using </span>Vector = Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt;;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keyword">using </span>Matrix = Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt;;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keyword">using </span>MapVec = Eigen::Map&lt;Vector&gt;;</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keyword">const</span> <a class="code hl_class" href="classLBFGSpp_1_1LBFGSParam.html">LBFGSParam&lt;Scalar&gt;</a>&amp; m_param;  <span class="comment">// Parameters to control the LBFGS algorithm</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    BFGSMat&lt;Scalar&gt; m_bfgs;             <span class="comment">// Approximation to the Hessian matrix</span></div>
@@ -186,7 +186,7 @@ $(document).ready(function(){initNavTree('LBFGS_8h_source.html',''); initResizab
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>        <span class="comment">// Initial step size</span></div>
 <div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>        Scalar step = Scalar(1) / m_drt.norm();</div>
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>        <span class="comment">// Tolerance for s&#39;y &gt;= eps * (y&#39;y)</span></div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>        <span class="keyword">const</span> Scalar eps = std::numeric_limits&lt;Scalar&gt;::epsilon();</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>        <span class="keyword">constexpr</span> Scalar eps = std::numeric_limits&lt;Scalar&gt;::epsilon();</div>
 <div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>        <span class="comment">// s and y vectors</span></div>
 <div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>        Vector vecs(n), vecy(n);</div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span> </div>

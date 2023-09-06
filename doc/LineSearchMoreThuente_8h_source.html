@@ -115,7 +115,7 @@ $(document).ready(function(){initNavTree('LineSearchMoreThuente_8h_source.html',
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="classLBFGSpp_1_1LineSearchMoreThuente.html">   26</a></span><span class="keyword">class </span><a class="code hl_class" href="classLBFGSpp_1_1LineSearchMoreThuente.html">LineSearchMoreThuente</a></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>{</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keyword">typedef</span> Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt; Vector;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keyword">using </span>Vector = Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt;;</div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="comment">// Minimizer of a quadratic function q(x) = c0 + c1 * x + c2 * x^2</span></div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="comment">// that interpolates fa, ga, and fb, assuming the minimizer exists</span></div>
@@ -313,161 +313,203 @@ $(document).ready(function(){initNavTree('LineSearchMoreThuente_8h_source.html',
 <div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>        Scalar I_lo = Scalar(0), I_hi = std::numeric_limits&lt;Scalar&gt;::infinity();</div>
 <div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>        Scalar fI_lo = Scalar(0), fI_hi = std::numeric_limits&lt;Scalar&gt;::infinity();</div>
 <div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>        Scalar gI_lo = (Scalar(1) - param.ftol) * dg_init, gI_hi = std::numeric_limits&lt;Scalar&gt;::infinity();</div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span> </div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>        <span class="comment">// Function value and gradient at the current step size</span></div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>        x.noalias() = xp + step * drt;</div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>        fx = f(x, grad);</div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>        dg = grad.dot(drt);</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span> </div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>        <span class="comment">// std::cout &lt;&lt; &quot;max_step = &quot; &lt;&lt; step_max &lt;&lt; &quot;, step = &quot; &lt;&lt; step &lt;&lt; &quot;, fx = &quot; &lt;&lt; fx &lt;&lt; &quot;, dg = &quot; &lt;&lt; dg &lt;&lt; std::endl;</span></div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span> </div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>        <span class="comment">// Convergence test</span></div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>        <span class="keywordflow">if</span> (fx &lt;= fx_init + step * test_decr &amp;&amp; abs(dg) &lt;= test_curv)</div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>        {</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>            <span class="comment">// std::cout &lt;&lt; &quot;** Criteria met\n\n&quot;;</span></div>
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>            <span class="comment">// std::cout &lt;&lt; &quot;========================= Leaving line search =========================\n\n&quot;;</span></div>
-<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>            <span class="keywordflow">return</span>;</div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>        }</div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span> </div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>        <span class="comment">// Extrapolation factor</span></div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>        <span class="keyword">const</span> Scalar delta = Scalar(1.1);</div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>        <span class="keywordtype">int</span> iter;</div>
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>        <span class="keywordflow">for</span> (iter = 0; iter &lt; param.max_linesearch; iter++)</div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>        {</div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>            <span class="comment">// ft = psi(step) = f(xp + step * drt) - f(xp) - step * test_decr</span></div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>            <span class="comment">// gt = psi&#39;(step) = dg - mu * dg_init</span></div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>            <span class="comment">// mu = param.ftol</span></div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>            <span class="keyword">const</span> Scalar ft = fx - fx_init - step * test_decr;</div>
-<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>            <span class="keyword">const</span> Scalar gt = dg - param.ftol * dg_init;</div>
-<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span> </div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>            <span class="comment">// Update step size and bracketing interval</span></div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>            Scalar new_step;</div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>            <span class="keywordflow">if</span> (ft &gt; fI_lo)</div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>            {</div>
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>                <span class="comment">// Case 1: ft &gt; fl</span></div>
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>                new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);</div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>                <span class="comment">// Sanity check: if the computed new_step is too small, typically due to</span></div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>                <span class="comment">// extremely large value of ft, switch to the middle point</span></div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>                <span class="keywordflow">if</span> (new_step &lt;= param.min_step)</div>
-<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>                    new_step = (I_lo + step) / Scalar(2);</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span> </div>
-<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>                I_hi = step;</div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>                fI_hi = ft;</div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>                gI_hi = gt;</div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>        <span class="comment">// We also need to save x and grad for step=I_lo, since we want to return the best</span></div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>        <span class="comment">// step size along the path when strong Wolfe condition is not met</span></div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>        Vector x_lo = xp, grad_lo = grad;</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>        Scalar fx_lo = fx_init, dg_lo = dg_init;</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span> </div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>        <span class="comment">// Function value and gradient at the current step size</span></div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>        x.noalias() = xp + step * drt;</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>        fx = f(x, grad);</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>        dg = grad.dot(drt);</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span> </div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>        <span class="comment">// std::cout &lt;&lt; &quot;max_step = &quot; &lt;&lt; step_max &lt;&lt; &quot;, step = &quot; &lt;&lt; step &lt;&lt; &quot;, fx = &quot; &lt;&lt; fx &lt;&lt; &quot;, dg = &quot; &lt;&lt; dg &lt;&lt; std::endl;</span></div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span> </div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>        <span class="comment">// Convergence test</span></div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>        <span class="keywordflow">if</span> (fx &lt;= fx_init + step * test_decr &amp;&amp; abs(dg) &lt;= test_curv)</div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>        {</div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>            <span class="comment">// std::cout &lt;&lt; &quot;** Criteria met\n\n&quot;;</span></div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>            <span class="comment">// std::cout &lt;&lt; &quot;========================= Leaving line search =========================\n\n&quot;;</span></div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>            <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>        }</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span> </div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>        <span class="comment">// Extrapolation factor</span></div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>        <span class="keyword">const</span> Scalar delta = Scalar(1.1);</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>        <span class="keywordtype">int</span> iter;</div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>        <span class="keywordflow">for</span> (iter = 0; iter &lt; param.max_linesearch; iter++)</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>        {</div>
+<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>            <span class="comment">// ft = psi(step) = f(xp + step * drt) - f(xp) - step * test_decr</span></div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>            <span class="comment">// gt = psi&#39;(step) = dg - mu * dg_init</span></div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>            <span class="comment">// mu = param.ftol</span></div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>            <span class="keyword">const</span> Scalar ft = fx - fx_init - step * test_decr;</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>            <span class="keyword">const</span> Scalar gt = dg - param.ftol * dg_init;</div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span> </div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>            <span class="comment">// Update step size and bracketing interval</span></div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>            Scalar new_step;</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>            <span class="keywordflow">if</span> (ft &gt; fI_lo)</div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>            {</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>                <span class="comment">// Case 1: ft &gt; fl</span></div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>                new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);</div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>                <span class="comment">// Sanity check: if the computed new_step is too small, typically due to</span></div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>                <span class="comment">// extremely large value of ft, switch to the middle point</span></div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>                <span class="keywordflow">if</span> (new_step &lt;= param.min_step)</div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>                    new_step = (I_lo + step) / Scalar(2);</div>
 <div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span> </div>
-<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>                <span class="comment">// std::cout &lt;&lt; &quot;Case 1: new step = &quot; &lt;&lt; new_step &lt;&lt; std::endl;</span></div>
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>            }</div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>            <span class="keywordflow">else</span> <span class="keywordflow">if</span> (gt * (I_lo - step) &gt; Scalar(0))</div>
-<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>            {</div>
-<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>                <span class="comment">// Case 2: ft &lt;= fl, gt * (al - at) &gt; 0</span></div>
-<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>                <span class="comment">//</span></div>
-<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>                <span class="comment">// Page 291 of Moré and Thuente (1994) suggests that</span></div>
-<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>                <span class="comment">// newat = min(at + delta * (at - al), amax), delta in [1.1, 4]</span></div>
-<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>                new_step = std::min(step_max, step + delta * (step - I_lo));</div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span> </div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>                <span class="comment">// We can also consider the following scheme:</span></div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>                <span class="comment">// First let step_selection() decide a value, and then project to the range above</span></div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>                <span class="comment">//</span></div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>                <span class="comment">// new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);</span></div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>                <span class="comment">// const Scalar delta2 = Scalar(4)</span></div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>                <span class="comment">// const Scalar t1 = step + delta * (step - I_lo);</span></div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>                <span class="comment">// const Scalar t2 = step + delta2 * (step - I_lo);</span></div>
-<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>                <span class="comment">// const Scalar tl = std::min(t1, t2), tu = std::max(t1, t2);</span></div>
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>                <span class="comment">// new_step = std::min(tu, std::max(tl, new_step));</span></div>
-<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>                <span class="comment">// new_step = std::min(step_max, new_step);</span></div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span> </div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>                I_lo = step;</div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>                fI_lo = ft;</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>                gI_lo = gt;</div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>                I_hi = step;</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>                fI_hi = ft;</div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>                gI_hi = gt;</div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span> </div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>                <span class="comment">// std::cout &lt;&lt; &quot;Case 1: new step = &quot; &lt;&lt; new_step &lt;&lt; std::endl;</span></div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>            }</div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>            <span class="keywordflow">else</span> <span class="keywordflow">if</span> (gt * (I_lo - step) &gt; Scalar(0))</div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>            {</div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>                <span class="comment">// Case 2: ft &lt;= fl, gt * (al - at) &gt; 0</span></div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>                <span class="comment">//</span></div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>                <span class="comment">// Page 291 of Moré and Thuente (1994) suggests that</span></div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>                <span class="comment">// newat = min(at + delta * (at - al), amax), delta in [1.1, 4]</span></div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>                new_step = std::min(step_max, step + delta * (step - I_lo));</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span> </div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>                <span class="comment">// We can also consider the following scheme:</span></div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>                <span class="comment">// First let step_selection() decide a value, and then project to the range above</span></div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>                <span class="comment">//</span></div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>                <span class="comment">// new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);</span></div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>                <span class="comment">// const Scalar delta2 = Scalar(4)</span></div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>                <span class="comment">// const Scalar t1 = step + delta * (step - I_lo);</span></div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>                <span class="comment">// const Scalar t2 = step + delta2 * (step - I_lo);</span></div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>                <span class="comment">// const Scalar tl = std::min(t1, t2), tu = std::max(t1, t2);</span></div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>                <span class="comment">// new_step = std::min(tu, std::max(tl, new_step));</span></div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>                <span class="comment">// new_step = std::min(step_max, new_step);</span></div>
 <div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span> </div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>                <span class="comment">// std::cout &lt;&lt; &quot;Case 2: new step = &quot; &lt;&lt; new_step &lt;&lt; std::endl;</span></div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>            }</div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>            <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>            {</div>
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>                <span class="comment">// Case 3: ft &lt;= fl, gt * (al - at) &lt;= 0</span></div>
-<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>                new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);</div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span> </div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>                I_hi = I_lo;</div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>                fI_hi = fI_lo;</div>
-<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>                gI_hi = gI_lo;</div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span> </div>
-<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>                I_lo = step;</div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>                fI_lo = ft;</div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>                gI_lo = gt;</div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span> </div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>                <span class="comment">// std::cout &lt;&lt; &quot;Case 3: new step = &quot; &lt;&lt; new_step &lt;&lt; std::endl;</span></div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>            }</div>
-<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span> </div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>            <span class="comment">// Case 1 and 3 are interpolations, whereas Case 2 is extrapolation</span></div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>            <span class="comment">// This means that Case 2 may return new_step = step_max,</span></div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>            <span class="comment">// and we need to decide whether to accept this value</span></div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>            <span class="comment">// 1. If both step and new_step equal to step_max, it means</span></div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>            <span class="comment">//    step will have no further change, so we accept it</span></div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>            <span class="comment">// 2. Otherwise, we need to test the function value and gradient</span></div>
-<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>            <span class="comment">//    on step_max, and decide later</span></div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span> </div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>            <span class="comment">// In case step, new_step, and step_max are equal, directly return the computed x and fx</span></div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>            <span class="keywordflow">if</span> (step == step_max &amp;&amp; new_step &gt;= step_max)</div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>            {</div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>                <span class="comment">// std::cout &lt;&lt; &quot;** Maximum step size reached\n\n&quot;;</span></div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>                <span class="comment">// std::cout &lt;&lt; &quot;========================= Leaving line search =========================\n\n&quot;;</span></div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>                <span class="keywordflow">return</span>;</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>            }</div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>            <span class="comment">// Otherwise, recompute x and fx based on new_step</span></div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>            step = new_step;</div>
-<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span> </div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>            <span class="keywordflow">if</span> (step &lt; param.min_step)</div>
-<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;the line search step became smaller than the minimum value allowed&quot;</span>);</div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span> </div>
-<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>            <span class="keywordflow">if</span> (step &gt; param.max_step)</div>
-<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;the line search step became larger than the maximum value allowed&quot;</span>);</div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span> </div>
-<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>            <span class="comment">// Update parameter, function value, and gradient</span></div>
-<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>            x.noalias() = xp + step * drt;</div>
-<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>            fx = f(x, grad);</div>
-<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>            dg = grad.dot(drt);</div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span> </div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>            <span class="comment">// std::cout &lt;&lt; &quot;step = &quot; &lt;&lt; step &lt;&lt; &quot;, fx = &quot; &lt;&lt; fx &lt;&lt; &quot;, dg = &quot; &lt;&lt; dg &lt;&lt; std::endl;</span></div>
-<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span> </div>
-<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>            <span class="comment">// Convergence test</span></div>
-<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>            <span class="keywordflow">if</span> (fx &lt;= fx_init + step * test_decr &amp;&amp; abs(dg) &lt;= test_curv)</div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>            {</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>                <span class="comment">// std::cout &lt;&lt; &quot;** Criteria met\n\n&quot;;</span></div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>                <span class="comment">// std::cout &lt;&lt; &quot;========================= Leaving line search =========================\n\n&quot;;</span></div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>                <span class="keywordflow">return</span>;</div>
-<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>            }</div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>                I_lo = step;</div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>                fI_lo = ft;</div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>                gI_lo = gt;</div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>                <span class="comment">// Move x and grad to x_lo and grad_lo, respectively</span></div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>                x_lo.swap(x);</div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>                grad_lo.swap(grad);</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>                fx_lo = fx;</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>                dg_lo = dg;</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span> </div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>                <span class="comment">// std::cout &lt;&lt; &quot;Case 2: new step = &quot; &lt;&lt; new_step &lt;&lt; std::endl;</span></div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>            }</div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>            <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>            {</div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>                <span class="comment">// Case 3: ft &lt;= fl, gt * (al - at) &lt;= 0</span></div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>                new_step = step_selection(I_lo, I_hi, step, fI_lo, fI_hi, ft, gI_lo, gI_hi, gt);</div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span> </div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>                I_hi = I_lo;</div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>                fI_hi = fI_lo;</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>                gI_hi = gI_lo;</div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span> </div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>                I_lo = step;</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>                fI_lo = ft;</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>                gI_lo = gt;</div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>                <span class="comment">// Move x and grad to x_lo and grad_lo, respectively</span></div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>                x_lo.swap(x);</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>                grad_lo.swap(grad);</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>                fx_lo = fx;</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>                dg_lo = dg;</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span> </div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>                <span class="comment">// std::cout &lt;&lt; &quot;Case 3: new step = &quot; &lt;&lt; new_step &lt;&lt; std::endl;</span></div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>            }</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span> </div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>            <span class="comment">// Case 1 and 3 are interpolations, whereas Case 2 is extrapolation</span></div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>            <span class="comment">// This means that Case 2 may return new_step = step_max,</span></div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>            <span class="comment">// and we need to decide whether to accept this value</span></div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>            <span class="comment">// 1. If both step and new_step equal to step_max, it means</span></div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>            <span class="comment">//    step will have no further change, so we accept it</span></div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>            <span class="comment">// 2. Otherwise, we need to test the function value and gradient</span></div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>            <span class="comment">//    on step_max, and decide later</span></div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span> </div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>            <span class="comment">// In case step, new_step, and step_max are equal, directly return the computed x and fx</span></div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>            <span class="keywordflow">if</span> (step == step_max &amp;&amp; new_step &gt;= step_max)</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>            {</div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>                <span class="comment">// std::cout &lt;&lt; &quot;** Maximum step size reached\n\n&quot;;</span></div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>                <span class="comment">// std::cout &lt;&lt; &quot;========================= Leaving line search =========================\n\n&quot;;</span></div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span> </div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>                <span class="comment">// Move {x, grad}_lo back before returning</span></div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>                x.swap(x_lo);</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>                grad.swap(grad_lo);</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>                <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>            }</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>            <span class="comment">// Otherwise, recompute x and fx based on new_step</span></div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>            step = new_step;</div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span> </div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>            <span class="keywordflow">if</span> (step &lt; param.min_step)</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;the line search step became smaller than the minimum value allowed&quot;</span>);</div>
 <div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span> </div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>            <span class="comment">// Now assume step = step_max, and we need to decide whether to</span></div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>            <span class="comment">// exit the line search (see the comments above regarding step_max)</span></div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>            <span class="comment">// If we reach here, it means this step size does not pass the convergence</span></div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>            <span class="comment">// test, so either the sufficient decrease condition or the curvature</span></div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>            <span class="comment">// condition is not met yet</span></div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>            <span class="comment">//</span></div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>            <span class="comment">// Typically the curvature condition is harder to meet, and it is</span></div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>            <span class="comment">// possible that no step size in [0, step_max] satisfies the condition</span></div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>            <span class="comment">//</span></div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>            <span class="comment">// But we need to make sure that its psi function value is smaller than</span></div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>            <span class="comment">// the best one so far. If not, go to the next iteration and find a better one</span></div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>            <span class="keywordflow">if</span> (step &gt;= step_max)</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>            <span class="keywordflow">if</span> (step &gt; param.max_step)</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;the line search step became larger than the maximum value allowed&quot;</span>);</div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span> </div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>            <span class="comment">// Update parameter, function value, and gradient</span></div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>            x.noalias() = xp + step * drt;</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>            fx = f(x, grad);</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>            dg = grad.dot(drt);</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span> </div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>            <span class="comment">// std::cout &lt;&lt; &quot;step = &quot; &lt;&lt; step &lt;&lt; &quot;, fx = &quot; &lt;&lt; fx &lt;&lt; &quot;, dg = &quot; &lt;&lt; dg &lt;&lt; std::endl;</span></div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span> </div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>            <span class="comment">// Convergence test</span></div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>            <span class="keywordflow">if</span> (fx &lt;= fx_init + step * test_decr &amp;&amp; abs(dg) &lt;= test_curv)</div>
 <div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>            {</div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>                <span class="keyword">const</span> Scalar ft = fx - fx_init - step * test_decr;</div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>                <span class="keywordflow">if</span> (ft &lt;= fI_lo)</div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>                {</div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>                    <span class="comment">// std::cout &lt;&lt; &quot;** Maximum step size reached\n\n&quot;;</span></div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>                    <span class="comment">// std::cout &lt;&lt; &quot;========================= Leaving line search =========================\n\n&quot;;</span></div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>                    <span class="keywordflow">return</span>;</div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>                }</div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>            }</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>        }</div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span> </div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>        <span class="keywordflow">if</span> (iter &gt;= param.max_linesearch)</div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>            <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;the line search routine reached the maximum number of iterations&quot;</span>);</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>    }</div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>};</div>
-<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span> </div>
-<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>}  <span class="comment">// namespace LBFGSpp</span></div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span> </div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span><span class="preprocessor">#endif  </span><span class="comment">// LBFGSPP_LINE_SEARCH_MORE_THUENTE_H</span></div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>                <span class="comment">// std::cout &lt;&lt; &quot;** Criteria met\n\n&quot;;</span></div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>                <span class="comment">// std::cout &lt;&lt; &quot;========================= Leaving line search =========================\n\n&quot;;</span></div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>                <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>            }</div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span> </div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>            <span class="comment">// Now assume step = step_max, and we need to decide whether to</span></div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>            <span class="comment">// exit the line search (see the comments above regarding step_max)</span></div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>            <span class="comment">// If we reach here, it means this step size does not pass the convergence</span></div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>            <span class="comment">// test, so either the sufficient decrease condition or the curvature</span></div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>            <span class="comment">// condition is not met yet</span></div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>            <span class="comment">//</span></div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>            <span class="comment">// Typically the curvature condition is harder to meet, and it is</span></div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>            <span class="comment">// possible that no step size in [0, step_max] satisfies the condition</span></div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>            <span class="comment">//</span></div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>            <span class="comment">// But we need to make sure that its psi function value is smaller than</span></div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>            <span class="comment">// the best one so far. If not, go to the next iteration and find a better one</span></div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>            <span class="keywordflow">if</span> (step &gt;= step_max)</div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>            {</div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>                <span class="keyword">const</span> Scalar ft_bound = fx - fx_init - step * test_decr;</div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>                <span class="keywordflow">if</span> (ft_bound &lt;= fI_lo)</div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>                {</div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>                    <span class="comment">// std::cout &lt;&lt; &quot;** Maximum step size reached\n\n&quot;;</span></div>
+<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>                    <span class="comment">// std::cout &lt;&lt; &quot;========================= Leaving line search =========================\n\n&quot;;</span></div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>                    <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>                }</div>
+<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span>            }</div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>        }</div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span> </div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>        <span class="comment">// If we have used up all line search iterations, then the strong Wolfe condition</span></div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>        <span class="comment">// is not met. We choose not to raise an exception (unless no step satisfying</span></div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>        <span class="comment">// sufficient decrease is found), but to return the best step size so far</span></div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>        <span class="keywordflow">if</span> (iter &gt;= param.max_linesearch)</div>
+<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>        {</div>
+<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>            <span class="comment">// throw std::runtime_error(&quot;the line search routine reached the maximum number of iterations&quot;);</span></div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span> </div>
+<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>            <span class="comment">// First test whether the last step is better than I_lo</span></div>
+<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span>            <span class="comment">// If yes, return the last step</span></div>
+<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>            <span class="keyword">const</span> Scalar ft = fx - fx_init - step * test_decr;</div>
+<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>            <span class="keywordflow">if</span> (ft &lt;= fI_lo)</div>
+<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span>                <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span> </div>
+<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span>            <span class="comment">// If not, then the best step size so far is I_lo, but it needs to be positive</span></div>
+<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>            <span class="keywordflow">if</span> (I_lo &lt;= Scalar(0))</div>
+<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;the line search routine is unable to sufficiently decrease the function value&quot;</span>);</div>
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span> </div>
+<div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span>            <span class="comment">// Return everything with _lo</span></div>
+<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span>            step = I_lo;</div>
+<div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span>            fx = fx_lo;</div>
+<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span>            dg = dg_lo;</div>
+<div class="line"><a id="l00434" name="l00434"></a><span class="lineno">  434</span>            <span class="comment">// Move {x, grad}_lo back</span></div>
+<div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span>            x.swap(x_lo);</div>
+<div class="line"><a id="l00436" name="l00436"></a><span class="lineno">  436</span>            grad.swap(grad_lo);</div>
+<div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span>            <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00438" name="l00438"></a><span class="lineno">  438</span>        }</div>
+<div class="line"><a id="l00439" name="l00439"></a><span class="lineno">  439</span>    }</div>
+<div class="line"><a id="l00440" name="l00440"></a><span class="lineno">  440</span>};</div>
+<div class="line"><a id="l00441" name="l00441"></a><span class="lineno">  441</span> </div>
+<div class="line"><a id="l00442" name="l00442"></a><span class="lineno">  442</span>}  <span class="comment">// namespace LBFGSpp</span></div>
+<div class="line"><a id="l00443" name="l00443"></a><span class="lineno">  443</span> </div>
+<div class="line"><a id="l00444" name="l00444"></a><span class="lineno">  444</span><span class="preprocessor">#endif  </span><span class="comment">// LBFGSPP_LINE_SEARCH_MORE_THUENTE_H</span></div>
 <div class="ttc" id="aclassLBFGSpp_1_1LineSearchMoreThuente_html"><div class="ttname"><a href="classLBFGSpp_1_1LineSearchMoreThuente.html">LBFGSpp::LineSearchMoreThuente</a></div><div class="ttdef"><b>Definition:</b> <a href="LineSearchMoreThuente_8h_source.html#l00026">LineSearchMoreThuente.h:27</a></div></div>
 <div class="ttc" id="aclassLBFGSpp_1_1LineSearchMoreThuente_html_a0bfffe11b437a1815e0e1edc5023fc0c"><div class="ttname"><a href="classLBFGSpp_1_1LineSearchMoreThuente.html#a0bfffe11b437a1815e0e1edc5023fc0c">LBFGSpp::LineSearchMoreThuente::LineSearch</a></div><div class="ttdeci">static void LineSearch(Foo &amp;f, const SolverParam &amp;param, const Vector &amp;xp, const Vector &amp;drt, const Scalar &amp;step_max, Scalar &amp;step, Scalar &amp;fx, Vector &amp;grad, Scalar &amp;dg, Vector &amp;x)</div><div class="ttdef"><b>Definition:</b> <a href="LineSearchMoreThuente_8h_source.html#l00214">LineSearchMoreThuente.h:214</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

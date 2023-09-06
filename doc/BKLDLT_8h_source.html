@@ -131,17 +131,17 @@ $(document).ready(function(){initNavTree('BKLDLT_8h_source.html',''); initResiza
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">class </span>BKLDLT</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>{</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <span class="keyword">typedef</span> Eigen::Index Index;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keyword">typedef</span> Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt; Matrix;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keyword">typedef</span> Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt; Vector;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keyword">typedef</span> Eigen::Map&lt;Vector&gt; MapVec;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keyword">typedef</span> Eigen::Map&lt;const Vector&gt; MapConstVec;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <span class="keyword">using </span>Index = Eigen::Index;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keyword">using </span>Matrix = Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt;;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keyword">using </span>Vector = Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt;;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keyword">using </span>MapVec = Eigen::Map&lt;Vector&gt;;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keyword">using </span>MapConstVec = Eigen::Map&lt;const Vector&gt;;</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <span class="keyword">typedef</span> Eigen::Matrix&lt;Index, Eigen::Dynamic, 1&gt; IntVector;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keyword">typedef</span> Eigen::Ref&lt;Vector&gt; GenericVector;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">typedef</span> Eigen::Ref&lt;Matrix&gt; GenericMatrix;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keyword">typedef</span> <span class="keyword">const</span> Eigen::Ref&lt;const Matrix&gt; ConstGenericMatrix;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keyword">typedef</span> <span class="keyword">const</span> Eigen::Ref&lt;const Vector&gt; ConstGenericVector;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <span class="keyword">using </span>IntVector = Eigen::Matrix&lt;Index, Eigen::Dynamic, 1&gt;;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keyword">using </span>GenericVector = Eigen::Ref&lt;Vector&gt;;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">using </span>GenericMatrix = Eigen::Ref&lt;Matrix&gt;;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keyword">using </span>ConstGenericMatrix = <span class="keyword">const</span> Eigen::Ref&lt;const Matrix&gt;;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keyword">using </span>ConstGenericVector = <span class="keyword">const</span> Eigen::Ref&lt;const Vector&gt;;</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    Index m_n;</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    Vector m_data;                                  <span class="comment">// storage for a lower-triangular matrix</span></div>
@@ -613,7 +613,7 @@ $(document).ready(function(){initNavTree('BKLDLT_8h_source.html',''); initResiza
 <div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>        }</div>
 <div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span> </div>
 <div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span>        <span class="comment">// 5. x = P&#39;y</span></div>
-<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span>        <span class="keywordflow">for</span> (Index i = npermc - 1; i &gt;= 0; i--)</div>
+<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span>        <span class="keywordflow">for</span> (i = npermc - 1; i &gt;= 0; i--)</div>
 <div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>        {</div>
 <div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>            std::swap(x[m_permc[i].first], x[m_permc[i].second]);</div>
 <div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span>        }</div>
