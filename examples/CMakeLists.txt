@@ -1,0 +1,6 @@
+foreach (source example-quadratic.cpp example-rosenbrock-box.cpp example-rosenbrock-bracketing.cpp example-rosenbrock-comparison.cpp example-rosenbrock.cpp)
+    get_filename_component(example ${source} NAME_WLE)
+    add_executable(${example} ${source})
+    set_property(TARGET ${example} PROPERTY CXX_STANDARD 17)
+    target_link_libraries(${example} PRIVATE lbfgspp Eigen3::Eigen)
+endforeach ()

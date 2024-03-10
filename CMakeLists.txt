@@ -83,3 +83,5 @@ install(
     ${CMAKE_CURRENT_BINARY_DIR}/lbfgspp-config-version.cmake
   DESTINATION lib/cmake/lbfgspp
 )
+
+add_subdirectory(examples)
