@@ -207,6 +207,69 @@ public:
         return B;
     }
 
+    // Explicitly form the H matrix
+    inline Matrix get_Hmat() const
+    {
+        // Initial approximation 1/theta * I
+        const int n = m_s.rows();
+        Matrix H = (Scalar(1) / m_theta) * Matrix::Identity(n, n);
+        if (m_ncorr < 1)
+            return H;
+
+        // Construct W matrix, W = [1/theta * Y, S]
+        // Y = [y0, y1, ..., yc]
+        // S = [s0, s1, ..., sc]
+        // We first set W = [Y, S], since later we still need Y and S matrices
+        // After computing M, we rescale the Y part in W
+        Matrix W(n, 2 * m_ncorr);
+        // p = m_ptr - 1 points to the most recent element,
+        // (p + 1) % m_ncorr points to the oldest element
+        int j = m_ptr % m_ncorr;
+        for (int i = 0; i < m_ncorr; i++)
+        {
+            W.col(i).noalias() = m_y.col(j);
+            W.col(m_ncorr + i).noalias() = m_s.col(j);
+            j = (j + 1) % m_m;
+        }
+        // Now Y = W[:, :c], S = W[:, c:]
+
+        // Construct M matrix, M = [        0                           -inv(R) ]
+        //                         [ -inv(R)'  inv(R)'(D + 1/theta * Y'Y)inv(R) ]
+        // D = diag(y0's0, ..., yc'sc)
+        Matrix M(2 * m_ncorr, 2 * m_ncorr);
+        // First use M[:c, :c] to store R
+        // R = [s[0]'y[0]  s[0]'y[1] ...    s[0]'y[c-1] ]
+        //     [        0  s[1]'y[1] ...    s[1]'y[c-1] ]
+        //     ...
+        //     [        0          0 ...  s[c-1]'y[c-1] ]
+        for (int i = 0; i < m_ncorr; i++)
+        {
+            M.col(i).head(i + 1).noalias() = W.middleCols(m_ncorr, i + 1).transpose() * W.col(i);
+        }
+        // Compute inv(R)
+        Matrix Rinv = M.topLeftCorner(m_ncorr, m_ncorr).template triangularView<Eigen::Upper>().solve(Matrix::Identity(m_ncorr, m_ncorr));
+        // Zero out the top left block
+        M.topLeftCorner(m_ncorr, m_ncorr).setZero();
+        // Set the top right block
+        M.topRightCorner(m_ncorr, m_ncorr).noalias() = -Rinv;
+        // The symmetric block
+        M.bottomLeftCorner(m_ncorr, m_ncorr).noalias() = -Rinv.transpose();
+        // 1/theta * Y'Y
+        Matrix block = (Scalar(1) / m_theta) * W.leftCols(m_ncorr).transpose() * W.leftCols(m_ncorr);
+        // D + 1/theta * Y'Y
+        Vector ys = W.leftCols(m_ncorr).cwiseProduct(W.rightCols(m_ncorr)).colwise().sum().transpose();
+        block.diagonal().array() += ys.array();
+        // The bottom right block
+        M.bottomRightCorner(m_ncorr, m_ncorr).noalias() = Rinv.transpose() * block * Rinv;
+
+        // Set the true W matrix
+        W.leftCols(m_ncorr).array() *= (Scalar(1) / m_theta);
+
+        // Compute H = 1/theta * I + W * M * W'
+        H.noalias() += W * M * W.transpose();
+        return H;
+    }
+
     // Recursive formula to compute a * H * v, where a is a scalar, and v is [n x 1]
     // H0 = (1/theta) * I is the initial approximation to H
     // Algorithm 7.4 of Nocedal, J., & Wright, S. (2006). Numerical optimization.
