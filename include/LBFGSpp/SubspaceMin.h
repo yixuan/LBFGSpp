@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2020-2024 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGSPP_SUBSPACE_MIN_H
