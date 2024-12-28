@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2020-2024 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGSPP_BFGS_MAT_H
@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <Eigen/Core>
+#include <Eigen/LU>
 #include "BKLDLT.h"
 
 /// \cond
@@ -13,10 +14,10 @@
 namespace LBFGSpp {
 
 //
-// An *implicit* representation of the BFGS approximation to the Hessian matrix B
+// An *implicit* representation of the BFGS approximation to the Hessian matrix
 //
-// B = theta * I - W * M * W'
-// H = inv(B)
+// B = theta * I - W * M * W' -- approximation to Hessian matrix, see [2]
+// H = inv(B)                 -- approximation to inverse Hessian matrix, see [2]
 //
 // Reference:
 // [1] D. C. Liu and J. Nocedal (1989). On the limited memory BFGS method for large scale optimization.
@@ -42,8 +43,9 @@ private:
                      // Details: s and y vectors are stored in cyclic order.
                      //          For example, if the current s-vector is stored in m_s[, m-1],
                      //          then in the next iteration m_s[, 0] will be overwritten.
-                     //          m_s[, m_ptr-1] points to the most recent history,
-                     //          and m_s[, m_ptr % m] points to the most distant one.
+                     //          m_s[, m_ptr-1] points to the most recent history (if ncorr > 0),
+                     //          and m_s[, m_ptr % m] points to the location that will be
+                     //          overwritten next time.
 
     //========== The following members are only used in L-BFGS-B algorithm ==========//
     Matrix m_permMinv;             // Permutated M inverse
@@ -142,6 +144,67 @@ public:
             m_permMsolver.compute(m_permMinv);
             m_permMinv.block(m_m, m_m, m_m, m_m) /= m_theta;
         }
+    }
+
+    // Explicitly form the B matrix
+    inline Matrix get_Bmat() const
+    {
+        // Initial approximation theta * I
+        const int n = m_s.rows();
+        Matrix B = m_theta * Matrix::Identity(n, n);
+        if (m_ncorr < 1)
+            return B;
+
+        // Construct W matrix, W = [Y, theta * S]
+        // Y = [y0, y1, ..., yc]
+        // S = [s0, s1, ..., sc]
+        // We first set W = [Y, S], since later we still need Y and S matrices
+        // After computing Minv, we rescale the S part in W
+        Matrix W(n, 2 * m_ncorr);
+        // r = m_ptr - 1 points to the most recent element,
+        // (r + 1) % m_ncorr points to the oldest element
+        int j = m_ptr % m_ncorr;
+        for (int i = 0; i < m_ncorr; i++)
+        {
+            W.col(i).noalias() = m_y.col(j);
+            W.col(m_ncorr + i).noalias() = m_s.col(j);
+            j = (j + 1) % m_m;
+        }
+        // Now Y = W[:, :c], S = W[:, c:]
+
+        // Construct Minv matrix, Minv = [-D  L'         ]
+        //                               [ L  theta * S'S]
+
+        // D = diag(y0's0, ..., yc'sc)
+        Matrix Minv(2 * m_ncorr, 2 * m_ncorr);
+        Minv.topLeftCorner(m_ncorr, m_ncorr).setZero();
+        Vector ys = W.leftCols(m_ncorr).cwiseProduct(W.rightCols(m_ncorr)).colwise().sum().transpose();
+        Minv.diagonal().head(m_ncorr).noalias() = -ys;
+        // L = [          0                                     ]
+        //     [  s[1]'y[0]             0                       ]
+        //     [  s[2]'y[0]     s[2]'y[1]                       ]
+        //     ...
+        //     [s[c-1]'y[0] ... ... ... ... ... s[c-1]'y[c-2]  0]
+        Minv.bottomLeftCorner(m_ncorr, m_ncorr).setZero();
+        for (int i = 0; i < m_ncorr - 1; i++)
+        {
+            // Number of terms for this column
+            const int nterm = m_ncorr - i - 1;
+            // S[:, -nterm:]'Y[:, j]
+            Minv.col(i).tail(nterm).noalias() = W.rightCols(nterm).transpose() * W.col(i);
+        }
+        // The symmetric block
+        Minv.topRightCorner(m_ncorr, m_ncorr).noalias() = Minv.bottomLeftCorner(m_ncorr, m_ncorr).transpose();
+        // theta * S'S
+        Minv.bottomRightCorner(m_ncorr, m_ncorr).noalias() = m_theta * W.rightCols(m_ncorr).transpose() * W.rightCols(m_ncorr);
+
+        // Set the true W matrix
+        W.rightCols(m_ncorr).array() *= m_theta;
+
+        // Compute B = theta * I - W * M * W'
+        Eigen::PartialPivLU<Matrix> M_solver(Minv);
+        B.noalias() -= W * M_solver.solve(W.transpose());
+        return B;
     }
 
     // Recursive formula to compute a * H * v, where a is a scalar, and v is [n x 1]
