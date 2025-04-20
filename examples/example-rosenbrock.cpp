@@ -43,6 +43,8 @@ int main()
     std::cout << "f(x) = " << fx << std::endl;
     std::cout << "grad = " << solver.final_grad().transpose() << std::endl;
     std::cout << "||grad|| = " << solver.final_grad_norm() << std::endl;
+    std::cout << "approx_hess = \n" << solver.final_approx_hessian() << std::endl;
+    std::cout << "approx_inv_hess = \n" << solver.final_approx_inverse_hessian() << std::endl;
 
     return 0;
 }

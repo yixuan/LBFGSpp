@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2023 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2024 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGSPP_LBFGS_H
@@ -185,6 +185,16 @@ public:
     /// Returning the Euclidean norm of the final gradient.
     ///
     Scalar final_grad_norm() const { return m_gnorm; }
+
+    ///
+    /// Returning the approximate Hessian matrix on the last iterate.
+    ///
+    Matrix final_approx_hessian() const { return m_bfgs.get_Bmat(); }
+
+    ///
+    /// Returning the approximate inverse Hessian matrix on the last iterate.
+    ///
+    Matrix final_approx_inverse_hessian() const { return m_bfgs.get_Hmat(); }
 };
 
 }  // namespace LBFGSpp
