@@ -1,12 +1,12 @@
-// Copyright (C) 2020-2024 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2020-2025 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGSPP_LINE_SEARCH_MORE_THUENTE_H
 #define LBFGSPP_LINE_SEARCH_MORE_THUENTE_H
 
-#include <stdexcept>  // std::invalid_argument, std::runtime_error
 #include <Eigen/Core>
-#include "LBFGSpp/Param.h"
+#include <stdexcept>  // std::invalid_argument, std::runtime_error
+#include "Param.h"
 
 namespace LBFGSpp {
 

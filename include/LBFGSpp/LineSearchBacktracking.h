@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2024 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2025 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGSPP_LINE_SEARCH_BACKTRACKING_H
@@ -6,6 +6,7 @@
 
 #include <Eigen/Core>
 #include <stdexcept>  // std::runtime_error
+#include "Param.h"
 
 namespace LBFGSpp {
 

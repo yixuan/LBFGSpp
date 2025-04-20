@@ -1,5 +1,5 @@
-// Copyright (C) 2016-2024 Yixuan Qiu <yixuan.qiu@cos.name>
-// Copyright (C) 2016-2024 Dirk Toewe <DirkToewe@GoogleMail.com>
+// Copyright (C) 2016-2025 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2025 Dirk Toewe <DirkToewe@GoogleMail.com>
 // Under MIT license
 
 #ifndef LBFGSPP_LINE_SEARCH_NOCEDAL_WRIGHT_H
@@ -7,6 +7,7 @@
 
 #include <Eigen/Core>
 #include <stdexcept>
+#include "Param.h"
 
 namespace LBFGSpp {
 
