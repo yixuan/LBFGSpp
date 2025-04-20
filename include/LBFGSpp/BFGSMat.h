@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2020-2025 Yixuan Qiu <yixuan.qiu@cos.name>
 // Under MIT license
 
 #ifndef LBFGSPP_BFGS_MAT_H
