@@ -1,3 +1,15 @@
+## [0.4.0] - 2025-04-20
+
+### Added
+
+- Added functions `final_approx_hessian()` and `final_approx_inverse_hessian()` to `LBFGSSolver`
+  to retrieve the final approximate Hessian information
+  ([#42](https://github.com/yixuan/LBFGSpp/issues/42), [#43](https://github.com/yixuan/LBFGSpp/issues/43))
+- Added CMake scripts to build examples ([#38](https://github.com/yixuan/LBFGSpp/pull/38)),
+  contributed by [@pjknowles](https://github.com/pjknowles)
+
+
+
 ## [0.3.0] - 2023-09-06
 
 ### Added
