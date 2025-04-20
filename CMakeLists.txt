@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.3)
-project(lbfgspp VERSION 0.3.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.10)
+project(lbfgspp VERSION 0.4.0 LANGUAGES CXX)
 
 # + ----------------- +
 # | BUILDING SETTINGS |
