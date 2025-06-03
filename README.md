@@ -196,6 +196,33 @@ Note that we also allow infinite values for the lower and upper bounds.
 In such cases one can define `ub[i] = std::numeric_limits<double>::infinity()`,
 for example.
 
+## LBFGS++ with Bazel
+
+**LBFGS++** can easily be integrated in project using the [Bazel](https://bazel.build/) build system via modules.
+Simply add the following to your `MODULE.bazel` file:
+
+```bzl
+# MODULE.bazel
+#...
+bazel_dep(name = "lbfgspp", version = "4.0.0")
+# ...
+```
+
+And add the dependency to the `@lbfgspp` library in your `cc_library`, `cc_binary`, or `cc_test` target.
+The transitive dependency on the `@eigen` library will be automatically resolved by Bazel.
+
+```bzl
+# BUILD.bazel
+cc_library(
+    name = "my_lib",
+    srcs = ["my_lib.cc"],
+    hdrs = ["my_lib.h"],
+    deps = ["@lbfgspp"],
+)
+```
+
+Some examples are provided in the [examples](./examples/) directory.
+
 ## Documentation
 
 The [API reference](https://lbfgspp.statr.me/doc/) page contains the documentation
