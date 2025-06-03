@@ -1,0 +1,11 @@
+"""Example module using lbfgspp."""
+
+module(name = "lbfgspp_examples")
+
+bazel_dep(name = "lbfgspp")
+local_path_override(
+    module_name = "lbfgspp",
+    path = "../",
+)
+
+bazel_dep(name = "rules_cc", version = "0.1.1")
