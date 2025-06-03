@@ -199,20 +199,40 @@ for example.
 ## LBFGS++ with Bazel
 
 **LBFGS++** can easily be integrated in project using the [Bazel](https://bazel.build/) build system via modules.
-Simply add the following to your `MODULE.bazel` file:
+Simply add the following at any point in your `MODULE.bazel` file:
 
 ```bzl
 # MODULE.bazel
+
+#...
+bazel_dep(name = "lbfgspp", version = "4.0.0")
+git_override(
+    module_name = "lbfgspp",
+    commit = "c524a407fb85b74807f53de5a3ca2ddbcc164e54",
+    remote = "https://github.com/yixuan/LBFGSpp.git",
+)
+# ...
+``` 
+
+<!--
+
+THIS WOULD WORK IF THE LIBRARY GETS PUBLISHED ON THE BAZEL MODULE REGISTRY
+
+```bzl
+# MODULE.bazel
+
 #...
 bazel_dep(name = "lbfgspp", version = "4.0.0")
 # ...
-```
+``` 
+-->
 
 And add the dependency to the `@lbfgspp` library in your `cc_library`, `cc_binary`, or `cc_test` target.
 The transitive dependency on the `@eigen` library will be automatically resolved by Bazel.
 
 ```bzl
 # BUILD.bazel
+
 cc_library(
     name = "my_lib",
     srcs = ["my_lib.cc"],
