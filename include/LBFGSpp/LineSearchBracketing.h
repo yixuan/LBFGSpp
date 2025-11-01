@@ -5,6 +5,7 @@
 #ifndef LBFGSPP_LINE_SEARCH_BRACKETING_H
 #define LBFGSPP_LINE_SEARCH_BRACKETING_H
 
+#include <cassert>
 #include <Eigen/Core>
 #include <stdexcept>  // std::runtime_error
 #include "Param.h"
