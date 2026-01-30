@@ -1,0 +1,13 @@
+"""LBFGSpp library for Bazel"""
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+licenses(["notice"])  # MIT
+
+cc_library(
+    name = "lbfgspp",
+    hdrs = glob(["include/**/*.h"]),
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+    deps = ["@eigen"],
+)

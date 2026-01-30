@@ -8,3 +8,5 @@ issues/*
 .cproject
 /Debug/
 /Release/
+bazel-*
+MODULE.bazel.lock

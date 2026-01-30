@@ -1,0 +1,14 @@
+{
+  "homepage": "https://github.com/yixuan/LBFGSpp",
+  "maintainers": [
+    {
+      "name": "Yixuan Qiu",
+      "email": "yixuanq@gmail.com",
+      "github": "yixuan",
+      "github_user_id": 216398
+    }
+  ],
+  "repository": ["github:yixuan/LBFGSpp"],
+  "versions": [],
+  "yanked_versions": {}
+}
