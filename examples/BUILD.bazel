@@ -1,0 +1,35 @@
+"""LBFGSpp library for Bazel"""
+
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+licenses(["notice"])  # MIT
+
+cc_binary(
+    name = "example-quadratic",
+    srcs = ["example-quadratic.cpp"],
+    deps = ["@lbfgspp"],
+)
+
+cc_binary(
+    name = "example-rosenbrock-box",
+    srcs = ["example-rosenbrock-box.cpp"],
+    deps = ["@lbfgspp"],
+)
+
+cc_binary(
+    name = "example-rosenbrock-bracketing",
+    srcs = ["example-rosenbrock-bracketing.cpp"],
+    deps = ["@lbfgspp"],
+)
+
+cc_binary(
+    name = "example-rosenbrock-comparison",
+    srcs = ["example-rosenbrock-comparison.cpp"],
+    deps = ["@lbfgspp"],
+)
+
+cc_binary(
+    name = "example-rosenbrock",
+    srcs = ["example-rosenbrock.cpp"],
+    deps = ["@lbfgspp"],
+)

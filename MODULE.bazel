@@ -1,0 +1,6 @@
+"""A header-only C++ library for L-BFGS and L-BFGS-B algorithms"""
+
+module(name = "lbfgspp", version = "4.0.0")
+
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "eigen", version = "3.4.0.bcr.3")
