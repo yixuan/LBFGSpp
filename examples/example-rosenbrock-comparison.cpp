@@ -1,3 +1,4 @@
+#include <cassert>
 #include <Eigen/Core>
 #include <iostream>
 #include <LBFGS.h>
