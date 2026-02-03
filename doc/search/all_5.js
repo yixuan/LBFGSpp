@@ -1,10 +1,8 @@
 var searchData=
 [
-  ['m_0',['m',['../classLBFGSpp_1_1LBFGSParam.html#a70eca2e693d8f86ab6fc929ec8595218',1,'LBFGSpp::LBFGSParam::m()'],['../classLBFGSpp_1_1LBFGSBParam.html#ae293bfac62405197b820d766e199fffe',1,'LBFGSpp::LBFGSBParam::m()']]],
-  ['max_5fiterations_1',['max_iterations',['../classLBFGSpp_1_1LBFGSParam.html#a9afca7340b6eaff8a6bad3712ebdf043',1,'LBFGSpp::LBFGSParam::max_iterations()'],['../classLBFGSpp_1_1LBFGSBParam.html#a076281d66e09bfd0b2d32f66cab5269f',1,'LBFGSpp::LBFGSBParam::max_iterations()']]],
-  ['max_5flinesearch_2',['max_linesearch',['../classLBFGSpp_1_1LBFGSParam.html#a4a1bb3fc2b776551916854f60f551f35',1,'LBFGSpp::LBFGSParam::max_linesearch()'],['../classLBFGSpp_1_1LBFGSBParam.html#ae292244d56ee643e765d0eda8879512b',1,'LBFGSpp::LBFGSBParam::max_linesearch()']]],
-  ['max_5fstep_3',['max_step',['../classLBFGSpp_1_1LBFGSParam.html#ac304c1e5c0ce21faea9b7f16601d45fc',1,'LBFGSpp::LBFGSParam::max_step()'],['../classLBFGSpp_1_1LBFGSBParam.html#a110e3f2e02baef03401d6374fd0a998f',1,'LBFGSpp::LBFGSBParam::max_step()']]],
-  ['max_5fsubmin_4',['max_submin',['../classLBFGSpp_1_1LBFGSBParam.html#afb781e34a321966dabf5ceee017b104a',1,'LBFGSpp::LBFGSBParam']]],
-  ['min_5fstep_5',['min_step',['../classLBFGSpp_1_1LBFGSParam.html#adf2748b5edcef27cb88e960154734d30',1,'LBFGSpp::LBFGSParam::min_step()'],['../classLBFGSpp_1_1LBFGSBParam.html#a3797674815aad41252870437b68443b8',1,'LBFGSpp::LBFGSBParam::min_step()']]],
-  ['minimize_6',['minimize',['../classLBFGSpp_1_1LBFGSSolver.html#aa1961dc72e480cb35e7831ad18d772f8',1,'LBFGSpp::LBFGSSolver::minimize()'],['../classLBFGSpp_1_1LBFGSBSolver.html#a420f4521286e2ac37a37f41b9f5767a9',1,'LBFGSpp::LBFGSBSolver::minimize()']]]
+  ['final_5fapprox_5fhessian_0',['final_approx_hessian',['../classLBFGSpp_1_1LBFGSSolver.html#a2694beddb897e699d1f70c8c6c0cfc2d',1,'LBFGSpp::LBFGSSolver']]],
+  ['final_5fapprox_5finverse_5fhessian_1',['final_approx_inverse_hessian',['../classLBFGSpp_1_1LBFGSSolver.html#aa3b4635e6aba1fc01bf5d7234e8f8853',1,'LBFGSpp::LBFGSSolver']]],
+  ['final_5fgrad_2',['final_grad',['../classLBFGSpp_1_1LBFGSSolver.html#a8f2300767858ba7778f2d0ecd8a188d1',1,'LBFGSpp::LBFGSSolver::final_grad()'],['../classLBFGSpp_1_1LBFGSBSolver.html#a197ad985627a9f84d93f431b32b56ec9',1,'LBFGSpp::LBFGSBSolver::final_grad()']]],
+  ['final_5fgrad_5fnorm_3',['final_grad_norm',['../classLBFGSpp_1_1LBFGSSolver.html#aac0283d58383e39d101bff2aeceb5423',1,'LBFGSpp::LBFGSSolver::final_grad_norm()'],['../classLBFGSpp_1_1LBFGSBSolver.html#ac2b249debcc55e0bb7edf43b11f6171d',1,'LBFGSpp::LBFGSBSolver::final_grad_norm()']]],
+  ['ftol_4',['ftol',['../classLBFGSpp_1_1LBFGSParam.html#afd25aeda1f1a3cb9084e2e860ff6caf8',1,'LBFGSpp::LBFGSParam::ftol'],['../classLBFGSpp_1_1LBFGSBParam.html#aa65896259d12ee094ba197e7202b6d8f',1,'LBFGSpp::LBFGSBParam::ftol']]]
 ];

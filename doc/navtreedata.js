@@ -25,8 +25,7 @@
 var NAVTREE =
 [
   [ "LBFGS++", "index.html", [
-    [ "LBFGS++ <img src=\"https://statr.me/images/sticker-lbfgspp.png\" alt=\"LBFGS++\" height=\"150px\" align=\"right\" />", "index.html", "index" ],
-    [ "Modules", "modules.html", "modules" ],
+    [ "Topics", "topics.html", "topics" ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Members", "functions.html", [
@@ -46,5 +45,6 @@ var NAVTREEINDEX =
 "BFGSMat_8h_source.html"
 ];
 
-var SYNCONMSG = 'click to disable panel synchronisation';
-var SYNCOFFMSG = 'click to enable panel synchronisation';
+var SYNCONMSG = 'click to disable panel synchronization';
+var SYNCOFFMSG = 'click to enable panel synchronization';
+var LISTOFALLMEMBERS = 'List of all members';
