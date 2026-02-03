@@ -38,7 +38,7 @@ target_include_directories(lbfgspp INTERFACE
 # | FIND EXTERNAL LIBRARIES |
 # + ----------------------- +
 
-find_package(Eigen3 3.0 REQUIRED)
+find_package(Eigen3 REQUIRED)
 target_link_libraries(lbfgspp INTERFACE Eigen3::Eigen)
 message("-- Eigen3 version: " ${EIGEN3_VERSION_STRING})
 
