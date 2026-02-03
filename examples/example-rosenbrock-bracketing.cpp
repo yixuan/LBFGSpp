@@ -1,5 +1,5 @@
-#include <cassert>
 #include <Eigen/Core>
+#include <stdexcept>
 #include <iostream>
 #include <LBFGS.h>
 
@@ -24,7 +24,10 @@ public:
             grad[i]     = -2.0 * (x[i] * grad[i + 1] + t1);
             fx += t1 * t1 + t2 * t2;
         }
-        assert( ! std::isnan(fx) );
+        if (!std::isfinite(fx))
+        {
+            throw std::runtime_error("fx is not finite");
+        }
         return fx;
     }
 };
@@ -44,7 +47,11 @@ int main()
             double fx;
             int niter = solver.minimize(fun, x, fx);
 
-            assert( ( (x.array() - 1.0).abs() < 1e-4 ).all() );
+            double diff = (x.array() - 1.0).abs().maxCoeff();
+            if (diff > 1e-4)
+            {
+                throw std::runtime_error("Error is larger than 1e-4");
+            }
         }
         std::cout << "Test passed!" << std::endl << std::endl;
     }

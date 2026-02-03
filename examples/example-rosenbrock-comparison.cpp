@@ -1,4 +1,3 @@
-#include <cassert>
 #include <Eigen/Core>
 #include <iostream>
 #include <LBFGS.h>
@@ -29,7 +28,10 @@ public:
             grad[i]     = -2.0 * (x[i] * grad[i + 1] + t1);
             fx += t1 * t1 + t2 * t2;
         }
-        assert( ! std::isnan(fx) );
+        if (!std::isfinite(fx))
+        {
+            throw std::runtime_error("fx is not finite");
+        }
         return fx;
     }
 
@@ -37,6 +39,15 @@ public:
       return ncalls;
     }
 };
+
+inline void validate_solution(const VectorXd& x)
+{
+    double diff = (x.array() - 1.0).abs().maxCoeff();
+    if (diff > 1e-4)
+    {
+        throw std::runtime_error("Error is larger than 1e-4");
+    }
+}
 
 int main()
 {
@@ -68,16 +79,16 @@ int main()
 
             double fx;
 
-            x = x0; niter_backtrack += solver_backtrack.minimize(fun_backtrack, x, fx); assert( ( (x.array() - 1.0).abs() < 1e-4 ).all() );
-            x = x0; niter_bracket   += solver_bracket  .minimize(fun_bracket  , x, fx); assert( ( (x.array() - 1.0).abs() < 1e-4 ).all() );
-            x = x0; niter_nocedal   += solver_nocedal  .minimize(fun_nocedal  , x, fx); assert( ( (x.array() - 1.0).abs() < 1e-4 ).all() );
-            x = x0; niter_more      += solver_more     .minimize(fun_more     , x, fx); assert( ( (x.array() - 1.0).abs() < 1e-4 ).all() );
+            x = x0; niter_backtrack += solver_backtrack.minimize(fun_backtrack, x, fx); validate_solution(x);
+            x = x0; niter_bracket   += solver_bracket  .minimize(fun_bracket  , x, fx); validate_solution(x);
+            x = x0; niter_nocedal   += solver_nocedal  .minimize(fun_nocedal  , x, fx); validate_solution(x);
+            x = x0; niter_more      += solver_more     .minimize(fun_more     , x, fx); validate_solution(x);
         }
         std::cout << "  Average #calls:" << std::endl;
         std::cout << "  LineSearchBacktracking : " << (fun_backtrack.get_ncalls() / tests_per_n) << " calls, " << (niter_backtrack / tests_per_n) << " iterations" << std::endl;
         std::cout << "  LineSearchBracketing   : " << (fun_bracket  .get_ncalls() / tests_per_n) << " calls, " << (niter_bracket   / tests_per_n) << " iterations" << std::endl;
         std::cout << "  LineSearchNocedalWright: " << (fun_nocedal  .get_ncalls() / tests_per_n) << " calls, " << (niter_nocedal   / tests_per_n) << " iterations" << std::endl;
-        std::cout << "  LineSearchMoreThuente: "   << (fun_more     .get_ncalls() / tests_per_n) << " calls, " << (niter_more      / tests_per_n) << " iterations" << std::endl;
+        std::cout << "  LineSearchMoreThuente  : " << (fun_more     .get_ncalls() / tests_per_n) << " calls, " << (niter_more      / tests_per_n) << " iterations" << std::endl;
     }
 
     return 0;
