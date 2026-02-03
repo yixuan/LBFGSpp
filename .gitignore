@@ -3,6 +3,7 @@
 include/Eigen/*
 archive/*
 issues/*
+build/*
 .settings/*
 .project
 .cproject

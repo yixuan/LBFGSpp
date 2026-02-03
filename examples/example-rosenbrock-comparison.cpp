@@ -1,4 +1,5 @@
 #include <Eigen/Core>
+#include <stdexcept>
 #include <iostream>
 #include <LBFGS.h>
 

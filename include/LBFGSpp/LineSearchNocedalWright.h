@@ -1,5 +1,5 @@
-// Copyright (C) 2016-2025 Yixuan Qiu <yixuan.qiu@cos.name>
-// Copyright (C) 2016-2025 Dirk Toewe <DirkToewe@GoogleMail.com>
+// Copyright (C) 2016-2026 Yixuan Qiu <yixuan.qiu@cos.name>
+// Copyright (C) 2016-2026 Dirk Toewe <DirkToewe@GoogleMail.com>
 // Under MIT license
 
 #ifndef LBFGSPP_LINE_SEARCH_NOCEDAL_WRIGHT_H
@@ -86,6 +86,8 @@ public:
                            const Vector& xp, const Vector& drt, const Scalar& step_max,
                            Scalar& step, Scalar& fx, Vector& grad, Scalar& dg, Vector& x)
     {
+        using std::abs;
+
         // Check the value of step
         if (step <= Scalar(0))
             throw std::invalid_argument("'step' must be positive");
@@ -157,7 +159,7 @@ public:
             // If reaching here, then the sufficient decrease condition is satisfied
 
             // Test the curvature condition
-            if (std::abs(dg) <= test_curv)
+            if (abs(dg) <= test_curv)
                 return;  // Case (4)
 
             step_hi = step_lo;
@@ -231,7 +233,7 @@ public:
             else
             {
                 // Test the curvature condition
-                if (std::abs(dg) <= test_curv)
+                if (abs(dg) <= test_curv)
                     return;
 
                 if (dg * (step_hi - step_lo) >= Scalar(0))
