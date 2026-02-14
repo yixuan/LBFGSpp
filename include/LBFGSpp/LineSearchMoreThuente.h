@@ -601,7 +601,6 @@ public:
         // step size so far
         if (iter >= param.max_linesearch)
         {
-            std::cout << "** Maximum step size reached\n\n";
             // std::cout << "** Maximum step size reached\n\n";
             // std::cout << "========================= Leaving line search =========================\n\n";
 
